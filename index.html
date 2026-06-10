@@ -144,7 +144,7 @@ button {
 
 <div id="login">
     <div id="top-banner">
-        <img src="トップバナー.PNG" alt="トップバナー画像">
+        <img src="top-banner.png" alt="トップバナー画像">
     </div>
     <h2>パスワードを入力してください</h2>
     <input type="password" id="passwordInput" placeholder="パスワード">
@@ -173,11 +173,11 @@ button {
     <div id="completion-message" style="display:none; margin-top: 20px;">
         <h2>コンプリートおめでとう！</h2>
         <p>可愛くシェアしよう！</p>
-        <img src="完了.PNG" alt="コンプリート" style="margin-top: 20px; width: 300px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);">
+        <img src="complete.png" alt="コンプリート" style="margin-top: 20px; width: 300px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);">
     </div>
 
     <div id="map-image" style="margin-top: 30px;">
-        <img src="マップ.png" alt="マップ" style="width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.3);">
+        <img src="map.png" alt="マップ" style="width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.3);">
     </div>
     
     <div class="follow-buttons">
@@ -192,7 +192,7 @@ button {
 </div>
 
 <div id="completion-overlay" onclick="hideCompletion()">
-    <img src="完了.PNG" alt="コンプリート">
+    <img src="complete.png" alt="コンプリート">
     <h2>コンプリート<br>おめでとう！</h2>
 </div>
 
@@ -225,7 +225,6 @@ function getStampFromUrl() {
 }
 
 function showStampGet(stampNum) {
-    // 画面に映っている「stamp1.PNG」などの大文字表記に変更
     document.getElementById('stampGetImg').src = `stamp${stampNum}.PNG`;
     document.getElementById('stampGetOverlay').classList.add('active');
 }
@@ -252,10 +251,8 @@ function updateStampsUI() {
         div.classList.add('stamp');
         if (stamps.includes(i)) {
             div.classList.add('collected');
-            // 画面に映っている大文字表記に対応
             div.innerHTML = `<a href="stamp${i}.PNG" download><img src="stamp${i}.PNG" alt="スタンプ${i}"></a>`;
         } else {
-            // 画面に映っている大文字表記に対応
             div.innerHTML = `<img src="stamp${i}.PNG" alt="スタンプ${i}" style="opacity:0.2;">`;
         }
         container.appendChild(div);
