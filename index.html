@@ -6,17 +6,15 @@
     <title>Bio-Eco Cyber Scavenger</title>
     <style>
         /* ==========================================================================
-           1. Frutiger Aero Zombie Apocalypse 全体デザイン
+           1. Frutiger Aero 全体デザイン (泡とグラデーション)
            ========================================================================== */
         :root {
-            /* 水、植物、未来、不穏を融合させた鮮やかなグラデーション */
             --bg-gradient: linear-gradient(135deg, #0077b6 0%, #00b4d8 30%, #52b788 70%, #112211 100%);
             --glass-bg: rgba(255, 255, 255, 0.12);
             --glass-border: rgba(255, 255, 255, 0.3);
             --text-main: #ffffff;
             --accent-cyan: #00f0ff;
             --biohazard-yellow: #ccff00;
-            --alert-red: #ff3333;
         }
 
         * {
@@ -39,7 +37,7 @@
             position: relative;
         }
 
-        /* Frutiger Aero特有の「泡・シャボン玉」の浮遊演出 */
+        /* 浮遊する泡（Frutiger Aero演出） */
         .bubbles {
             position: fixed;
             top: 0;
@@ -66,7 +64,7 @@
         }
 
         /* ==========================================================================
-           2. 近未来的ですっきりしたUIパーツ (Glassmorphism)
+           2. 共通UIパーツ (Glassmorphism)
            ========================================================================== */
         .glass-panel {
             background: var(--glass-bg);
@@ -79,11 +77,11 @@
             max-width: 500px;
             padding: 22px;
             margin-bottom: 20px;
-            z-index: 1;
+            z-index: 2; /* 泡より確実に手前に出すためにz-indexを強化 */
             position: relative;
         }
 
-        h1, h2, h3 {
+        h2, h3 {
             font-weight: 600;
             letter-spacing: 0.05em;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -95,7 +93,6 @@
             color: #ffffff;
         }
 
-        /* Aeroテイストの光沢感あるボタン */
         .btn {
             display: block;
             width: 100%;
@@ -115,14 +112,11 @@
         .btn:active, .btn:hover {
             background: linear-gradient(180deg, rgba(0,240,255,0.9) 0%, rgba(0,180,216,0.9) 100%);
             transform: scale(0.98);
-            box-shadow: 0 2px 8px rgba(0,240,255,0.5);
         }
 
-        /* ==========================================================================
-           3. 各種画面セクションの制御
-           ========================================================================== */
+        /* 表示・非表示の基本制御 */
         #story-zone, #main-content, #complete-zone {
-            display: none;
+            display: none; /* デフォルトは非表示、JSで必ず1つをflexにする */
             width: 100%;
             flex-direction: column;
             align-items: center;
@@ -137,7 +131,6 @@
             font-weight: bold;
         }
 
-        /* スタンプラリーのグリッド配置 (5個一列) */
         .stamp-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -155,47 +148,24 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .stamp-slot.active {
             border: 2px solid var(--accent-cyan);
             background: rgba(0, 240, 255, 0.15);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6), inset 0 0 8px rgba(255,255,255,0.3);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
         }
 
-        .stamp-slot img {
-            width: 85%;
-            height: 85%;
-            object-fit: contain;
-        }
+        .stamp-slot img { width: 85%; height: 85%; object-fit: contain; }
+        .stamp-number { font-size: 0.8rem; color: rgba(255,255,255,0.4); font-weight: bold; }
 
-        .stamp-number {
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.4);
-            font-weight: bold;
-        }
-
-        /* 警告・通知デザイン */
         .notice-box {
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            width: 100%;
-            max-width: 500px;
-            z-index: 1;
+            padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px;
+            font-weight: bold; font-size: 0.9rem; width: 100%; max-width: 500px; z-index: 10;
         }
-        .success-notice { background: rgba(82, 183, 136, 0.85); border: 1px solid var(--biohazard-yellow); }
-        .error-notice { background: rgba(255, 51, 51, 0.85); border: 1px solid #ff9999; }
-
-        .banner-container {
-            padding: 0;
-            overflow: hidden;
-            border: 1px solid var(--glass-border);
-        }
+        .success-notice { background: rgba(82, 183, 136, 0.9); border: 1px solid var(--biohazard-yellow); }
+        .error-notice { background: rgba(255, 51, 51, 0.9); border: 1px solid #ff9999; }
+        .banner-container { padding: 0; overflow: hidden; border: 1px solid var(--glass-border); }
         .banner-container img { width: 100%; height: auto; display: block; }
     </style>
 </head>
@@ -212,20 +182,14 @@
     <div id="notice-container" style="display: none;"></div>
 
     <div id="story-zone">
-        <div class="glass-panel" style="background: rgba(10, 35, 45, 0.85); border: 2px solid var(--accent-cyan);">
-            <div class="biohazard-header" id="story-alert-text">⚠️ MISSION ONGOING ⚠️</div>
+        <div class="glass-panel" style="background: rgba(10, 35, 45, 0.9); border: 2px solid var(--accent-cyan);">
+            <div class="biohazard-header">⚠️ MISSION ONGOING ⚠️</div>
             <h3 id="story-title" style="margin-bottom:15px; text-align:center;">QUEST DATA</h3>
-            
-            <p id="story-main-text" style="margin-bottom:22px; padding:15px; background:rgba(255,255,255,0.06); border-radius:10px; border-left:4px solid var(--accent-cyan);">
-                ストーリーテキストを読み込んでいます...
+            <p id="story-main-text" style="margin-bottom:22px; padding:15px; background:rgba(255,255,255,0.06); border-radius:10px; border-left:4px solid var(--accent-cyan); white-space: pre-wrap;">
+                テキスト読み込み中...
             </p>
-            
-            <button class="btn" id="option-1-btn" onclick="makeChoice(1)" style="margin-bottom: 12px; text-align: left; padding-left: 20px;">
-                ❶ 選択肢1
-            </button>
-            <button class="btn" id="option-2-btn" onclick="makeChoice(2)" style="text-align: left; padding-left: 20px;">
-                ❷ 選択肢2
-            </button>
+            <button class="btn" id="option-1-btn" onclick="makeChoice(1)" style="margin-bottom: 12px; text-align: left; padding-left: 20px;">❶ 選択肢1</button>
+            <button class="btn" id="option-2-btn" onclick="makeChoice(2)" style="text-align: left; padding-left: 20px;">❷ 選択肢2</button>
         </div>
     </div>
 
@@ -233,18 +197,253 @@
         <div class="glass-panel banner-container">
             <img src="top-banner.png" alt="[ Top Banner ]">
         </div>
-
         <div class="glass-panel">
             <h2 style="color: var(--accent-cyan); margin-bottom:8px; font-size:1.2rem; text-align:center;">SYSTEM OVERVIEW</h2>
-            <p id="main-status-text" style="text-align: center; font-size: 0.9rem;">
-                次のスポットの情報をスキャンしてください。
-            </p>
+            <p id="main-status-text" style="text-align: center; font-size: 0.9rem;">ステータスを更新中...</p>
         </div>
-
         <div class="glass-panel">
-            <h3 style="font-size:1rem; margin-bottom:12px; text-align:center; color: #fff;">ARCHIVE CHECKPOINT</h3>
+            <h3 style="font-size:1rem; margin-bottom:12px; text-align:center;">ARCHIVE CHECKPOINT</h3>
             <div class="stamp-grid">
                 <div class="stamp-slot" id="slot-1"><span class="stamp-number">01</span></div>
                 <div class="stamp-slot" id="slot-2"><span class="stamp-number">02</span></div>
                 <div class="stamp-slot" id="slot-3"><span class="stamp-number">03</span></div>
                 <div class="stamp-slot" id="slot-4"><span class="stamp-number">04</span></div>
+                <div class="stamp-slot" id="slot-5"><span class="stamp-number">05</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="complete-zone">
+        <div class="glass-panel" style="border: 2px solid var(--biohazard-yellow); background: rgba(15, 45, 35, 0.95);">
+            <div class="biohazard-header">🏁 FINAL ARCHIVE RESTORED 🏁</div>
+            <h2 id="ending-title" style="color: var(--biohazard-yellow); margin-bottom:12px; text-align:center;">ENDING</h2>
+            <p id="ending-text" style="margin-bottom: 20px; padding: 15px; background:rgba(0,0,0,0.2); border-radius:10px; white-space: pre-wrap;">テキスト</p>
+            <div style="background:rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; margin-bottom:20px;">
+                <img id="complete-image" src="" alt="[ Ending Reward ]" style="width:100%; height:auto; display:block;">
+            </div>
+            <button class="btn" onclick="resetGame()" style="background: linear-gradient(180deg, #ff4d4d, #990000);">データを初期化して最初から遊ぶ</button>
+        </div>
+    </div>
+
+    <script>
+        const STAMP_IMAGES = { 1: 'stamp1.PNG', 2: 'stamp2.PNG', 3: 'stamp3.PNG', 4: 'stamp4.PNG', 5: 'stamp5.PNG' };
+
+        const STAMP_STORIES = {
+            1: { title: "第1章：廃墟となったエコキャンパス", text: "キリコ「ここが最初のラボね。植物工学のデータが残っているはずよ。でもシャッターがロックされてるわ…」\nブンジ「無理やりこじ開けるか、それとも制御端末を探してハッキングするか、どうする？」", opt1: "❶ 力技でシャッターをこじ開ける！", opt2: "❷ ブンジを信じてハッキングを待つ" },
+            2: { title: "第2章：忍び寄る影", text: "無さに進んだ先で、ゾンビの群れに遭遇した！\nキリコ「私の開発した超音波デバイダーなら一時的に足を止められるわ！」\nブンジ「待て、そんな派手な音を出したら遠くのゾンビまで呼び寄せちまう！」", opt1: "❶ キリコの超音波装置を起動する！", opt2: "❷ 物物陰に隠れてやり過ごす" },
+            3: { title: "第3章：二人の科学者の衝突", text: "研究室のメインサーバーに到達した。しかしデータ容量が大きく、全てを持ち帰る時間はない。\nキリコ「抗ウイルス薬の配合レシピのデータを優先すべきよ！」\nブンジ「いや、ウイルスの正体を暴くための発生源データを抜くべきだ！」", opt1: "❶ キリコ考案：薬のデータを優先する", opt2: "❷ ブンジ考案：原因特定データを優先する" },
+            4: { title: "第4章：バイオ汚染の罠", text: "突如、部屋のセキュリティシステムが作動し、有毒な隔離ガスが噴出し始めた！\nブンジ「換気扇を手動で回せばガスは抜けるが、誰か一人がレバーを抑え続けなきゃならない！」\nキリコ「私が残るわ、あなたたちは先へ！」", opt1: "❶ キリコを一人で残さない、一緒に残る！", opt2: "❷ 苦渋の決断…データを守るため先へ進む" },
+            5: { title: "最終章：未来への選択", text: "ついにすべてのデータを回収し、脱出ヘリの無線を繋いだ。しかし最後の瞬間、ワクチン精製装置の暴走アラートが鳴り響く！\nキリコ「装置を安全に停止させないと、データが消えちゃう！」\nブンジ「ヘリの離陸まであと1分だ、今すぐ屋上へ走らないと全員ゾンビの餌食だぞ！」", opt1: "❶ 危険を冒してでもワクチン精製装置を止める！", opt2: "❷ 命が最優先！データを抱えてヘリへ走る！" }
+        };
+
+        const ENDING_DATA = {
+            1: { title: "EDITION 1：パーフェクト・ハッピーエンド", text: "あなたとキリコ、ブンジはすべてのデータを持ち帰り、特効薬の開発に成功した！未来のエコシティは、再び青い空と豊かな緑を取り戻すだろう。これ以上の結末はない！", img: "complete-A.png" },
+            2: { title: "EDITION 2：キリコ救出・ワクチンエンド", text: "命からがら脱出したあなたたち。キリコの熱意が実り、不完全ながらもゾンビ化を抑えるワクチンが完成した。しかし、パンデミックの謎は未だ闇の中だ…。", img: "complete-A.png" },
+            3: { title: "EDITION 3：ブンジの真実解明エンド", text: "ウイルスの発生源を暴いたブンジのデータにより、事件の黒幕が白日の下に晒された。世界は救われたが、失った研究施設の代償は大きかった。", img: "complete-B.png" },
+            4: { title: "EDITION 4：ほろ苦い生存エンド", text: "多くの謎とデータを失ったものの、あなたたちは生きてキャンパスを脱出した。荒廃した世界を前に、キリコとブンジは静かに再起を誓う。", img: "complete-B.png" },
+            5: { title: "EDITION 5：バッド・バイオハザードエンド", text: "選択を誤り、データはすべて消滅。ヘリも間に合わず、キャンパスは完全に隔離された…。あなたたちの無線はここで途絶えている。", img: "complete-B.png" }
+        };
+
+        // アプリ状態の初期値
+        let gameState = { currentStep: 0, collectedSpots: [], choices: {} };
+
+        // ★★★ 起動時処理 (絶対にフリーズさせない超ガード構造) ★★★
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. まずローカルストレージの読み込みを試みる (壊れたデータは強制破棄)
+            try {
+                const savedSpots = localStorage.getItem('v3_z_spots');
+                const savedChoices = localStorage.getItem('v3_z_choices');
+                const savedStep = localStorage.getItem('v3_z_step');
+
+                // データの存在と整合性をチェックして復元
+                if (savedSpots) {
+                    const parsed = JSON.parse(savedSpots);
+                    if (Array.isArray(parsed)) gameState.collectedSpots = parsed;
+                }
+                if (savedChoices) {
+                    const parsed = JSON.parse(savedChoices);
+                    if (parsed && typeof parsed === 'object') gameState.choices = parsed;
+                }
+                if (savedStep) {
+                    const parsed = parseInt(savedStep, 10);
+                    if (!isNaN(parsed)) gameState.currentStep = parsed;
+                }
+            } catch (e) {
+                console.log("古いセーブデータを自動クリーンアップしました");
+                localStorage.clear();
+                gameState = { currentStep: 0, collectedSpots: [], choices: {} };
+            }
+
+            // 2. URLのチェックイン処理
+            processUrlParameter();
+
+            // 3. 画面描画の実行
+            updateScreen();
+        });
+
+        function saveStorage() {
+            try {
+                localStorage.setItem('v3_z_spots', JSON.stringify(gameState.collectedSpots));
+                localStorage.setItem('v3_z_choices', JSON.stringify(gameState.choices));
+                localStorage.setItem('v3_z_step', gameState.currentStep.toString());
+            } catch (e) {}
+        }
+
+        // 順番厳守チェックイン
+        function processUrlParameter() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const spotParam = urlParams.get('spot');
+                const noticeContainer = document.getElementById('notice-container');
+                if (!noticeContainer) return;
+
+                if (spotParam) {
+                    const spotNum = parseInt(spotParam, 10);
+                    if (spotNum >= 1 && spotNum <= 5) {
+                        
+                        // 獲得済みなら何もしない
+                        if (gameState.collectedSpots.includes(spotNum)) return;
+
+                        // 次にあるべき正しい番号を計算
+                        const expectedNext = gameState.collectedSpots.length + 1;
+
+                        if (spotNum === expectedNext) {
+                            gameState.collectedSpots.push(spotNum);
+                            saveStorage();
+                            noticeContainer.innerHTML = `<div class="notice-box success-notice">▶ CHECK-IN SUCCESS: スポット 0${spotNum} 接続完了</div>`;
+                            noticeContainer.style.display = 'block';
+                        } else {
+                            noticeContainer.innerHTML = `<div class="notice-box error-notice">❌ アクセス拒否: スポット 0${expectedNext} のデータを先に修復してください。</div>`;
+                            noticeContainer.style.display = 'block';
+                        }
+                    }
+                }
+            } catch(err) {
+                console.error(err);
+            }
+        }
+
+        // 選択肢クリック
+        function makeChoice(optionNumber) {
+            try {
+                const currentQuestionId = gameState.collectedSpots.length;
+                if (currentQuestionId === 0) return;
+
+                gameState.choices[currentQuestionId] = optionNumber;
+                gameState.currentStep = currentQuestionId;
+                saveStorage();
+
+                const noticeContainer = document.getElementById('notice-container');
+                if (noticeContainer) noticeContainer.style.display = 'none';
+                
+                // URLの?パラメータを消してスッキリさせてリロード効果
+                window.history.replaceState({}, document.title, window.location.pathname);
+                updateScreen();
+            } catch(e) {
+                alert("エラーが発生したためリセットします");
+                resetGame();
+            }
+        }
+
+        // 画面切り替えの統括 (絶対にどれか1つの画面が映るように保証)
+        function updateScreen() {
+            const storyZone = document.getElementById('story-zone');
+            const mainContent = document.getElementById('main-content');
+            const completeZone = document.getElementById('complete-zone');
+
+            // 万が一のHTML破損対策
+            if (!storyZone || !mainContent || !completeZone) return;
+
+            const totalCollected = gameState.collectedSpots.length;
+
+            // 状態判定 A: 新しいスタンプを手に入れたが、まだ質問に答えていない ➔ ストーリー強制
+            if (totalCollected > gameState.currentStep) {
+                const storyData = STAMP_STORIES[totalCollected];
+                if (storyData) {
+                    document.getElementById('story-title').innerText = storyData.title;
+                    document.getElementById('story-main-text').innerText = storyData.text;
+                    document.getElementById('option-1-btn').innerText = storyData.opt1;
+                    document.getElementById('option-2-btn').innerText = storyData.opt2;
+
+                    storyZone.style.display = 'flex';
+                    mainContent.style.display = 'none';
+                    completeZone.style.display = 'none';
+                    return;
+                }
+            }
+
+            // 状態判定 B: 5個すべて集めて、全ての質問に答え終わった ➔ エンディング
+            if (totalCollected === 5 && gameState.currentStep === 5) {
+                determineEnding();
+                storyZone.style.display = 'none';
+                mainContent.style.display = 'none';
+                completeZone.style.display = 'flex';
+                return;
+            }
+
+            // 状態判定 C: 通常のメイン画面（次のQRを探す状態）
+            storyZone.style.display = 'none';
+            mainContent.style.display = 'flex';
+            completeZone.style.display = 'none';
+
+            // 進捗テキストの更新
+            const statusTextEl = document.getElementById('main-status-text');
+            if (statusTextEl) {
+                if (totalCollected === 0) {
+                    statusTextEl.innerText = "【ミッション開始】近くにある最初のターゲット：スポット01のQRコードをスキャンしてください。";
+                } else {
+                    statusTextEl.innerText = `スポット0${totalCollected}クリア。次はスポット0${totalCollected + 1}のQRコードを探してください。`;
+                }
+            }
+
+            // スタンプスロットの点灯
+            for (let i = 1; i <= 5; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                if (slot) {
+                    if (gameState.collectedSpots.includes(i)) {
+                        slot.classList.add('active');
+                        slot.innerHTML = `<img src="${STAMP_IMAGES[i]}" alt="Stamp ${i}">`;
+                    } else {
+                        slot.classList.remove('active');
+                        slot.innerHTML = `<span class="stamp-number">0${i}</span>`;
+                    }
+                }
+            }
+        }
+
+        // エンディング判定アルゴリズム
+        function determineEnding() {
+            let countOpt1 = 0;
+            for(let i = 1; i <= 5; i++) {
+                if(gameState.choices[i] === 1) countOpt1++;
+            }
+            const lastChoice = gameState.choices[5];
+
+            let endingId = 5; 
+            if (lastChoice === 1 && countOpt1 >= 4) {
+                endingId = 1; 
+            } else if (lastChoice === 1 && countOpt1 < 4) {
+                endingId = 2; 
+            } else if (lastChoice === 2 && gameState.choices[3] === 2) {
+                endingId = 3; 
+            } else if (lastChoice === 2 && countOpt1 >= 2) {
+                endingId = 4; 
+            } else {
+                endingId = 5; 
+            }
+
+            const finalEnd = ENDING_DATA[endingId];
+            if (finalEnd) {
+                document.getElementById('ending-title').innerText = finalEnd.title;
+                document.getElementById('ending-text').innerText = finalEnd.text;
+                document.getElementById('complete-image').src = finalEnd.img;
+            }
+        }
+
+        function resetGame() {
+            localStorage.clear();
+            window.location.href = window.location.pathname;
+        }
+    </script>
+</body>
+</html>
