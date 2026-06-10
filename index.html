@@ -7,7 +7,7 @@
 
 <meta property="og:title" content="ねこスタンプラリー">
 <meta property="og:description" content="ねこスタンプをコンプリートしよう！">
-<meta property="og:image" content="https://nidako05.github.io/stamp-rally-test/images/ogp-image.PNG">
+<meta property="og:image" content="https://nidako05.github.io/stamp-rally-test/images/ogp-image.png">
 <meta property="og:url" content="https://nidako05.github.io/stamp-rally-test/">
 <meta property="og:type" content="website">
 
@@ -144,7 +144,7 @@ button {
 
 <div id="login">
     <div id="top-banner">
-        <img src="images/top-banner.PNG" alt="トップバナー画像">
+        <img src="images/top-banner.png" alt="トップバナー画像">
     </div>
     <h2>パスワードを入力してください</h2>
     <input type="password" id="passwordInput" placeholder="パスワード">
@@ -173,7 +173,7 @@ button {
     <div id="completion-message" style="display:none; margin-top: 20px;">
         <h2>コンプリートおめでとう！</h2>
         <p>可愛くシェアしよう！</p>
-        <img src="images/complete.PNG" alt="コンプリート" style="margin-top: 20px; width: 300px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);">
+        <img src="images/complete.png" alt="コンプリート" style="margin-top: 20px; width: 300px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);">
     </div>
 
     <div id="map-image" style="margin-top: 30px;">
@@ -192,7 +192,7 @@ button {
 </div>
 
 <div id="completion-overlay" onclick="hideCompletion()">
-    <img src="images/complete.PNG" alt="コンプリート">
+    <img src="images/complete.png" alt="コンプリート">
     <h2>コンプリート<br>おめでとう！</h2>
 </div>
 
@@ -225,7 +225,7 @@ function getStampFromUrl() {
 }
 
 function showStampGet(stampNum) {
-    document.getElementById('stampGetImg').src = `images/stamp${stampNum}.PNG`;
+    document.getElementById('stampGetImg').src = `images/stamp${stampNum}.png`;
     document.getElementById('stampGetOverlay').classList.add('active');
 }
 
@@ -251,14 +251,13 @@ function updateStampsUI() {
         div.classList.add('stamp');
         if (stamps.includes(i)) {
             div.classList.add('collected');
-            div.innerHTML = `<a href="images/stamp${i}.PNG" download><img src="images/stamp${i}.PNG" alt="スタンプ${i}"></a>`;
+            div.innerHTML = `<a href="images/stamp${i}.png" download><img src="images/stamp${i}.png" alt="スタンプ${i}"></a>`;
         } else {
-            div.innerHTML = `<img src="images/stamp${i}.PNG" alt="スタンプ${i}" style="opacity:0.2;">`;
+            div.innerHTML = `<img src="images/stamp${i}.png" alt="スタンプ${i}" style="opacity:0.2;">`;
         }
         container.appendChild(div);
     }
     
-    // 進捗バーの更新
     const progressPercent = (stamps.length / totalStamps) * 100;
     document.getElementById('progress-bar').style.width = `${progressPercent}%`;
     
@@ -283,7 +282,6 @@ function init() {
     
     if (newStamp && !stamps.includes(newStamp)) {
         stamps.push(newStamp);
-        // 数字の若い順にソートして保存
         stamps.sort((a, b) => a - b);
         saveStampData(stamps);
         showStampGet(newStamp);
