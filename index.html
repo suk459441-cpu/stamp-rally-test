@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Scavenger Hunt</title>
+    <title>Bio-Eco Cyber Scavenger</title>
     <style>
         /* ==========================================================================
-           1. 全体・背景デザイン
+           1. Frutiger Aero Zombie Apocalypse 全体デザイン
            ========================================================================== */
         :root {
-            --bg-gradient: linear-gradient(135deg, #0d1b2a 0%, #003049 50%, #1b4332 100%);
-            --glass-bg: rgba(15, 32, 39, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --text-main: #f8f9fa;
-            --accent-blue: #00b4d8;
+            /* 水、植物、未来、不穏を融合させた鮮やかなグラデーション */
+            --bg-gradient: linear-gradient(135deg, #0077b6 0%, #00b4d8 30%, #52b788 70%, #112211 100%);
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --text-main: #ffffff;
+            --accent-cyan: #00f0ff;
             --biohazard-yellow: #ccff00;
+            --alert-red: #ff3333;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
         }
 
         body {
@@ -33,276 +35,216 @@
             flex-direction: column;
             align-items: center;
             padding: 20px 10px;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #00b4d8 0%, #40916c 100%);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 30px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            text-decoration: none; /* リンクの線を消す */
-        }
-
-        /* ==========================================================================
-           2. 【超重要】CSSだけで画面を切り替える仕掛け (CSS Target HTML)
-           ========================================================================== */
-        /* ボタンを押して URLの末尾に「#game-start」がついたら、ストーリーを消してメインを出す */
-        #story-overlay {
+        /* Frutiger Aero特有の「泡・シャボン玉」の浮遊演出 */
+        .bubbles {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(5, 15, 20, 0.98);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
         }
-        
-        #main-content {
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: rise 12s infinite linear;
+        }
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
+        }
+
+        /* ==========================================================================
+           2. 近未来的ですっきりしたUIパーツ (Glassmorphism)
+           ========================================================================== */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 80, 100, 0.25), inset 0 0 20px rgba(255,255,255,0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 22px;
+            margin-bottom: 20px;
+            z-index: 1;
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #ffffff;
+        }
+
+        /* Aeroテイストの光沢感あるボタン */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(180deg, rgba(0,240,255,0.7) 0%, rgba(0,119,182,0.7) 100%);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,180,216,0.3), inset 0 2px 4px rgba(255,255,255,0.4);
+            text-decoration: none;
+        }
+        .btn:active, .btn:hover {
+            background: linear-gradient(180deg, rgba(0,240,255,0.9) 0%, rgba(0,180,216,0.9) 100%);
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(0,240,255,0.5);
+        }
+
+        /* ==========================================================================
+           3. 各種画面セクションの制御
+           ========================================================================== */
+        #story-zone, #main-content, #complete-zone {
             display: none;
             width: 100%;
             flex-direction: column;
             align-items: center;
         }
 
-        /* URLに #game-start が入った瞬間の超強力なCSS強制切り替え */
-        :target #story-overlay {
-            display: none !important;
-        }
-        :target #main-content {
-            display: flex !important;
-        }
-
-        /* ==========================================================================
-           3. メイン画面の装飾など
-           ========================================================================== */
-        .banner-container, .map-container {
-            background: rgba(255,255,255,0.05);
-            min-height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
-            overflow: hidden;
+        .biohazard-header {
+            color: var(--biohazard-yellow);
+            font-size: 0.8rem;
+            text-align: center;
+            letter-spacing: 0.15em;
+            margin-bottom: 12px;
+            font-weight: bold;
         }
 
-        .banner-container img, .map-container img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
+        /* スタンプラリーのグリッド配置 (5個一列) */
         .stamp-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
+            gap: 10px;
             margin-top: 15px;
         }
 
         .stamp-slot {
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px dashed rgba(255,255,255,0.3);
+            background: rgba(0, 40, 60, 0.4);
+            border: 2px dashed rgba(255,255,255,0.3);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .stamp-slot.active {
-            border: 1px solid var(--accent-blue);
-            background: rgba(0, 180, 216, 0.2);
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.5);
+            border: 2px solid var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6), inset 0 0 8px rgba(255,255,255,0.3);
         }
 
-        .stamp-slot img { width: 85%; height: 85%; object-fit: contain; }
-        .stamp-number { font-size: 0.8rem; color: rgba(255,255,255,0.4); font-weight: bold; }
-        #complete-zone { display: none; text-align: center; }
-        .toast-notice { background: #40916c; color: #fff; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
+        .stamp-slot img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+
+        .stamp-number {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: bold;
+        }
+
+        /* 警告・通知デザイン */
+        .notice-box {
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 500px;
+            z-index: 1;
+        }
+        .success-notice { background: rgba(82, 183, 136, 0.85); border: 1px solid var(--biohazard-yellow); }
+        .error-notice { background: rgba(255, 51, 51, 0.85); border: 1px solid #ff9999; }
+
+        .banner-container {
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+        .banner-container img { width: 100%; height: auto; display: block; }
     </style>
 </head>
-<body id="root">
+<body>
 
-    <div id="story-overlay">
-        <div class="glass-panel" style="background:#0f2027; border:2px solid var(--accent-blue); max-width:450px;">
-            <div style="color:var(--biohazard-yellow); font-size:0.8rem; text-align:center; letter-spacing:0.2em; margin-bottom:10px;">
-                ⚠️ BIOHAZARD ALERT: INFECTED CAMPUS ⚠️
-            </div>
-            <h3 style="margin-bottom:15px; text-align:center;">MISSION ROUTE SELECT</h3>
+    <div class="bubbles">
+        <div class="bubble" style="left: 10%; width: 30px; height: 30px; animation-delay: 0s; animation-duration: 8s;"></div>
+        <div class="bubble" style="left: 30%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 11s;"></div>
+        <div class="bubble" style="left: 55%; width: 45px; height: 45px; animation-delay: 1s; animation-duration: 14s;"></div>
+        <div class="bubble" style="left: 70%; width: 20px; height: 20px; animation-delay: 5s; animation-duration: 9s;"></div>
+        <div class="bubble" style="left: 85%; width: 35px; height: 35px; animation-delay: 3s; animation-duration: 12s;"></div>
+    </div>
+
+    <div id="notice-container" style="display: none;"></div>
+
+    <div id="story-zone">
+        <div class="glass-panel" style="background: rgba(10, 35, 45, 0.85); border: 2px solid var(--accent-cyan);">
+            <div class="biohazard-header" id="story-alert-text">⚠️ MISSION ONGOING ⚠️</div>
+            <h3 id="story-title" style="margin-bottom:15px; text-align:center;">QUEST DATA</h3>
             
-            <p style="margin-bottom:25px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px; border-left:4px solid var(--accent-blue); id-line-height:1.6;">
-                ゾンビが溢れた街で調査を始めたあなた。機械理工学科の機械研究者、キリコと文化情報学部の情報エンジニア、ブンジとともにキャンパスへ足を踏み入れた。
+            <p id="story-main-text" style="margin-bottom:22px; padding:15px; background:rgba(255,255,255,0.06); border-radius:10px; border-left:4px solid var(--accent-cyan);">
+                ストーリーテキストを読み込んでいます...
             </p>
             
-            <a href="#root" class="btn" onclick="selectRoute('A')" style="margin-bottom: 12px; display:block;">
-                ❶ ゾンビ化を止める薬を探しに行く
-            </a>
-            <a href="#root" class="btn" onclick="selectRoute('B')" style="display:block;">
-                ❷ いや、ゾンビ化の原因を探すべきだ。
-            </a>
+            <button class="btn" id="option-1-btn" onclick="makeChoice(1)" style="margin-bottom: 12px; text-align: left; padding-left: 20px;">
+                ❶ 選択肢1
+            </button>
+            <button class="btn" id="option-2-btn" onclick="makeChoice(2)" style="text-align: left; padding-left: 20px;">
+                ❷ 選択肢2
+            </button>
         </div>
     </div>
 
-
     <div id="main-content">
         <div class="glass-panel banner-container">
-            <img src="top-banner.png" alt="[ トップバナー画像 (top-banner.png) ]">
+            <img src="top-banner.png" alt="[ Top Banner ]">
         </div>
 
         <div class="glass-panel">
-            <h2 id="route-title" style="color:#fff; margin-bottom:10px; font-size:1.3rem; text-align:center;">ミッション進行中</h2>
-            <p id="route-desc" style="text-align: center;">データを解析しています...</p>
+            <h2 style="color: var(--accent-cyan); margin-bottom:8px; font-size:1.2rem; text-align:center;">SYSTEM OVERVIEW</h2>
+            <p id="main-status-text" style="text-align: center; font-size: 0.9rem;">
+                次のスポットの情報をスキャンしてください。
+            </p>
         </div>
 
-        <div id="spot-notification" style="display: none; width: 100%; max-width: 500px;"></div>
-
         <div class="glass-panel">
-            <h3 style="font-size:1rem; margin-bottom:10px; text-align:center;">DATA ARCHIVE PROGRESS</h3>
+            <h3 style="font-size:1rem; margin-bottom:12px; text-align:center; color: #fff;">ARCHIVE CHECKPOINT</h3>
             <div class="stamp-grid">
                 <div class="stamp-slot" id="slot-1"><span class="stamp-number">01</span></div>
                 <div class="stamp-slot" id="slot-2"><span class="stamp-number">02</span></div>
                 <div class="stamp-slot" id="slot-3"><span class="stamp-number">03</span></div>
                 <div class="stamp-slot" id="slot-4"><span class="stamp-number">04</span></div>
-                <div class="stamp-slot" id="slot-5"><span class="stamp-number">05</span></div>
-            </div>
-        </div>
-
-        <div class="glass-panel">
-            <h3 style="margin-bottom: 10px; font-size: 1rem; color: var(--accent-blue); text-align:center;">RESEARCH FACILITY MAP</h3>
-            <div class="map-container">
-                <img src="map.png" alt="[ マップ画像 (map.png) ]">
-            </div>
-        </div>
-
-        <div class="glass-panel" id="complete-zone">
-            <h2 style="color:var(--biohazard-yellow); margin-bottom:10px;">MISSION COMPLETE</h2>
-            <div style="background:rgba(255,255,255,0.1); border-radius:8px; margin-bottom:15px;">
-                <img id="complete-image" src="" alt="[ コンプリート特典画像 ]" style="width:100%; height:auto; display:block;">
-            </div>
-            <button class="btn" onclick="resetGame()" style="background: #da1e28; padding: 8px; font-size:0.8rem; width:auto; display:inline-block; border-radius:4px;">リセット</button>
-        </div>
-    </div>
-
-    <script>
-        const STAMP_IMAGES = { 1: 'stamp1.PNG', 2: 'stamp2.PNG', 3: 'stamp3.PNG', 4: 'stamp4.PNG', 5: 'stamp5.PNG' };
-        const ROUTE_DATA = {
-            'A': { title: 'ルートA：抗ウイルス薬確保ミッション', desc: 'キリコ「生存者のためにも、まずは薬の確保が最優先よ。施設内の5つのラボラトリーを巡り、研究データをサルベージしましょう！」' },
-            'B': { title: 'ルートB：パンデミック原因究明ミッション', desc: 'ブンジ「この感染は仕組まれたものだ…。キャンパスのメインサーバーに残された5つのログを解析し、ウイルスの発生源を突き止めるぞ。」' }
-        };
-
-        let gameState = { chosenRoute: null, collectedSpots: [] };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadStorage();
-            processUrlParameter();
-            updateUI();
-        });
-
-        function loadStorage() {
-            try {
-                const savedRoute = localStorage.getItem('zombie_rally_route');
-                const savedSpots = localStorage.getItem('zombie_rally_spots');
-                if (savedRoute === 'A' || savedRoute === 'B') {
-                    gameState.chosenRoute = savedRoute;
-                    // すでに選ばれているならURLを書き換えて最初からメイン画面を出す
-                    if(!window.location.hash) window.location.hash = "root";
-                }
-                if (savedSpots) gameState.collectedSpots = JSON.parse(savedSpots);
-            } catch (e) {}
-        }
-
-        function processUrlParameter() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const spotParam = urlParams.get('spot');
-            if (spotParam) {
-                const spotNum = parseInt(spotParam, 10);
-                if (spotNum >= 1 && spotNum <= 5) {
-                    if (!gameState.collectedSpots.includes(spotNum)) {
-                        gameState.collectedSpots.push(spotNum);
-                        localStorage.setItem('zombie_rally_spots', JSON.stringify(gameState.collectedSpots));
-                    }
-                    const noticeEl = document.getElementById('spot-notification');
-                    if(noticeEl){
-                        noticeEl.innerHTML = `<div class="toast-notice">▶ スポット 0${spotNum} のデータチェックインに成功！</div>`;
-                        noticeEl.style.display = 'block';
-                    }
-                }
-            }
-        }
-
-        function selectRoute(route) {
-            gameState.chosenRoute = route;
-            localStorage.setItem('zombie_rally_route', route);
-            // JSが動く環境なら、ここでも文字を書き換える
-            updateUI();
-            // 強制的にURLの末尾に #root を付与してCSSをハックする
-            window.location.hash = "root";
-        }
-
-        function updateUI() {
-            if (!gameState.chosenRoute) return;
-
-            // URLに#rootがついていればCSS側で自動で切り替わりますが、念のためJSでもバックアップ切り替え
-            document.getElementById('story-overlay').style.display = 'none';
-            document.getElementById('main-content').style.display = 'flex';
-
-            const currentRoute = ROUTE_DATA[gameState.chosenRoute];
-            if(currentRoute) {
-                document.getElementById('route-title').innerText = currentRoute.title;
-                document.getElementById('route-desc').innerText = currentRoute.desc;
-            }
-
-            for (let i = 1; i <= 5; i++) {
-                const slot = document.getElementById(`slot-${i}`);
-                if (slot) {
-                    if (gameState.collectedSpots.includes(i)) {
-                        slot.classList.add('active');
-                        slot.innerHTML = `<img src="${STAMP_IMAGES[i]}" alt="Stamp ${i}">`;
-                    } else {
-                        slot.classList.remove('active');
-                        slot.innerHTML = `<span class="stamp-number">0${i}</span>`;
-                    }
-                }
-            }
-
-            if (gameState.collectedSpots.length === 5) {
-                const compImg = document.getElementById('complete-image');
-                if(compImg) compImg.src = gameState.chosenRoute === 'A' ? 'complete-A.png' : 'complete-B.png';
-                document.getElementById('complete-zone').style.display = 'block';
-            }
-        }
-
-        function resetGame() {
-            if (confirm('すべての進行状況と選択したルートをリセットします。よろしいですか？')) {
-                localStorage.clear();
-                window.location.href = window.location.pathname; // #も消してリロード
-            }
-        }
-    </script>
-</body>
-</html>
