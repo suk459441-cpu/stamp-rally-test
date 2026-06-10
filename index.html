@@ -1,365 +1,214 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>ねこ！</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<meta property="og:title" content="ねこスタンプラリー">
-<meta property="og:description" content="ねこスタンプをコンプリートしよう！">
-<meta property="og:image" content="https://suk459441-cpu.github.io/stamp-rally-test/ogp-image.PNG">
-<meta property="og:url" content="https://suk459441-cpu.github.io/stamp-rally-test/">
-<meta property="og:type" content="website">
-
-<meta name="twitter:card" content="summary_large_image">
-
-<style>
-body {
-    font-family: 'Georgia', serif;
-    text-align: center;
-    background: #0d1b2a;
-    color: #E7E2C1;
-    overflow-x: hidden;
-    margin: 0;
-    padding: 20px;
-    position: relative;
-}
-h1, h2 { color: #E7E2C1; }
-#login, #content { max-width: 800px; margin: auto; position: relative; z-index: 1; }
-
-input[type="password"], button {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    margin: 10px 0;
-}
-button {
-    background-color: #AD6299;
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-}
-.share-buttons a {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #AD6299, #E7E2C1);
-    color: #fff;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.share-buttons a:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-}
-.share-buttons a.line {
-    background: linear-gradient(135deg, #00c300, #a8e6a3);
-}
-#stamp-container { display: flex; flex-wrap: wrap; justify-content: center; }
-.stamp {
-    width: 120px; height: 120px; margin: 10px;
-    border: 2px dashed #E7E2C1; border-radius: 10px;
-    position: relative; overflow: hidden;
-}
-.stamp img {
-    width: 100%; height: 100%; object-fit: contain; border-radius: 8px;
-}
-.stamp.collected img {
-    border: 2px solid #AD6299;
-    box-shadow: 0 0 12px rgba(173, 98, 153, 0.7);
-}
-#progress-container {
-    width: 100%;
-    background: rgba(255,255,255,0.2);
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 20px auto;
-    max-width: 400px;
-}
-#progress-bar {
-    height: 20px;
-    width: 0;
-    background: linear-gradient(90deg, #AD6299, #E7E2C1, #AD6299);
-    border-radius: 10px;
-    transition: width 0.5s ease;
-}
-.stamp-get-overlay,
-#completion-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-}
-.stamp-get-overlay.active,
-#completion-overlay.active {
-    opacity: 1; pointer-events: all;
-}
-.stamp-get-overlay img,
-#completion-overlay img {
-    width: 200px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);
-}
-.stamp-get-overlay h2,
-#completion-overlay h2 {
-    margin-top: 20px; font-size: 2em; color: #fffacd;
-}
-.follow-buttons {
-    margin-top: 20px;
-}
-.follow-buttons a {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
-    background: #6441a5;
-    color: #fff;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-}
-.follow-buttons a:hover {
-    background: #9b59b6;
-}
-#shooting-stars-container {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -1;
-    overflow: hidden;
-}
-#top-banner img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 10px;
-}
-</style>
-</head>
-<body>
-
-<div id="shooting-stars-container">
-    <canvas id="shooting-stars"></canvas>
-</div>
-
-<div id="login">
-    <div id="top-banner">
-        <img src="top-banner.png" alt="トップバナー画像">
-    </div>
-    <h2>パスワードを入力してください</h2>
-    <input type="password" id="passwordInput" placeholder="パスワード">
-    <button onclick="checkPassword()">ログイン</button>
-    <p id="error" style="color: red;"></p>
-</div>
-
-<div id="content" style="display: none;">
-    <h1>ねこスタンプラリー</h1>
-    <p style="margin-bottom: 20px;">5つのスタンプを集めよう！</p>
-    <p style="font-size: 0.9em; margin-top: 0;">
-        3つゲットでオリジナルステッカーを1枚<br>
-        5つ全てゲットでオリジナルステッカーを2枚<br>
-        プレゼント！
-    </p>
-    <div id="progress-container">
-        <div id="progress-bar"></div>
-    </div>
-    <div id="stamp-container"></div>
-    
-    <div class="share-buttons" style="margin-top: 20px;">
-        <a href="#" id="twitter-share" target="_blank">Xでシェア</a> 
-        <a href="#" id="line-share" target="_blank" class="line">LINEでシェア</a>
-    </div>
-    
-    <div id="completion-message" style="display:none; margin-top: 20px;">
-        <h2>コンプリートおめでとう！</h2>
-        <p>可愛くシェアしよう！</p>
-        <img src="complete.png" alt="コンプリート" style="margin-top: 20px; width: 300px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);">
-    </div>
-
-    <div id="map-image" style="margin-top: 30px;">
-        <img src="map.png" alt="マップ" style="width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.3);">
-    </div>
-    
-    <div class="follow-buttons">
-        <a href="https://www.instagram.com/officialastro" target="_blank">Instagramをフォロー！</a>
-        <a href="https://twitter.com/offclASTRO" target="_blank">Xをフォロー！</a>
-    </div>
-</div>
-
-<div class="stamp-get-overlay" id="stampGetOverlay" onclick="hideStampGet()">
-    <img id="stampGetImg" src="" alt="スタンプゲット！">
-    <h2>スタンプゲット！</h2>
-</div>
-
-<div id="completion-overlay" onclick="hideCompletion()">
-    <img src="complete.png" alt="コンプリート">
-    <h2>コンプリート<br>おめでとう！</h2>
-</div>
-
-<script>
-const correctPassword = "roacoco";
-const totalStamps = 5;
-
-function checkPassword() {
-    const input = document.getElementById('passwordInput').value;
-    if (input === correctPassword) {
-        document.getElementById('login').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
-        init();
-    } else {
-        document.getElementById('error').textContent = "パスワードが違います";
-    }
-}
-
-function getStampData() {
-    return JSON.parse(localStorage.getItem('collectedStamps')) || [];
-}
-
-function saveStampData(stamps) {
-    localStorage.setItem('collectedStamps', JSON.stringify(stamps));
-}
-
-function getStampFromUrl() {
-    const spot = parseInt(new URLSearchParams(window.location.search).get('spot'));
-    return (!isNaN(spot) && spot >= 1 && spot <= totalStamps) ? spot : null;
-}
-
-function showStampGet(stampNum) {
-    document.getElementById('stampGetImg').src = `stamp${stampNum}.PNG`;
-    document.getElementById('stampGetOverlay').classList.add('active');
-}
-
-function hideStampGet() {
-    document.getElementById('stampGetOverlay').classList.remove('active');
-    const stamps = getStampData();
-    if (stamps.length >= totalStamps) {
-        document.getElementById('completion-overlay').classList.add('active');
-    }
-}
-
-function hideCompletion() {
-    document.getElementById('completion-overlay').classList.remove('active');
-}
-
-function updateStampsUI() {
-    const container = document.getElementById('stamp-container');
-    container.innerHTML = "";
-    const stamps = getStampData();
-    
-    for (let i = 1; i <= totalStamps; i++) {
-        const div = document.createElement('div');
-        div.classList.add('stamp');
-        if (stamps.includes(i)) {
-            div.classList.add('collected');
-            div.innerHTML = `<a href="stamp${i}.PNG" download><img src="stamp${i}.PNG" alt="スタンプ${i}"></a>`;
-        } else {
-            div.innerHTML = `<img src="stamp${i}.PNG" alt="スタンプ${i}" style="opacity:0.2;">`;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Scavenger Hunt</title>
+    <style>
+        /* ==========================================================================
+           1. 全体・背景デザイン (Frutiger Aero Zombie Apocalypse)
+           ========================================================================== */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0d1b2a 0%, #003049 40%, #d8f3dc 100%);
+            --glass-bg: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-main: #f8f9fa;
+            --accent-blue: #00b4d8;
+            --accent-green: #40916c;
+            --biohazard-yellow: #ccff00;
         }
-        container.appendChild(div);
-    }
-    
-    const progressPercent = (stamps.length / totalStamps) * 100;
-    document.getElementById('progress-bar').style.width = `${progressPercent}%`;
-    
-    if (stamps.length >= totalStamps) {
-        document.getElementById('completion-message').style.display = 'block';
-    } else {
-        document.getElementById('completion-message').style.display = 'none';
-    }
-    updateShareLinks();
-}
 
-function updateShareLinks() {
-    const text = encodeURIComponent("ねこスタンプをコンプリートしたよ！ #ねこ #cat");
-    const url = encodeURIComponent(window.location.href.split('?')[0]);
-    document.getElementById('twitter-share').href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
-    document.getElementById('line-share').href = `https://social-plugins.line.me/lineit/share?url=${url}&text=${text}`;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+        }
 
-function init() {
-    const stamps = getStampData();
-    const newStamp = getStampFromUrl();
-    
-    if (newStamp && !stamps.includes(newStamp)) {
-        stamps.push(newStamp);
-        stamps.sort((a, b) => a - b);
-        saveStampData(stamps);
-        showStampGet(newStamp);
-    }
-    updateStampsUI();
-}
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-// 星空アニメーション
-const canvas = document.getElementById('shooting-stars');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+        /* 擬似的なバイオハザード・光沢エフェクトの背景装飾 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,180,216,0.1) 0%, rgba(64,145,108,0.05) 50%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
 
-let stars = [];
-for (let i = 0; i < 100; i++) {
-    stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 1.2,
-        alpha: Math.random(),
-        alphaChange: Math.random() * 0.02
-    });
-}
+        /* ==========================================================================
+           2. 共通コンポーネント (Glassmorphism UI)
+           ========================================================================== */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            margin-bottom: 20px;
+            z-index: 1;
+            position: relative;
+        }
 
-let shootingStars = [];
-function createShootingStar() {
-    shootingStars.push({
-        x: Math.random() * canvas.width,
-        y: 0,
-        length: Math.random() * 80 + 100,
-        speed: Math.random() * 10 + 6,
-        size: Math.random() * 1.5 + 1,
-        opacity: 1,
-        angle: Math.PI / 4
-    });
-}
+        h1, h2, h3 {
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
 
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
-    
-    stars.forEach(star => {
-        star.alpha += star.alphaChange;
-        if (star.alpha <= 0 || star.alpha >= 1) star.alphaChange = -star.alphaChange;
-        ctx.globalAlpha = star.alpha;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fill();
-    });
-    
-    ctx.globalAlpha = 1;
-    shootingStars.forEach((star, i) => {
-        const dx = Math.cos(star.angle) * star.length;
-        const dy = Math.sin(star.angle) * star.length;
-        ctx.beginPath();
-        ctx.moveTo(star.x, star.y);
-        ctx.lineTo(star.x + dx, star.y + dy);
-        ctx.strokeStyle = `rgba(255,255,255,${star.opacity})`;
-        ctx.lineWidth = star.size;
-        ctx.stroke();
-        
-        star.x += star.speed * Math.cos(star.angle);
-        star.y += star.speed * Math.sin(star.angle);
-        star.opacity -= 0.01;
-        
-        if (star.opacity <= 0) shootingStars.splice(i, 1);
-    });
-    
-    requestAnimationFrame(animate);
-}
+        p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0e1dd;
+        }
 
-setInterval(createShootingStar, 600);
-animate();
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, rgba(0,180,216,0.6) 0%, rgba(64,145,108,0.6) 100%);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,180,216,0.2);
+        }
 
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
-</script>
-</body>
-</html>
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(0,180,216,0.8) 0%, rgba(64,145,108,0.8) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(204,255,0,0.3);
+        }
+
+        /* ==========================================================================
+           3. ストーリー選択画面 (初期オーバーレイ)
+           ========================================================================== */
+        #story-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 25, 30, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .story-box {
+            max-width: 450px;
+            border: 2px solid rgba(0,180,216,0.3);
+            background: rgba(15, 32, 39, 0.85);
+        }
+
+        .biohazard-alert {
+            color: var(--biohazard-yellow);
+            font-size: 0.8rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .story-text {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .option-btn {
+            margin-bottom: 12px;
+            text-align: left;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        /* ==========================================================================
+           4. メインコンテンツ画面
+           ========================================================================== */
+        #main-content {
+            display: none; /* ストーリー選択後にJSで表示 */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .banner-container img, .map-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+        }
+
+        .banner-container {
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .dynamic-title {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0,180,216,0.6);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .dynamic-desc {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* スタンプラリーのグリッド配置 */
+        .stamp-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            justify-items: center;
+            margin-top: 15px;
+        }
+
+        /* 4番目と5番目を中央寄せにするための調整 */
+        .stamp-grid .stamp-slot:nth-child(4) {
+            grid-column: 1 / 2;
+        }
+        @media (min-width: 320px) {
+            .stamp-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .stamp-slot:nth-child(1) { grid-column: 1 / 3; }
+            .stamp-slot:nth-child(2) { grid-column: 3 / 5; }
+            .stamp-slot:nth-child(3) { grid-column: 5
