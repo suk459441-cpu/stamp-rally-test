@@ -1,14 +1,306 @@
-<script>
-        // 定数定義 (画像ファイル名指定)
-        const STAMP_IMAGES = {
-            1: 'stamp1.PNG',
-            2: 'stamp2.PNG',
-            3: 'stamp3.PNG',
-            4: 'stamp4.PNG',
-            5: 'stamp5.PNG'
-        };
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Scavenger Hunt</title>
+    <style>
+        /* ==========================================================================
+           1. 全体・背景デザイン (Frutiger Aero Zombie Apocalypse)
+           ========================================================================== */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0d1b2a 0%, #003049 50%, #1b4332 100%);
+            --glass-bg: rgba(15, 32, 39, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-main: #f8f9fa;
+            --accent-blue: #00b4d8;
+            --accent-green: #40916c;
+            --biohazard-yellow: #ccff00;
+        }
 
-        // ルートごとの表示テキスト定義
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+        }
+
+        /* ==========================================================================
+           2. 共通コンポーネント (確定で見えるように再設計)
+           ========================================================================== */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0e1dd;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00b4d8 0%, #40916c 100%);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:hover, .btn:active {
+            background: linear-gradient(135deg, #00f0ff 0%, #52b788 100%);
+            transform: translateY(-1px);
+        }
+
+        /* ==========================================================================
+           3. ストーリー選択画面 (最前面に絶対固定)
+           ========================================================================== */
+        #story-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 15, 20, 0.95); /* 背景を濃くして確実に遮断 */
+            z-index: 9999; /* 確実に一番手前に持ってくる */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .story-box {
+            background: #0f2027 !important; /* すりガラスがバグった時用に不透明色を保証 */
+            border: 2px solid var(--accent-blue);
+            max-width: 450px;
+        }
+
+        .biohazard-alert {
+            color: var(--biohazard-yellow);
+            font-size: 0.8rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 10px;
+        }
+
+        .story-text {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .option-btn {
+            margin-bottom: 12px;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        /* ==========================================================================
+           4. メインコンテンツ画面 (初期値は非表示。JSで制御)
+           ========================================================================== */
+        #main-content {
+            display: none; 
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 画像がなくても枠線だけで崩れないようにダミー背景を設定 */
+        .banner-container, .map-container {
+            background: rgba(255,255,255,0.05);
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+        }
+
+        .banner-container img, .map-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .dynamic-title {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        /* スタンプラリーのグリッド配置 */
+        .stamp-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            justify-items: center;
+            margin-top: 15px;
+        }
+
+        @media (min-width: 320px) {
+            .stamp-grid { grid-template-columns: repeat(6, 1fr); }
+            .stamp-slot:nth-child(1) { grid-column: 1 / 3; }
+            .stamp-slot:nth-child(2) { grid-column: 3 / 5; }
+            .stamp-slot:nth-child(3) { grid-column: 5 / 7; }
+            .stamp-slot:nth-child(4) { grid-column: 2 / 4; }
+            .stamp-slot:nth-child(5) { grid-column: 4 / 6; }
+        }
+
+        .stamp-slot {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stamp-slot.active {
+            border: 1px solid var(--accent-blue);
+            background: rgba(0, 180, 216, 0.2);
+            box-shadow: 0 0 15px rgba(0, 180, 216, 0.5);
+        }
+
+        .stamp-slot img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+
+        .stamp-number {
+            position: absolute;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: bold;
+        }
+
+        #complete-zone {
+            display: none;
+            text-align: center;
+        }
+
+        .toast-notice {
+            background: #40916c;
+            border: 1px solid var(--biohazard-yellow);
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="story-overlay">
+        <div class="glass-panel story-box">
+            <div class="biohazard-alert">
+                ⚠️ BIOHAZARD ALERT: INFECTED CAMPUS ⚠️
+            </div>
+            <h3 style="margin-bottom:15px; color:#fff;">MISSION ROUTE SELECT</h3>
+            
+            <p class="story-text">
+                ゾンビが溢れた街で調査を始めたあなた。機械理工学科の機械研究者、キリコと文化情報学部の情報エンジニア、ブンジとともにキャンパスへ足を踏み入れた。
+            </p>
+            
+            <button class="btn option-btn" onclick="selectRoute('A')">
+                ❶ ゾンビ化を止める薬を探しに行く
+            </button>
+            <button class="btn option-btn" style="margin-top: 10px;" onclick="selectRoute('B')">
+                ❷ いや、ゾンビ化の原因を探すべきだ。
+            </button>
+        </div>
+    </div>
+
+
+    <div id="main-content">
+
+        <div class="glass-panel banner-container">
+            <img src="top-banner.png" alt="[ トップバナー画像 (top-banner.png) ]">
+        </div>
+
+        <div class="glass-panel">
+            <h2 id="route-title" class="dynamic-title">Loading Mission...</h2>
+            <p id="route-desc" style="text-align: center;">ルートを解析中...</p>
+        </div>
+
+        <div id="spot-notification" style="display: none; width: 100%; max-width: 500px;"></div>
+
+        <div class="glass-panel">
+            <h3 style="font-size:1rem; margin-bottom:10px;">DATA ARCHIVE PROGRESS</h3>
+            <div class="stamp-grid">
+                <div class="stamp-slot" id="slot-1"><span class="stamp-number">01</span></div>
+                <div class="stamp-slot" id="slot-2"><span class="stamp-number">02</span></div>
+                <div class="stamp-slot" id="slot-3"><span class="stamp-number">03</span></div>
+                <div class="stamp-slot" id="slot-4"><span class="stamp-number">04</span></div>
+                <div class="stamp-slot" id="slot-5"><span class="stamp-number">05</span></div>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <h3 style="margin-bottom: 10px; font-size: 1rem; color: var(--accent-blue);">RESEARCH FACILITY MAP</h3>
+            <div class="map-container">
+                <img src="map.png" alt="[ マップ画像 (map.png) ]">
+            </div>
+        </div>
+
+        <div class="glass-panel" id="complete-zone">
+            <h2 style="color:var(--biohazard-yellow); margin-bottom:10px;">MISSION COMPLETE</h2>
+            <p style="margin-bottom: 15px;">すべてのアーカイブデータを復元しました。</p>
+            <div style="background:rgba(255,255,255,0.1); border-radius:8px; margin-bottom:15px;">
+                <img id="complete-image" src="" alt="[ コンプリート特典画像 ]" style="width:100%; height:auto; display:block;">
+            </div>
+            <button class="btn" onclick="resetGame()" style="background: #da1e28; padding: 8px; font-size:0.8rem; width:auto; display:inline-block; border-radius:4px;">データをリセットする</button>
+        </div>
+
+    </div>
+
+    <script>
+        const STAMP_IMAGES = { 1: 'stamp1.PNG', 2: 'stamp2.PNG', 3: 'stamp3.PNG', 4: 'stamp4.PNG', 5: 'stamp5.PNG' };
+
         const ROUTE_DATA = {
             'A': {
                 title: 'ルートA：抗ウイルス薬確保ミッション',
@@ -20,147 +312,81 @@
             }
         };
 
-        // アプリケーションの状態
-        let gameState = {
-            chosenRoute: null,
-            collectedSpots: []
-        };
+        let gameState = { chosenRoute: null, collectedSpots: [] };
 
-        // ページ読み込み時の初期化処理
         window.addEventListener('DOMContentLoaded', () => {
-            try {
-                loadStorage();
-                processUrlParameter();
-                updateUI();
-            } catch (error) {
-                console.error("Initialization Error: ", error);
-                // 万が一エラーが出ても、強制的に初期選択画面だけは表示させる
-                document.getElementById('story-overlay').style.display = 'flex';
-                document.getElementById('main-content').style.display = 'none';
-            }
+            loadStorage();
+            processUrlParameter();
+            updateUI();
         });
 
-        // 1. ローカルストレージから状態を復元
         function loadStorage() {
             try {
                 const savedRoute = localStorage.getItem('zombie_rally_route');
                 const savedSpots = localStorage.getItem('zombie_rally_spots');
-
-                if (savedRoute && (savedRoute === 'A' || savedRoute === 'B')) {
-                    gameState.chosenRoute = savedRoute;
-                }
-                if (savedSpots) {
-                    const parsed = JSON.parse(savedSpots);
-                    if (Array.isArray(parsed)) {
-                        gameState.collectedSpots = parsed;
-                    }
-                }
+                if (savedRoute === 'A' || savedRoute === 'B') gameState.chosenRoute = savedRoute;
+                if (savedSpots) gameState.collectedSpots = JSON.parse(savedSpots);
             } catch (e) {
-                console.error("Storage load failed, clearing logic...", e);
-                localStorage.clear(); // 破損データ対策で一度クリア
+                localStorage.clear();
             }
         }
 
-        // 2. URLパラメータ (?spot=X) の解析とスタンプ付与
         function processUrlParameter() {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const spotParam = urlParams.get('spot');
-
-                if (spotParam) {
-                    const spotNum = parseInt(spotParam, 10);
-                    if (spotNum >= 1 && spotNum <= 5) {
-                        if (!gameState.collectedSpots.includes(spotNum)) {
-                            gameState.collectedSpots.push(spotNum);
-                            localStorage.setItem('zombie_rally_spots', JSON.stringify(gameState.collectedSpots));
-                        }
-                        
-                        const noticeEl = document.getElementById('spot-notification');
-                        if (noticeEl) {
-                            noticeEl.innerHTML = `<div class="toast-notice">▶ スポット 0${spotNum} のデータチェックインに成功！</div>`;
-                            noticeEl.style.display = 'block';
-                        }
+            const urlParams = new URLSearchParams(window.location.search);
+            const spotParam = urlParams.get('spot');
+            if (spotParam) {
+                const spotNum = parseInt(spotParam, 10);
+                if (spotNum >= 1 && spotNum <= 5) {
+                    if (!gameState.collectedSpots.includes(spotNum)) {
+                        gameState.collectedSpots.push(spotNum);
+                        localStorage.setItem('zombie_rally_spots', JSON.stringify(gameState.collectedSpots));
                     }
+                    const noticeEl = document.getElementById('spot-notification');
+                    noticeEl.innerHTML = `<div class="toast-notice">▶ スポット 0${spotNum} のデータチェックインに成功！</div>`;
+                    noticeEl.style.display = 'block';
                 }
-            } catch (e) {
-                console.error("URL Parameter processing failed: ", e);
             }
         }
 
-        // 3. ルート選択が行われたときの処理
+        // ★この関数がボタンクリックで実行され、画面が切り替わります
         function selectRoute(route) {
             gameState.chosenRoute = route;
             localStorage.setItem('zombie_rally_route', route);
-            
-            const overlay = document.getElementById('story-overlay');
-            overlay.style.transition = 'opacity 0.3s ease';
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                updateUI();
-            }, 300);
+            updateUI();
         }
 
-        // 4. 画面全体の表示更新処理
         function updateUI() {
-            const overlayEl = document.getElementById('story-overlay');
-            const mainContentEl = document.getElementById('main-content');
+            const overlay = document.getElementById('story-overlay');
+            const mainContent = document.getElementById('main-content');
 
-            // ルート未選択時の安全な表示切り替え
             if (!gameState.chosenRoute) {
-                if (overlayEl) overlayEl.style.display = 'flex';
-                if (mainContentEl) mainContentEl.style.display = 'none';
+                // ルート未選択なら、選択画面を確実に「flex」で表示
+                overlay.style.display = 'flex';
+                mainContent.style.display = 'none';
                 return;
             } else {
-                if (overlayEl) overlayEl.style.display = 'none';
-                if (mainContentEl) mainContentEl.style.display = 'flex';
+                // ルート選択済みなら、選択画面を「none」で消してメインを表示
+                overlay.style.display = 'none';
+                mainContent.style.display = 'flex';
             }
 
-            // テキストの書き換え
-            const currentRouteInfo = ROUTE_DATA[gameState.chosenRoute];
-            if (currentRouteInfo) {
-                const titleEl = document.getElementById('route-title');
-                const descEl = document.getElementById('route-desc');
-                if (titleEl) titleEl.innerText = currentRouteInfo.title;
-                if (descEl) descEl.innerText = currentRouteInfo.desc;
-            }
+            // テキスト反映
+            const currentRoute = ROUTE_DATA[gameState.chosenRoute];
+            document.getElementById('route-title').innerText = currentRoute.title;
+            document.getElementById('route-desc').innerText = currentRoute.desc;
 
-            // スタンプスロットの描画更新
+            // スタンプ状態反映
             for (let i = 1; i <= 5; i++) {
                 const slot = document.getElementById(`slot-${i}`);
-                if (slot) {
-                    if (gameState.collectedSpots.includes(i)) {
-                        slot.classList.add('active');
-                        slot.innerHTML = `<img src="${STAMP_IMAGES[i]}" alt="Stamp ${i}">`;
-                    } else {
-                        slot.classList.remove('active');
-                        slot.innerHTML = `<span class="stamp-number">0${i}</span>`;
-                    }
+                if (gameState.collectedSpots.includes(i)) {
+                    slot.classList.add('active');
+                    slot.innerHTML = `<img src="${STAMP_IMAGES[i]}" alt="Stamp ${i}">`;
+                } else {
+                    slot.classList.remove('active');
+                    slot.innerHTML = `<span class="stamp-number">0${i}</span>`;
                 }
             }
 
             // コンプリート判定
-            const completeZone = document.getElementById('complete-zone');
-            if (completeZone) {
-                if (gameState.collectedSpots.length === 5) {
-                    const completeImg = document.getElementById('complete-image');
-                    if (completeImg) {
-                        completeImg.src = gameState.chosenRoute === 'A' ? 'complete-A.png' : 'complete-B.png';
-                    }
-                    completeZone.style.display = 'block';
-                } else {
-                    completeZone.style.display = 'none';
-                }
-            }
-        }
-
-        // リセット機能
-        function resetGame() {
-            if (confirm('すべての進行状況と選択したルートをリセットします。よろしいですか？')) {
-                localStorage.clear();
-                gameState.chosenRoute = null;
-                gameState.collectedSpots = [];
-                window.location.href = window.location.pathname;
-            }
-        }
-    </script>
+            if (gameState.collectedSpots.length === 5) {
+                document.getElementById('complete-image').src = gameState.chosenRoute === 'A
