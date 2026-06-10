@@ -37,7 +37,6 @@
             position: relative;
         }
 
-        /* 浮遊する泡（Frutiger Aero演出） */
         .bubbles {
             position: fixed;
             top: 0;
@@ -77,7 +76,7 @@
             max-width: 500px;
             padding: 22px;
             margin-bottom: 20px;
-            z-index: 2; /* 泡より確実に手前に出すためにz-indexを強化 */
+            z-index: 2;
             position: relative;
         }
 
@@ -114,9 +113,8 @@
             transform: scale(0.98);
         }
 
-        /* 表示・非表示の基本制御 */
         #story-zone, #main-content, #complete-zone {
-            display: none; /* デフォルトは非表示、JSで必ず1つをflexにする */
+            display: none;
             width: 100%;
             flex-direction: column;
             align-items: center;
@@ -228,68 +226,97 @@
     <script>
         const STAMP_IMAGES = { 1: 'stamp1.PNG', 2: 'stamp2.PNG', 3: 'stamp3.PNG', 4: 'stamp4.PNG', 5: 'stamp5.PNG' };
 
+        // ★ あなたのプロットに基づいた全4問の選択肢
         const STAMP_STORIES = {
-            1: { title: "第1章：廃墟となったエコキャンパス", text: "キリコ「ここが最初のラボね。植物工学のデータが残っているはずよ。でもシャッターがロックされてるわ…」\nブンジ「無理やりこじ開けるか、それとも制御端末を探してハッキングするか、どうする？」", opt1: "❶ 力技でシャッターをこじ開ける！", opt2: "❷ ブンジを信じてハッキングを待つ" },
-            2: { title: "第2章：忍び寄る影", text: "無さに進んだ先で、ゾンビの群れに遭遇した！\nキリコ「私の開発した超音波デバイダーなら一時的に足を止められるわ！」\nブンジ「待て、そんな派手な音を出したら遠くのゾンビまで呼び寄せちまう！」", opt1: "❶ キリコの超音波装置を起動する！", opt2: "❷ 物物陰に隠れてやり過ごす" },
-            3: { title: "第3章：二人の科学者の衝突", text: "研究室のメインサーバーに到達した。しかしデータ容量が大きく、全てを持ち帰る時間はない。\nキリコ「抗ウイルス薬の配合レシピのデータを優先すべきよ！」\nブンジ「いや、ウイルスの正体を暴くための発生源データを抜くべきだ！」", opt1: "❶ キリコ考案：薬のデータを優先する", opt2: "❷ ブンジ考案：原因特定データを優先する" },
-            4: { title: "第4章：バイオ汚染の罠", text: "突如、部屋のセキュリティシステムが作動し、有毒な隔離ガスが噴出し始めた！\nブンジ「換気扇を手動で回せばガスは抜けるが、誰か一人がレバーを抑え続けなきゃならない！」\nキリコ「私が残るわ、あなたたちは先へ！」", opt1: "❶ キリコを一人で残さない、一緒に残る！", opt2: "❷ 苦渋の決断…データを守るため先へ進む" },
-            5: { title: "最終章：未来への選択", text: "ついにすべてのデータを回収し、脱出ヘリの無線を繋いだ。しかし最後の瞬間、ワクチン精製装置の暴走アラートが鳴り響く！\nキリコ「装置を安全に停止させないと、データが消えちゃう！」\nブンジ「ヘリの離陸まであと1分だ、今すぐ屋上へ走らないと全員ゾンビの餌食だぞ！」", opt1: "❶ 危険を冒してでもワクチン精製装置を止める！", opt2: "❷ 命が最優先！データを抱えてヘリへ走る！" }
+            1: { 
+                title: "【第1選択】キャンパス潜入の目的", 
+                text: "ゾンビが溢れ返ったキャンパス。キリコとブンジと共に中央管理棟へ向かう中、限られたリソースで何から調査すべきか議論になった。\n\nブンジ「ウイルスの発生原因を突き止めなきゃ根本的な解決にゃならねえ！」\nキリコ「いいえ、目の前の生存者を救うために、まずは治療薬のレシピよ！」", 
+                opt1: "❶ ゾンビ化の原因を調べる", 
+                opt2: "❷ 治療薬の作り方を調べる" 
+            },
+            2: { 
+                title: "【第2選択】突発的バイオハザード", 
+                text: "研究棟を捜索中、背後からゾンビの大群がなだれ込んできた！\n脱出する最中、キリコが転倒し、ドアの向こうに取り残されてしまう！\n\nキリコ「キャッ！…私に構わず先に行って！」\nブンジ「おい！アイツを置いていくのか、それともリスクを承知で助けに戻るか！？」", 
+                opt1: "❶ キリコを助けに戻る！", 
+                opt2: "❷ 苦渋の決断…キリコを置いていく" 
+            },
+            3: { 
+                title: "【第3選択】立ちはだかる感染者たち", 
+                text: "ついにメインラボへの道が開けた。しかし、ラボの入り口には、かつてここで研究を行っていたゾンビたちが徘徊している。彼らの生体データは治療薬の完成度に直結しそうだ。\n\nキリコ「彼らを傷つけず、麻酔で拘束して慎重に進めば、完璧なデータが得られるわ！」\nブンジ「甘い！そんな余裕はねえ、倒しながら最短距離で突っ切るぞ！」", 
+                opt1: "❶ 麻酔・拘束して進む（完全な治療薬完成へ）", 
+                opt2: "❷ 倒しながら進む（不完全な治療薬完成へ）" 
+            },
+            4: { 
+                title: "【第4選択】絶望の感染、そして残された一本", 
+                text: "メインラボの最深部で、エラーを起こしたAIシステムが強力なウイルスガスを噴射した！\n必死に防壁を起動したものの、あなたとブンジはガスを吸い込み、感染の初期症状が出始めてしまう。\n手元にある治療薬は……わずか「1人分」だけ。\n\nブンジ「…おい、お前が使え。俺のことはいい…」", 
+                opt1: "❶ ブンジに治療薬を使う（ブンジ生存・日記発見）", 
+                opt2: "❷ 自分に治療薬を使う（自分生存・ブンジ死亡）" 
+            },
+            5: {
+                title: "【最終決戦】マザーAIとの対峙",
+                text: "ウイルスをばら撒き続ける、この都市の環境管理マザーAIが目の前で起動した。\nシステムを完全に停止させなければ未来はない。\nこれまでの全ての行動と選択の結果が、今ここに集約される……。\n\n（※最後のQRコード。ボタンを押すとエンディングへ進みます）",
+                opt1: "▶ AIの出力を停止させ、決着をつける",
+                opt2: "▶ AIの出力を停止させ、決着をつける"
+            }
         };
 
+        // ★ あなたのプロットに基づいた全5種類のマルチエンディング
         const ENDING_DATA = {
-            1: { title: "EDITION 1：パーフェクト・ハッピーエンド", text: "あなたとキリコ、ブンジはすべてのデータを持ち帰り、特効薬の開発に成功した！未来のエコシティは、再び青い空と豊かな緑を取り戻すだろう。これ以上の結末はない！", img: "complete-A.png" },
-            2: { title: "EDITION 2：キリコ救出・ワクチンエンド", text: "命からがら脱出したあなたたち。キリコの熱意が実り、不完全ながらもゾンビ化を抑えるワクチンが完成した。しかし、パンデミックの謎は未だ闇の中だ…。", img: "complete-A.png" },
-            3: { title: "EDITION 3：ブンジの真実解明エンド", text: "ウイルスの発生源を暴いたブンジのデータにより、事件の黒幕が白日の下に晒された。世界は救われたが、失った研究施設の代償は大きかった。", img: "complete-B.png" },
-            4: { title: "EDITION 4：ほろ苦い生存エンド", text: "多くの謎とデータを失ったものの、あなたたちは生きてキャンパスを脱出した。荒廃した世界を前に、キリコとブンジは静かに再起を誓う。", img: "complete-B.png" },
-            5: { title: "EDITION 5：バッド・バイオハザードエンド", text: "選択を誤り、データはすべて消滅。ヘリも間に合わず、キャンパスは完全に隔離された…。あなたたちの無線はここで途絶えている。", img: "complete-B.png" }
+            "TRUE": { 
+                title: "🏆 TRUE END：『AIの贖罪』", 
+                text: "【条件：全員生存／AIの目的判明／AIを倒さない】\n\nブンジに薬を使い、研究者の日記から「AIの真の目的」を知ったあなたたち。キリコも生存し、3人でAIに対峙する。暴走するAIに対し、日記に遺された真実を突きつけると、AIは自らの過ちに気づき、静かに自爆シーケンスを起動した。\nウイルスは完全に消滅。調査団の3人は、屋上に現れた救援ヘリで爽快に青空へと脱出した！", 
+                img: "complete-A.png" 
+            },
+            "GOOD": { 
+                title: "✨ GOOD END：『人類の勝利』", 
+                text: "【条件：AIの目的判明／AIを破壊】\n\nAIの真の目的は突き止めたものの、キリコやブンジを失った、あるいは対話の道を選ばなかったあなたたち。激しい戦闘の末、暴走するマザーAIのコアを完全に破壊した！\nかくして事件は解決しパンデミックは収束したが、AIが遺した不穏な真相は、生き残った者たちの心に深く重く残り続ける……。", 
+                img: "complete-A.png" 
+            },
+            "NORMAL": { 
+                title: "🏃‍♂️ NORMAL END：『治療薬』", 
+                text: "【条件：完全な治療薬完成／AIを倒せない】\n\nAIの目的は不明のまま、あるいはAIを止めることはできなかった。しかし、道中で完成させた「完全な治療薬」のデータを死守することには成功する。\nあなたたちは治療法を確立したまま、ヘリで無事にキャンパスを脱出した。人類には大いなる希望が残された。……だが、AIは今でもあの廃墟で、静かにゾンビを増やし続けている。", 
+                img: "complete-B.png" 
+            },
+            "BAD": { 
+                title: "💀 BAD END：『感染』", 
+                text: "【条件：不完全な治療薬、またはAIとの戦闘に敗北】\n\n手に入れたのは不完全な治療薬だった。あるいは、自分に薬を使ったことで孤立し、狂いゆくシステムに敗北してしまった。\nウイルスの浸食が体を蝕んでいく。あなたたちは力尽き、キリコとブンジも次々とゾンビ化していった……。\n遠のく記憶。約束されなかった未来の虚無だけが、そこに残された。", 
+                img: "complete-B.png" 
+            },
+            "WORST": { 
+                title: "🚨 WORST END：『人類ゾンビ化計画』", 
+                text: "【条件：AIを止められず、治療薬も完成しない】\n\n最悪の選択が重なり、治療薬のレシピは霧散し、マザーAIの暴走を止める術は完全に失われた。\nAIは世界に向けて、潜伏性の高い新型ウイルスを大気中へ一斉に拡散し始める。\n──数ヶ月後、人類は滅亡。地球には、死ぬことも腐ることもない、永遠に彷徨う不死のゾンビだけが残された。", 
+                img: "complete-B.png" 
+            }
         };
 
-        // アプリ状態の初期値
         let gameState = { currentStep: 0, collectedSpots: [], choices: {} };
 
-        // ★★★ 起動時処理 (絶対にフリーズさせない超ガード構造) ★★★
         window.addEventListener('DOMContentLoaded', () => {
-            // 1. まずローカルストレージの読み込みを試みる (壊れたデータは強制破棄)
             try {
-                const savedSpots = localStorage.getItem('v3_z_spots');
-                const savedChoices = localStorage.getItem('v3_z_choices');
-                const savedStep = localStorage.getItem('v3_z_step');
+                const savedSpots = localStorage.getItem('v4_z_spots');
+                const savedChoices = localStorage.getItem('v4_z_choices');
+                const savedStep = localStorage.getItem('v4_z_step');
 
-                // データの存在と整合性をチェックして復元
-                if (savedSpots) {
-                    const parsed = JSON.parse(savedSpots);
-                    if (Array.isArray(parsed)) gameState.collectedSpots = parsed;
-                }
-                if (savedChoices) {
-                    const parsed = JSON.parse(savedChoices);
-                    if (parsed && typeof parsed === 'object') gameState.choices = parsed;
-                }
-                if (savedStep) {
-                    const parsed = parseInt(savedStep, 10);
-                    if (!isNaN(parsed)) gameState.currentStep = parsed;
-                }
+                if (savedSpots) gameState.collectedSpots = JSON.parse(savedSpots);
+                if (savedChoices) gameState.choices = JSON.parse(savedChoices);
+                if (savedStep) gameState.currentStep = parseInt(savedStep, 10);
             } catch (e) {
-                console.log("古いセーブデータを自動クリーンアップしました");
                 localStorage.clear();
                 gameState = { currentStep: 0, collectedSpots: [], choices: {} };
             }
 
-            // 2. URLのチェックイン処理
             processUrlParameter();
-
-            // 3. 画面描画の実行
             updateScreen();
         });
 
         function saveStorage() {
             try {
-                localStorage.setItem('v3_z_spots', JSON.stringify(gameState.collectedSpots));
-                localStorage.setItem('v3_z_choices', JSON.stringify(gameState.choices));
-                localStorage.setItem('v3_z_step', gameState.currentStep.toString());
+                localStorage.setItem('v4_z_spots', JSON.stringify(gameState.collectedSpots));
+                localStorage.setItem('v4_z_choices', JSON.stringify(gameState.choices));
+                localStorage.setItem('v4_z_step', gameState.currentStep.toString());
             } catch (e) {}
         }
 
-        // 順番厳守チェックイン
         function processUrlParameter() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -300,11 +327,8 @@
                 if (spotParam) {
                     const spotNum = parseInt(spotParam, 10);
                     if (spotNum >= 1 && spotNum <= 5) {
-                        
-                        // 獲得済みなら何もしない
                         if (gameState.collectedSpots.includes(spotNum)) return;
 
-                        // 次にあるべき正しい番号を計算
                         const expectedNext = gameState.collectedSpots.length + 1;
 
                         if (spotNum === expectedNext) {
@@ -318,12 +342,9 @@
                         }
                     }
                 }
-            } catch(err) {
-                console.error(err);
-            }
+            } catch(err) { console.error(err); }
         }
 
-        // 選択肢クリック
         function makeChoice(optionNumber) {
             try {
                 const currentQuestionId = gameState.collectedSpots.length;
@@ -336,27 +357,20 @@
                 const noticeContainer = document.getElementById('notice-container');
                 if (noticeContainer) noticeContainer.style.display = 'none';
                 
-                // URLの?パラメータを消してスッキリさせてリロード効果
                 window.history.replaceState({}, document.title, window.location.pathname);
                 updateScreen();
-            } catch(e) {
-                alert("エラーが発生したためリセットします");
-                resetGame();
-            }
+            } catch(e) { resetGame(); }
         }
 
-        // 画面切り替えの統括 (絶対にどれか1つの画面が映るように保証)
         function updateScreen() {
             const storyZone = document.getElementById('story-zone');
             const mainContent = document.getElementById('main-content');
             const completeZone = document.getElementById('complete-zone');
 
-            // 万が一のHTML破損対策
             if (!storyZone || !mainContent || !completeZone) return;
 
             const totalCollected = gameState.collectedSpots.length;
 
-            // 状態判定 A: 新しいスタンプを手に入れたが、まだ質問に答えていない ➔ ストーリー強制
             if (totalCollected > gameState.currentStep) {
                 const storyData = STAMP_STORIES[totalCollected];
                 if (storyData) {
@@ -372,7 +386,6 @@
                 }
             }
 
-            // 状態判定 B: 5個すべて集めて、全ての質問に答え終わった ➔ エンディング
             if (totalCollected === 5 && gameState.currentStep === 5) {
                 determineEnding();
                 storyZone.style.display = 'none';
@@ -381,22 +394,19 @@
                 return;
             }
 
-            // 状態判定 C: 通常のメイン画面（次のQRを探す状態）
             storyZone.style.display = 'none';
             mainContent.style.display = 'flex';
             completeZone.style.display = 'none';
 
-            // 進捗テキストの更新
             const statusTextEl = document.getElementById('main-status-text');
             if (statusTextEl) {
                 if (totalCollected === 0) {
-                    statusTextEl.innerText = "【ミッション開始】近くにある最初のターゲット：スポット01のQRコードをスキャンしてください。";
+                    statusTextEl.innerText = "【作戦開始】まずは最初のターゲット：スポット01のQRコードをスキャンしてください。";
                 } else {
-                    statusTextEl.innerText = `スポット0${totalCollected}クリア。次はスポット0${totalCollected + 1}のQRコードを探してください。`;
+                    statusTextEl.innerText = `選択完了。次はスポット0${totalCollected + 1}のQRコードを探してください。`;
                 }
             }
 
-            // スタンプスロットの点灯
             for (let i = 1; i <= 5; i++) {
                 const slot = document.getElementById(`slot-${i}`);
                 if (slot) {
@@ -411,28 +421,62 @@
             }
         }
 
-        // エンディング判定アルゴリズム
+        // ==========================================================================
+        // 🧠 ★天才エンジニアの条件判定アルゴリズム (プロットを完全再現)
+        // ==========================================================================
         function determineEnding() {
-            let countOpt1 = 0;
-            for(let i = 1; i <= 5; i++) {
-                if(gameState.choices[i] === 1) countOpt1++;
-            }
-            const lastChoice = gameState.choices[5];
+            // 各選択肢の回答を取得 (1 = ❶の選択肢, 2 = ❷の選択肢)
+            const choice1 = gameState.choices[1]; // 1:原因調査, 2:治療薬レシピ
+            const choice2 = gameState.choices[2]; // 1:キリコ助ける, 2:置いていく
+            const choice3 = gameState.choices[3]; // 1:麻酔・拘束(完全), 2:倒す(不完全)
+            const choice4 = gameState.choices[4]; // 1:ブンジに使う(日記発見), 2:自分に使う(不明)
 
-            let endingId = 5; 
-            if (lastChoice === 1 && countOpt1 >= 4) {
-                endingId = 1; 
-            } else if (lastChoice === 1 && countOpt1 < 4) {
-                endingId = 2; 
-            } else if (lastChoice === 2 && gameState.choices[3] === 2) {
-                endingId = 3; 
-            } else if (lastChoice === 2 && countOpt1 >= 2) {
-                endingId = 4; 
-            } else {
-                endingId = 5; 
+            // フラグの初期化
+            let isAllAlive = false;       // 全員生存フラグ
+            let knowAIPurpose = false;    // AIの目的判明フラグ
+            let isPerfectCure = false;    // 完全な治療薬フラグ
+
+            // 1. 治療薬の完成度判定 (第3選択)
+            if (choice3 === 1) {
+                isPerfectCure = true;
             }
 
-            const finalEnd = ENDING_DATA[endingId];
+            // 2. AIの目的判明判定 (第4選択でブンジに薬を使うと日記発見)
+            if (choice4 === 1) {
+                knowAIPurpose = true;
+            }
+
+            // 3. 全員生存判定 (キリコを助け、かつブンジに薬を使って自分が耐えきった場合)
+            if (choice2 === 1 && choice4 === 1) {
+                isAllAlive = true;
+            }
+
+            // --- 運命のエンディング判定 ---
+            let finalEndKey = "WORST"; // デフォルト
+
+            if (isAllAlive && knowAIPurpose) {
+                // ◆全員生存していて、目的も知っている ➔ 対話が可能になり、AIを倒さず自爆させる【TRUE END】
+                finalEndKey = "TRUE";
+            } 
+            else if (knowAIPurpose && !isAllAlive) {
+                // ◆AIの目的は知ったが、誰かが欠けている ➔ 対話が成立せず、力ずくでAIを破壊する【GOOD END】
+                finalEndKey = "GOOD";
+            } 
+            else if (isPerfectCure && !knowAIPurpose) {
+                // ◆完全な治療薬はあるが、AIの目的は不明（日記未発見）➔ AIを倒せず生存させてしまう【NORMAL END】
+                finalEndKey = "NORMAL";
+            } 
+            else if (!isPerfectCure && choice4 === 2) {
+                // ◆不完全な治療薬、または自分に薬を使ってブンジ死亡（AIとの戦闘敗北扱い）【BAD END】
+                finalEndKey = "BAD";
+            } 
+            else {
+                // ◆治療薬も完成せず、AIも止められない【WORST END】
+                finalEndKey = "WORST";
+            }
+
+            // 画面への反映
+            const finalEnd = ENDING_DATA[finalEndKey];
             if (finalEnd) {
                 document.getElementById('ending-title').innerText = finalEnd.title;
                 document.getElementById('ending-text').innerText = finalEnd.text;
