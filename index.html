@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Eco Cyber Scavenger</title>
+    <title>Bio-Eco Dystopia Scavenger</title>
     <style>
         /* ==========================================================================
-           1. Frutiger Aero 全体デザイン (泡とグラデーション)
+           1. Frutiger Aero × Dystopia 全体デザイン (泡消去・ダーク化)
            ========================================================================== */
         :root {
-            --bg-gradient: linear-gradient(135deg, #0077b6 0%, #00b4d8 30%, #52b788 70%, #112211 100%);
-            --glass-bg: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --text-main: #ffffff;
+            /* 明るさを抑え、深海や隔離施設をイメージさせるディストピアグラデーション */
+            --bg-gradient: linear-gradient(135deg, #002b49 0%, #005f73 40%, #0a2f1d 80%, #050b05 100%);
+            --glass-bg: rgba(5, 20, 30, 0.45);
+            --glass-border: rgba(0, 240, 255, 0.25);
+            --text-main: #e0f7fa;
             --accent-cyan: #00f0ff;
-            --biohazard-yellow: #ccff00;
+            --biohazard-yellow: #aacc00;
+            --alert-red: #ff3344;
         }
 
         * {
@@ -37,41 +39,28 @@
             position: relative;
         }
 
-        .bubbles {
+        /* ディストピア感を出すための、画面全体のうっすらとした走査線（グリッド）エフェクト */
+        body::before {
+            content: " ";
+            display: block;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 9999;
+            background-size: 100% 4px, 6px 100%;
             pointer-events: none;
-        }
-        .bubble {
-            position: absolute;
-            bottom: -50px;
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            animation: rise 12s infinite linear;
-        }
-        @keyframes rise {
-            0% { transform: translateY(0) scale(1); opacity: 0; }
-            10% { opacity: 0.6; }
-            90% { opacity: 0.6; }
-            100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
         }
 
         /* ==========================================================================
-           2. 共通UIパーツ (Glassmorphism)
+           2. サイバーUIパーツ (Glassmorphism + Cyber)
            ========================================================================== */
         .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 80, 100, 0.25), inset 0 0 20px rgba(255,255,255,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.1);
             width: 100%;
             max-width: 500px;
             padding: 22px;
@@ -82,35 +71,37 @@
 
         h2, h3 {
             font-weight: 600;
-            letter-spacing: 0.05em;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: 0.08em;
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
         }
 
         p {
             font-size: 0.95rem;
             line-height: 1.6;
-            color: #ffffff;
+            color: #cce7eb;
         }
 
+        /* 光沢感を残しつつ、少し引き締めたサイバーボタン */
         .btn {
             display: block;
             width: 100%;
             padding: 14px;
-            background: linear-gradient(180deg, rgba(0,240,255,0.7) 0%, rgba(0,119,182,0.7) 100%);
-            border: 1px solid rgba(255,255,255,0.4);
-            border-radius: 30px;
+            background: linear-gradient(180deg, rgba(0,180,216,0.5) 0%, rgba(0,77,118,0.6) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 8px; /* 丸みを少し尖らせてスタイリッシュに */
             color: #fff;
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,180,216,0.3), inset 0 2px 4px rgba(255,255,255,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
             text-decoration: none;
         }
         .btn:active, .btn:hover {
-            background: linear-gradient(180deg, rgba(0,240,255,0.9) 0%, rgba(0,180,216,0.9) 100%);
-            transform: scale(0.98);
+            background: linear-gradient(180deg, rgba(0,240,255,0.7) 0%, rgba(0,119,182,0.8) 100%);
+            box-shadow: 0 0 12px rgba(0,240,255,0.5);
+            transform: scale(0.99);
         }
 
         #story-zone, #main-content, #complete-zone {
@@ -124,9 +115,10 @@
             color: var(--biohazard-yellow);
             font-size: 0.8rem;
             text-align: center;
-            letter-spacing: 0.15em;
+            letter-spacing: 0.2em;
             margin-bottom: 12px;
             font-weight: bold;
+            text-shadow: 0 0 5px var(--biohazard-yellow);
         }
 
         .stamp-grid {
@@ -139,9 +131,9 @@
         .stamp-slot {
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: rgba(0, 40, 60, 0.4);
-            border: 2px dashed rgba(255,255,255,0.3);
-            border-radius: 50%;
+            background: rgba(0, 20, 30, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px; /* スロットも四角ベースのサイバー感へ */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -149,42 +141,34 @@
         }
 
         .stamp-slot.active {
-            border: 2px solid var(--accent-cyan);
-            background: rgba(0, 240, 255, 0.15);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+            border: 1px solid var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), inset 0 0 5px rgba(0, 240, 255, 0.2);
         }
 
         .stamp-slot img { width: 85%; height: 85%; object-fit: contain; }
-        .stamp-number { font-size: 0.8rem; color: rgba(255,255,255,0.4); font-weight: bold; }
+        .stamp-number { font-size: 0.8rem; color: rgba(0,240,255,0.3); font-weight: bold; }
 
         .notice-box {
-            padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px;
+            padding: 12px; border-radius: 6px; text-align: center; margin-bottom: 15px;
             font-weight: bold; font-size: 0.9rem; width: 100%; max-width: 500px; z-index: 10;
         }
-        .success-notice { background: rgba(82, 183, 136, 0.9); border: 1px solid var(--biohazard-yellow); }
-        .error-notice { background: rgba(255, 51, 51, 0.9); border: 1px solid #ff9999; }
+        .success-notice { background: rgba(10, 80, 50, 0.85); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); }
+        .error-notice { background: rgba(120, 20, 20, 0.85); border: 1px solid var(--alert-red); color: #ffcccc; }
         .banner-container { padding: 0; overflow: hidden; border: 1px solid var(--glass-border); }
-        .banner-container img { width: 100%; height: auto; display: block; }
+        .banner-container img { width: 100%; height: auto; display: block; opacity: 0.8; }
     </style>
 </head>
 <body>
 
-    <div class="bubbles">
-        <div class="bubble" style="left: 10%; width: 30px; height: 30px; animation-delay: 0s; animation-duration: 8s;"></div>
-        <div class="bubble" style="left: 30%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 11s;"></div>
-        <div class="bubble" style="left: 55%; width: 45px; height: 45px; animation-delay: 1s; animation-duration: 14s;"></div>
-        <div class="bubble" style="left: 70%; width: 20px; height: 20px; animation-delay: 5s; animation-duration: 9s;"></div>
-        <div class="bubble" style="left: 85%; width: 35px; height: 35px; animation-delay: 3s; animation-duration: 12s;"></div>
-    </div>
-
     <div id="notice-container" style="display: none;"></div>
 
     <div id="story-zone">
-        <div class="glass-panel" style="background: rgba(10, 35, 45, 0.9); border: 2px solid var(--accent-cyan);">
-            <div class="biohazard-header">⚠️ MISSION ONGOING ⚠️</div>
-            <h3 id="story-title" style="margin-bottom:15px; text-align:center;">QUEST DATA</h3>
-            <p id="story-main-text" style="margin-bottom:22px; padding:15px; background:rgba(255,255,255,0.06); border-radius:10px; border-left:4px solid var(--accent-cyan); white-space: pre-wrap;">
-                テキスト読み込み中...
+        <div class="glass-panel" style="background: rgba(5, 15, 25, 0.9); border: 1px solid var(--accent-cyan);">
+            <div class="biohazard-header">⚠️ SYSTEM LINKED / STORY RECORDED ⚠️</div>
+            <h3 id="story-title" style="margin-bottom:15px; text-align:center; color: var(--accent-cyan);">QUEST DATA</h3>
+            <p id="story-main-text" style="margin-bottom:22px; padding:15px; background:rgba(0,0,0,0.3); border-radius:8px; border-left:4px solid var(--accent-cyan); white-space: pre-wrap;">
+                データ展開中...
             </p>
             <button class="btn" id="option-1-btn" onclick="makeChoice(1)" style="margin-bottom: 12px; text-align: left; padding-left: 20px;">❶ 選択肢1</button>
             <button class="btn" id="option-2-btn" onclick="makeChoice(2)" style="text-align: left; padding-left: 20px;">❷ 選択肢2</button>
@@ -196,11 +180,11 @@
             <img src="top-banner.png" alt="[ Top Banner ]">
         </div>
         <div class="glass-panel">
-            <h2 style="color: var(--accent-cyan); margin-bottom:8px; font-size:1.2rem; text-align:center;">SYSTEM OVERVIEW</h2>
-            <p id="main-status-text" style="text-align: center; font-size: 0.9rem;">ステータスを更新中...</p>
+            <h2 style="color: var(--accent-cyan); margin-bottom:8px; font-size:1.1rem; text-align:center; letter-spacing: 0.1em;">OPERATING SYSTEM</h2>
+            <p id="main-status-text" style="text-align: center; font-size: 0.9rem; color: #8ab4f8;">ステータスを確認中...</p>
         </div>
         <div class="glass-panel">
-            <h3 style="font-size:1rem; margin-bottom:12px; text-align:center;">ARCHIVE CHECKPOINT</h3>
+            <h3 style="font-size:0.95rem; margin-bottom:12px; text-align:center; color: var(--biohazard-yellow);">RECOVERED DATA NODES</h3>
             <div class="stamp-grid">
                 <div class="stamp-slot" id="slot-1"><span class="stamp-number">01</span></div>
                 <div class="stamp-slot" id="slot-2"><span class="stamp-number">02</span></div>
@@ -212,79 +196,78 @@
     </div>
 
     <div id="complete-zone">
-        <div class="glass-panel" style="border: 2px solid var(--biohazard-yellow); background: rgba(15, 45, 35, 0.95);">
-            <div class="biohazard-header">🏁 FINAL ARCHIVE RESTORED 🏁</div>
-            <h2 id="ending-title" style="color: var(--biohazard-yellow); margin-bottom:12px; text-align:center;">ENDING</h2>
-            <p id="ending-text" style="margin-bottom: 20px; padding: 15px; background:rgba(0,0,0,0.2); border-radius:10px; white-space: pre-wrap;">テキスト</p>
-            <div style="background:rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; margin-bottom:20px;">
-                <img id="complete-image" src="" alt="[ Ending Reward ]" style="width:100%; height:auto; display:block;">
+        <div class="glass-panel" style="border: 1px solid var(--biohazard-yellow); background: rgba(5, 20, 15, 0.95);">
+            <div class="biohazard-header">🏁 EXECUTING FINAL SEQUENCE 🏁</div>
+            <h2 id="ending-title" style="color: var(--biohazard-yellow); margin-bottom:12px; text-align:center; font-size: 1.3rem;">ENDING</h2>
+            <p id="ending-text" style="margin-bottom: 20px; padding: 15px; background:rgba(0,0,0,0.4); border-radius:8px; white-space: pre-wrap; font-size: 0.95rem;"></p>
+            <div style="background:rgba(0,0,0,0.3); border-radius:8px; overflow:hidden; margin-bottom:20px; border: 1px solid rgba(255,255,255,0.1);">
+                <img id="complete-image" src="" alt="[ Ending Visual ]" style="width:100%; height:auto; display:block;">
             </div>
-            <button class="btn" onclick="resetGame()" style="background: linear-gradient(180deg, #ff4d4d, #990000);">データを初期化して最初から遊ぶ</button>
+            <button class="btn" onclick="resetGame()" style="background: linear-gradient(180deg, #cc3333, #660000); border: 1px solid var(--alert-red);">全端末のログを消去して初期化</button>
         </div>
     </div>
 
     <script>
         const STAMP_IMAGES = { 1: 'stamp1.PNG', 2: 'stamp2.PNG', 3: 'stamp3.PNG', 4: 'stamp4.PNG', 5: 'stamp5.PNG' };
 
-        // ★ あなたのプロットに基づいた全4問の選択肢
+        // ★ ブンジをおどおど、キリコを強気に変更したストーリーテキスト
         const STAMP_STORIES = {
             1: { 
                 title: "【第1選択】キャンパス潜入の目的", 
-                text: "ゾンビが溢れ返ったキャンパス。キリコとブンジと共に中央管理棟へ向かう中、限られたリソースで何から調査すべきか議論になった。\n\nブンジ「ウイルスの発生原因を突き止めなきゃ根本的な解決にゃならねえ！」\nキリコ「いいえ、目の前の生存者を救うために、まずは治療薬のレシピよ！」", 
+                text: "ゾンビが溢れ返り、死に瀕したキャンパス。何から手をつけるべきか。\n\nブンジ「ウイルスの発生原因を突き止めないと……また同じことが起きるんじゃ、ない、かなぁ……？」\nキリコ「べつに原因も何もないでしょ。誰がゾンビになろうと知ったこっちゃないわ。」", 
                 opt1: "❶ ゾンビ化の原因を調べる", 
                 opt2: "❷ 治療薬の作り方を調べる" 
             },
             2: { 
                 title: "【第2選択】突発的バイオハザード", 
-                text: "研究棟を捜索中、背後からゾンビの大群がなだれ込んできた！\n脱出する最中、キリコが転倒し、ドアの向こうに取り残されてしまう！\n\nキリコ「キャッ！…私に構わず先に行って！」\nブンジ「おい！アイツを置いていくのか、それともリスクを承知で助けに戻るか！？」", 
-                opt1: "❶ キリコを助けに戻る！", 
-                opt2: "❷ 苦渋の決断…キリコを置いていく" 
+                text: "ここは夢告館。研究棟の奥で、背後からおびただしい数のゾンビが迫る！\n脱出の間際、キリコが足を取られ、自動防壁の向こう側に取り残されてしまった！\n\nキリコ「私に構わず走りなさい！ここで死んだら全部終わりよ！」\nブンジ「ゾンビが来る…！でも、キリコを見捨てるなんて、ぼ、僕にはできないよ……っ！」", 
+                opt1: "❶ キリコを助けに戻る", 
+                opt2: "❷ キリコを置いていく" 
             },
             3: { 
                 title: "【第3選択】立ちはだかる感染者たち", 
-                text: "ついにメインラボへの道が開けた。しかし、ラボの入り口には、かつてここで研究を行っていたゾンビたちが徘徊している。彼らの生体データは治療薬の完成度に直結しそうだ。\n\nキリコ「彼らを傷つけず、麻酔で拘束して慎重に進めば、完璧なデータが得られるわ！」\nブンジ「甘い！そんな余裕はねえ、倒しながら最短距離で突っ切るぞ！」", 
-                opt1: "❶ 麻酔・拘束して進む（完全な治療薬完成へ）", 
-                opt2: "❷ 倒しながら進む（不完全な治療薬完成へ）" 
+                text: "メインラボの入り口を塞ぐのは、かつてこの場所で未来を研究していた同僚たちの変わり果てた姿だった。彼らのサンプルを無傷で採集できれば、データは跳ね上がるが……。\n\nキリコ「…ゾンビはなぜゾンビになったのか。原因がある気がしてきたわ。ここで倒してしまうのが、私たちの正しさなのかしら？麻酔で眠らせて殺さない選択肢もあるんじゃないかしら。」\nブンジ「で、でも、そんなの時間がかかりすぎるよ……！弾を撃ち込んで、最短で突っ切る方が安全だよ……」", 
+                opt1: "❶ 麻酔・拘束して進む", 
+                opt2: "❷ 倒しながら進む" 
             },
             4: { 
                 title: "【第4選択】絶望の感染、そして残された一本", 
-                text: "メインラボの最深部で、エラーを起こしたAIシステムが強力なウイルスガスを噴射した！\n必死に防壁を起動したものの、あなたとブンジはガスを吸い込み、感染の初期症状が出始めてしまう。\n手元にある治療薬は……わずか「1人分」だけ。\n\nブンジ「…おい、お前が使え。俺のことはいい…」", 
-                opt1: "❶ ブンジに治療薬を使う（ブンジ生存・日記発見）", 
-                opt2: "❷ 自分に治療薬を使う（自分生存・ブンジ死亡）" 
+                text: "どうにか研究室の最奥まできたあなたたち。そこに立ちはだかる鉛の巨大物体。ゾンビを増やしていたのはこのAIだったのだ。AIの隔離トラップにより、致死性のウイルスガスが部屋に充満した。\n防壁を展開したものの、あなたとブンジの皮膚にはすでに黒い感染斑が浮かび上がっている。\n残された治療薬は、たったの「1人分」。\n\nブンジ「あ、あはは……。やっぱり僕、足手まといだったね……。その薬、君が使いなよ……。ね？」\nキリコ「何バカなこと言ってるのよブンジ！あんたが生きなきゃ日記の暗号が解けないでしょ！？」\n？？？「うおおおおおおお激アツ！どうもpiga!です！！これはね、すくうべきですよ！」", 
+                opt1: "❶ ブンジに治療薬を使う", 
+                opt2: "❷ 自分に治療薬を使う" 
             },
             5: {
                 title: "【最終決戦】マザーAIとの対峙",
-                text: "ウイルスをばら撒き続ける、この都市の環境管理マザーAIが目の前で起動した。\nシステムを完全に停止させなければ未来はない。\nこれまでの全ての行動と選択の結果が、今ここに集約される……。\n\n（※最後のQRコード。ボタンを押すとエンディングへ進みます）",
-                opt1: "▶ AIの出力を停止させ、決着をつける",
-                opt2: "▶ AIの出力を停止させ、決着をつける"
+                text: "狂った環境管理AIが、警告音を鳴らしながら世界の終焉を告げている。\nすべての選択の答えを携え、アクセスせよ。\n\n（※最終選択肢です）",
+                opt1: "▶ AIの出力を停止させ、結末を見届ける",
+                opt2: "▶ AIの出力を停止させ、結末を見届ける"
             }
         };
 
-        // ★ あなたのプロットに基づいた全5種類のマルチエンディング
         const ENDING_DATA = {
             "TRUE": { 
                 title: "🏆 TRUE END：『AIの贖罪』", 
-                text: "【条件：全員生存／AIの目的判明／AIを倒さない】\n\nブンジに薬を使い、研究者の日記から「AIの真の目的」を知ったあなたたち。キリコも生存し、3人でAIに対峙する。暴走するAIに対し、日記に遺された真実を突きつけると、AIは自らの過ちに気づき、静かに自爆シーケンスを起動した。\nウイルスは完全に消滅。調査団の3人は、屋上に現れた救援ヘリで爽快に青空へと脱出した！", 
+                text: "【条件：全員生存／AIの目的判明／AIを倒さない】\n\nブンジを救ったあなたは、ブンジがその後ハックしたパソコンから研究者の日記を見つけ、「AIの真の目的」を突き止めた。（ここのパートはちゃんと説明できるよう後で工夫します）3人でAIのコアへ。暴走するシステムに対し、日記に隠されていた切ない真実をアップロードすると、AIは自らのエラー（過ち）を認識し、涙のように火花を散らしながら自爆シーケンスを起動した。\nウイルスは完全に中和。調査団は、崩壊する研究所の屋上から、救助ヘリで爽快に脱出を遂げた！", 
                 img: "complete-A.png" 
             },
             "GOOD": { 
                 title: "✨ GOOD END：『人類の勝利』", 
-                text: "【条件：AIの目的判明／AIを破壊】\n\nAIの真の目的は突き止めたものの、キリコやブンジを失った、あるいは対話の道を選ばなかったあなたたち。激しい戦闘の末、暴走するマザーAIのコアを完全に破壊した！\nかくして事件は解決しパンデミックは収束したが、AIが遺した不穏な真相は、生き残った者たちの心に深く重く残り続ける……。", 
+                text: "【条件：AIの目的判明／AIを破壊】\n\nAIの真の目的こそ突き止めたものの、仲間の犠牲や決裂を乗り越えてここまで来た。もはや対話の選択肢はない。AIの物理コアを容赦なく叩き潰した！\n世界的なパンデミックは瀬戸際で阻止された。やったね！", 
                 img: "complete-A.png" 
             },
             "NORMAL": { 
                 title: "🏃‍♂️ NORMAL END：『治療薬』", 
-                text: "【条件：完全な治療薬完成／AIを倒せない】\n\nAIの目的は不明のまま、あるいはAIを止めることはできなかった。しかし、道中で完成させた「完全な治療薬」のデータを死守することには成功する。\nあなたたちは治療法を確立したまま、ヘリで無事にキャンパスを脱出した。人類には大いなる希望が残された。……だが、AIは今でもあの廃墟で、静かにゾンビを増やし続けている。", 
+                text: "【条件：完全な治療薬完成／AIを倒せない】\n\nAIの目的は闇に包まれたままで、システムの暴走を完全に止めることは叶わなかった。しかし、キリコの意地が完成させた「完全な治療薬」のデータだけは、ブンジが震える手で死守し通した。\nあなたたちは治療法を世界へ持ち帰るため、ヘリで脱出する。人類の絶滅は免れた。……だが、AIは今でもあの廃墟の奥で、冷徹にゾンビを量産し続けている。", 
                 img: "complete-B.png" 
             },
             "BAD": { 
                 title: "💀 BAD END：『感染』", 
-                text: "【条件：不完全な治療薬、またはAIとの戦闘に敗北】\n\n手に入れたのは不完全な治療薬だった。あるいは、自分に薬を使ったことで孤立し、狂いゆくシステムに敗北してしまった。\nウイルスの浸食が体を蝕んでいく。あなたたちは力尽き、キリコとブンジも次々とゾンビ化していった……。\n遠のく記憶。約束されなかった未来の虚無だけが、そこに残された。", 
+                text: "【条件：不完全な治療薬、またはAIとの戦闘に敗北】\n\n手元にあるのは不完全なレシピのみ。そうか、完全な治療薬には生きたままのゾンビの細胞が必要だったのか。自分を優先したことでチームは崩壊し、狂いゆく防衛システムに圧倒されてしまった。\nウイルスの浸食が脳を蝕んでいく。なにも聞こえない。遠のく意識のなか、約束されなかった未来の闇へと堕ちていった。", 
                 img: "complete-B.png" 
             },
             "WORST": { 
                 title: "🚨 WORST END：『人類ゾンビ化計画』", 
-                text: "【条件：AIを止められず、治療薬も完成しない】\n\n最悪の選択が重なり、治療薬のレシピは霧散し、マザーAIの暴走を止める術は完全に失われた。\nAIは世界に向けて、潜伏性の高い新型ウイルスを大気中へ一斉に拡散し始める。\n──数ヶ月後、人類は滅亡。地球には、死ぬことも腐ることもない、永遠に彷徨う不死のゾンビだけが残された。", 
+                text: "【条件：AIを止められず、治療薬も完成しない】\n\n最悪の選択が重なり、すったもんだあって、治療薬は失われ、AIの暴走を止める術は完全に潰えた。\nいろいろあって狂ったAIは、地球全土に向けて新型ウイルスの大気拡散を開始する。\n人類は絶滅。あとに残されたのは、自我を失い、廃墟を彷徨い続ける不死のゾンビたちだけだった。", 
                 img: "complete-B.png" 
             }
         };
@@ -293,9 +276,9 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             try {
-                const savedSpots = localStorage.getItem('v4_z_spots');
-                const savedChoices = localStorage.getItem('v4_z_choices');
-                const savedStep = localStorage.getItem('v4_z_step');
+                const savedSpots = localStorage.getItem('v5_z_spots');
+                const savedChoices = localStorage.getItem('v5_z_choices');
+                const savedStep = localStorage.getItem('v5_z_step');
 
                 if (savedSpots) gameState.collectedSpots = JSON.parse(savedSpots);
                 if (savedChoices) gameState.choices = JSON.parse(savedChoices);
@@ -311,9 +294,9 @@
 
         function saveStorage() {
             try {
-                localStorage.setItem('v4_z_spots', JSON.stringify(gameState.collectedSpots));
-                localStorage.setItem('v4_z_choices', JSON.stringify(gameState.choices));
-                localStorage.setItem('v4_z_step', gameState.currentStep.toString());
+                localStorage.setItem('v5_z_spots', JSON.stringify(gameState.collectedSpots));
+                localStorage.setItem('v5_z_choices', JSON.stringify(gameState.choices));
+                localStorage.setItem('v5_z_step', gameState.currentStep.toString());
             } catch (e) {}
         }
 
@@ -334,10 +317,10 @@
                         if (spotNum === expectedNext) {
                             gameState.collectedSpots.push(spotNum);
                             saveStorage();
-                            noticeContainer.innerHTML = `<div class="notice-box success-notice">▶ CHECK-IN SUCCESS: スポット 0${spotNum} 接続完了</div>`;
+                            noticeContainer.innerHTML = `<div class="notice-box success-notice">⚡ DATA-NODE 0${spotNum}: 接続確立に成功</div>`;
                             noticeContainer.style.display = 'block';
                         } else {
-                            noticeContainer.innerHTML = `<div class="notice-box error-notice">❌ アクセス拒否: スポット 0${expectedNext} のデータを先に修復してください。</div>`;
+                            noticeContainer.innerHTML = `<div class="notice-box error-notice">⚠️ ACCESS DENIED: ノード 0${expectedNext} を先に同期してください。</div>`;
                             noticeContainer.style.display = 'block';
                         }
                     }
@@ -401,9 +384,9 @@
             const statusTextEl = document.getElementById('main-status-text');
             if (statusTextEl) {
                 if (totalCollected === 0) {
-                    statusTextEl.innerText = "【作戦開始】まずは最初のターゲット：スポット01のQRコードをスキャンしてください。";
+                    statusTextEl.innerText = "【待機中】ノード01のQRコードをスキャンし、システムを同期せよ。";
                 } else {
-                    statusTextEl.innerText = `選択完了。次はスポット0${totalCollected + 1}のQRコードを探してください。`;
+                    statusTextEl.innerText = `ノード0${totalCollected}同期完了。次なるターゲット：0${totalCollected + 1} を捕捉中。`;
                 }
             }
 
@@ -421,61 +404,38 @@
             }
         }
 
-        // ==========================================================================
-        // 🧠 ★天才エンジニアの条件判定アルゴリズム (プロットを完全再現)
-        // ==========================================================================
         function determineEnding() {
-            // 各選択肢の回答を取得 (1 = ❶の選択肢, 2 = ❷の選択肢)
-            const choice1 = gameState.choices[1]; // 1:原因調査, 2:治療薬レシピ
-            const choice2 = gameState.choices[2]; // 1:キリコ助ける, 2:置いていく
-            const choice3 = gameState.choices[3]; // 1:麻酔・拘束(完全), 2:倒す(不完全)
-            const choice4 = gameState.choices[4]; // 1:ブンジに使う(日記発見), 2:自分に使う(不明)
+            const choice1 = gameState.choices[1];
+            const choice2 = gameState.choices[2];
+            const choice3 = gameState.choices[3];
+            const choice4 = gameState.choices[4];
 
-            // フラグの初期化
-            let isAllAlive = false;       // 全員生存フラグ
-            let knowAIPurpose = false;    // AIの目的判明フラグ
-            let isPerfectCure = false;    // 完全な治療薬フラグ
+            let isAllAlive = false;       
+            let knowAIPurpose = false;    
+            let isPerfectCure = false;    
 
-            // 1. 治療薬の完成度判定 (第3選択)
-            if (choice3 === 1) {
-                isPerfectCure = true;
-            }
+            if (choice3 === 1) isPerfectCure = true;
+            if (choice4 === 1) knowAIPurpose = true;
+            if (choice2 === 1 && choice4 === 1) isAllAlive = true;
 
-            // 2. AIの目的判明判定 (第4選択でブンジに薬を使うと日記発見)
-            if (choice4 === 1) {
-                knowAIPurpose = true;
-            }
-
-            // 3. 全員生存判定 (キリコを助け、かつブンジに薬を使って自分が耐えきった場合)
-            if (choice2 === 1 && choice4 === 1) {
-                isAllAlive = true;
-            }
-
-            // --- 運命のエンディング判定 ---
-            let finalEndKey = "WORST"; // デフォルト
+            let finalEndKey = "WORST";
 
             if (isAllAlive && knowAIPurpose) {
-                // ◆全員生存していて、目的も知っている ➔ 対話が可能になり、AIを倒さず自爆させる【TRUE END】
                 finalEndKey = "TRUE";
             } 
             else if (knowAIPurpose && !isAllAlive) {
-                // ◆AIの目的は知ったが、誰かが欠けている ➔ 対話が成立せず、力ずくでAIを破壊する【GOOD END】
                 finalEndKey = "GOOD";
             } 
             else if (isPerfectCure && !knowAIPurpose) {
-                // ◆完全な治療薬はあるが、AIの目的は不明（日記未発見）➔ AIを倒せず生存させてしまう【NORMAL END】
                 finalEndKey = "NORMAL";
             } 
             else if (!isPerfectCure && choice4 === 2) {
-                // ◆不完全な治療薬、または自分に薬を使ってブンジ死亡（AIとの戦闘敗北扱い）【BAD END】
                 finalEndKey = "BAD";
             } 
             else {
-                // ◆治療薬も完成せず、AIも止められない【WORST END】
                 finalEndKey = "WORST";
             }
 
-            // 画面への反映
             const finalEnd = ENDING_DATA[finalEndKey];
             if (finalEnd) {
                 document.getElementById('ending-title').innerText = finalEnd.title;
