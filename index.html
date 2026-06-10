@@ -1,351 +1,166 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>ねこ！</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+        // 定数定義 (画像ファイル名指定)
+        const STAMP_IMAGES = {
+            1: 'stamp1.PNG',
+            2: 'stamp2.PNG',
+            3: 'stamp3.PNG',
+            4: 'stamp4.PNG',
+            5: 'stamp5.PNG'
+        };
 
-<style>
-body {
-    font-family: 'Georgia', serif;
-    text-align: center;
-    background: #0d1b2a;
-    color: #E7E2C1;
-    overflow-x: hidden;
-    margin: 0;
-    padding: 20px;
-    position: relative;
-}
-h1, h2 { color: #E7E2C1; }
-#login, #content { max-width: 800px; margin: auto; position: relative; z-index: 1; }
-
-input[type="password"], button {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    margin: 10px 0;
-}
-button {
-    background-color: #AD6299;
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-}
-.share-buttons a {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #AD6299, #E7E2C1);
-    color: #fff;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.share-buttons a:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-}
-.share-buttons a.line {
-    background: linear-gradient(135deg, #00c300, #a8e6a3);
-}
-#stamp-container { display: flex; flex-wrap: wrap; justify-content: center; }
-.stamp {
-    width: 120px; height: 120px; margin: 10px;
-    border: 2px dashed #E7E2C1; border-radius: 10px;
-    position: relative; overflow: hidden;
-}
-.stamp img {
-    width: 100%; height: 100%; object-fit: contain; border-radius: 8px;
-}
-.stamp.collected img {
-    border: 2px solid #AD6299;
-    box-shadow: 0 0 12px rgba(173, 98, 153, 0.7);
-}
-#progress-container {
-    width: 100%;
-    background: rgba(255,255,255,0.2);
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 20px auto;
-    max-width: 400px;
-}
-#progress-bar {
-    height: 20px;
-    width: 0;
-    background: linear-gradient(90deg, #AD6299, #E7E2C1, #AD6299);
-    border-radius: 10px;
-    transition: width 0.5s ease;
-}
-.stamp-get-overlay,
-#completion-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-}
-.stamp-get-overlay.active,
-#completion-overlay.active {
-    opacity: 1; pointer-events: all;
-}
-.stamp-get-overlay img,
-#completion-overlay img {
-    width: 200px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);
-}
-.stamp-get-overlay h2,
-#completion-overlay h2 {
-    margin-top: 20px; font-size: 2em; color: #fffacd;
-}
-.follow-buttons {
-    margin-top: 20px;
-}
-.follow-buttons a {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
-    background: #6441a5;
-    color: #fff;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-}
-.follow-buttons a:hover {
-    background: #9b59b6;
-}
-#shooting-stars-container {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -1;
-    overflow: hidden;
-}
-#top-banner img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 10px;
-}
-</style>
-</head>
-<body>
-
-<div id="shooting-stars-container">
-    <canvas id="shooting-stars"></canvas>
-</div>
-
-<div id="login">
-    <div id="top-banner">
-        <img src="top-banner.png" alt="トップバナー画像">
-    </div>
-    <h2>パスワードを入力してください</h2>
-    <input type="password" id="passwordInput" placeholder="パスワード">
-    <button onclick="checkPassword()">ログイン</button>
-    <p id="error" style="color: red;"></p>
-</div>
-
-<div id="content" style="display: none;">
-    <h1>ねこスタンプラリー</h1>
-    <p style="margin-bottom: 20px;">5つのスタンプを集めよう！</p>
-    <p style="font-size: 0.9em; margin-top: 0;">
-        3つゲットでオリジナルステッカーを1枚<br>
-        5つ全てゲットでオリジナルステッカーを2枚<br>
-        プレゼント！
-    </p>
-    <div id="progress-container">
-        <div id="progress-bar"></div>
-    </div>
-    <div id="stamp-container"></div>
-    
-    <div class="share-buttons" style="margin-top: 20px;">
-        <a href="#" id="twitter-share" target="_blank">Xでシェア</a> 
-        <a href="#" id="line-share" target="_blank" class="line">LINEでシェア</a>
-    </div>
-    
-    <div id="completion-message" style="display:none; margin-top: 20px;">
-        <h2>コンプリートおめでとう！</h2>
-        <p>可愛くシェアしよう！</p>
-        <img src="complete.png" alt="コンプリート" style="margin-top: 20px; width: 300px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.6);">
-    </div>
-
-    <div id="map-image" style="margin-top: 30px;">
-        <img src="map.png" alt="マップ" style="width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.3);">
-    </div>
-    
-    <div class="follow-buttons">
-        <a href="https://www.instagram.com/officialastro" target="_blank">Instagramをフォロー！</a>
-        <a href="https://twitter.com/offclASTRO" target="_blank">Xをフォロー！</a>
-    </div>
-</div>
-
-<div class="stamp-get-overlay" id="stampGetOverlay" onclick="hideStampGet()">
-    <img id="stampGetImg" src="" alt="スタンプゲット！">
-    <h2>スタンプゲット！</h2>
-</div>
-
-<div id="completion-overlay" onclick="hideCompletion()">
-    <img src="complete.png" alt="コンプリート">
-    <h2>コンプリート<br>おめでとう！</h2>
-</div>
-
-<script translate="no">
-(function() {
-    var _pass = "roacoco";
-    var _total = 5;
-
-    window.checkPassword = function() {
-        var val = document.getElementById('passwordInput').value;
-        if (val === _pass) {
-            document.getElementById('login').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-            _init();
-        } else {
-            document.getElementById('error').textContent = "パスワードが違います";
-        }
-    };
-
-    function _getData() {
-        return JSON.parse(localStorage.getItem('collectedStamps')) || [];
-    }
-
-    function _saveData(arr) {
-        localStorage.setItem('collectedStamps', JSON.stringify(arr));
-    }
-
-    function _getSpot() {
-        var p = new URLSearchParams(window.location.search).get('spot');
-        var num = parseInt(p, 10);
-        return (!isNaN(num) && num >= 1 && num <= _total) ? num : null;
-    }
-
-    window.hideStampGet = function() {
-        document.getElementById('stampGetOverlay').classList.remove('active');
-        if (_getData().length >= _total) {
-            document.getElementById('completion-overlay').classList.add('active');
-        }
-    };
-
-    window.hideCompletion = function() {
-        document.getElementById('completion-overlay').classList.remove('active');
-    };
-
-    function _updateUI() {
-        var box = document.getElementById('stamp-container');
-        box.innerHTML = "";
-        var arr = _getData();
-        
-        for (var i = 1; i <= _total; i++) {
-            var div = document.createElement('div');
-            div.classList.add('stamp');
-            if (arr.includes(i)) {
-                div.classList.add('collected');
-                div.innerHTML = '<a href="stamp' + i + '.PNG" download><img src="stamp' + i + '.PNG" alt="stamp"></a>';
-            } else {
-                div.innerHTML = '<img src="stamp' + i + '.PNG" alt="stamp" style="opacity:0.2;">';
+        // ルートごとの表示テキスト定義
+        const ROUTE_DATA = {
+            'A': {
+                title: 'ルートA：抗ウイルス薬確保ミッション',
+                desc: 'キリコ「生存者のためにも、まずは薬の確保が最優先よ。施設内の5つのラボラトリーを巡り、研究データをサルベージしましょう！」'
+            },
+            'B': {
+                title: 'ルートB：パンデミック原因究明ミッション',
+                desc: 'ブンジ「この感染は仕組まれたものだ…。キャンパスのメインサーバーに残された5つのログを解析し、ウイルスの発生源を突き止めるぞ。」'
             }
-            box.appendChild(div);
-        }
-        
-        var pct = (arr.length / _total) * 100;
-        document.getElementById('progress-bar').style.width = pct + '%';
-        
-        if (arr.length >= _total) {
-            document.getElementById('completion-message').style.display = 'block';
-        } else {
-            document.getElementById('completion-message').style.display = 'none';
-        }
-        _share();
-    }
+        };
 
-    function _share() {
-        var txt = encodeURIComponent("ねこスタンプをコンプリートしたよ！ #ねこ #cat");
-        var url = encodeURIComponent(window.location.href.split('?')[0]);
-        document.getElementById('twitter-share').href = "https://twitter.com/intent/tweet?text=" + txt + "&url=" + url;
-        document.getElementById('line-share').href = "https://social-plugins.line.me/lineit/share?url=" + url + "&text=" + txt;
-    }
+        // アプリケーションの状態
+        let gameState = {
+            chosenRoute: null,
+            collectedSpots: []
+        };
 
-    function _init() {
-        var arr = _getData();
-        var spot = _getSpot();
-        if (spot && !arr.includes(spot)) {
-            arr.push(spot);
-            arr.sort(function(a, b) { return a - b; });
-            _saveData(arr);
-            document.getElementById('stampGetImg').src = 'stamp' + spot + '.PNG';
-            document.getElementById('stampGetOverlay').classList.add('active');
-        }
-        _updateUI();
-    }
-
-    var cvs = document.getElementById('shooting-stars');
-    var ctx = cvs.getContext('2d');
-    cvs.width = window.innerWidth;
-    cvs.height = window.innerHeight;
-
-    var stars = [];
-    for (var i = 0; i < 100; i++) {
-        stars.push({
-            x: Math.random() * cvs.width,
-            y: Math.random() * cvs.height,
-            r: Math.random() * 1.2,
-            a: Math.random(),
-            ch: Math.random() * 0.02
+        // ページ読み込み時の初期化処理
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                loadStorage();
+                processUrlParameter();
+                updateUI();
+            } catch (error) {
+                console.error("Initialization Error: ", error);
+                // 万が一エラーが出ても、強制的に初期選択画面だけは表示させる
+                document.getElementById('story-overlay').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'none';
+            }
         });
-    }
 
-    var sStars = [];
-    function makeSS() {
-        sStars.push({
-            x: Math.random() * cvs.width,
-            y: 0,
-            len: Math.random() * 80 + 100,
-            sp: Math.random() * 10 + 6,
-            sz: Math.random() * 1.5 + 1,
-            op: 1,
-            ang: Math.PI / 4
-        });
-    }
+        // 1. ローカルストレージから状態を復元
+        function loadStorage() {
+            try {
+                const savedRoute = localStorage.getItem('zombie_rally_route');
+                const savedSpots = localStorage.getItem('zombie_rally_spots');
 
-    function tick() {
-        ctx.clearRect(0, 0, cvs.width, cvs.height);
-        ctx.fillStyle = "white";
-        
-        stars.forEach(function(s) {
-            s.a += s.ch;
-            if (s.a <= 0 || s.a >= 1) s.ch = -s.ch;
-            ctx.globalAlpha = s.a;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fill();
-        });
-        
-        ctx.globalAlpha = 1;
-        sStars.forEach(function(s, idx) {
-            var dx = Math.cos(s.ang) * s.len;
-            var dy = Math.sin(s.ang) * s.len;
-            ctx.beginPath();
-            ctx.moveTo(s.x, s.y);
-            ctx.lineTo(s.x + dx, s.y + dy);
-            ctx.strokeStyle = "rgba(255,255,255," + s.op + ")";
-            ctx.lineWidth = s.sz;
-            ctx.stroke();
+                if (savedRoute && (savedRoute === 'A' || savedRoute === 'B')) {
+                    gameState.chosenRoute = savedRoute;
+                }
+                if (savedSpots) {
+                    const parsed = JSON.parse(savedSpots);
+                    if (Array.isArray(parsed)) {
+                        gameState.collectedSpots = parsed;
+                    }
+                }
+            } catch (e) {
+                console.error("Storage load failed, clearing logic...", e);
+                localStorage.clear(); // 破損データ対策で一度クリア
+            }
+        }
+
+        // 2. URLパラメータ (?spot=X) の解析とスタンプ付与
+        function processUrlParameter() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const spotParam = urlParams.get('spot');
+
+                if (spotParam) {
+                    const spotNum = parseInt(spotParam, 10);
+                    if (spotNum >= 1 && spotNum <= 5) {
+                        if (!gameState.collectedSpots.includes(spotNum)) {
+                            gameState.collectedSpots.push(spotNum);
+                            localStorage.setItem('zombie_rally_spots', JSON.stringify(gameState.collectedSpots));
+                        }
+                        
+                        const noticeEl = document.getElementById('spot-notification');
+                        if (noticeEl) {
+                            noticeEl.innerHTML = `<div class="toast-notice">▶ スポット 0${spotNum} のデータチェックインに成功！</div>`;
+                            noticeEl.style.display = 'block';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("URL Parameter processing failed: ", e);
+            }
+        }
+
+        // 3. ルート選択が行われたときの処理
+        function selectRoute(route) {
+            gameState.chosenRoute = route;
+            localStorage.setItem('zombie_rally_route', route);
             
-            s.x += s.sp * Math.cos(s.ang);
-            s.y += s.sp * Math.sin(s.ang);
-            s.op -= 0.01;
-            if (s.op <= 0) sStars.splice(idx, 1);
-        });
-        requestAnimationFrame(tick);
-    }
+            const overlay = document.getElementById('story-overlay');
+            overlay.style.transition = 'opacity 0.3s ease';
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                updateUI();
+            }, 300);
+        }
 
-    setInterval(makeSS, 600);
-    tick();
+        // 4. 画面全体の表示更新処理
+        function updateUI() {
+            const overlayEl = document.getElementById('story-overlay');
+            const mainContentEl = document.getElementById('main-content');
 
-    window.addEventListener('resize', function() {
-        cvs.width = window.innerWidth;
-        cvs.height = window.innerHeight;
-    });
-})();
-</script>
-</body>
-</html>
+            // ルート未選択時の安全な表示切り替え
+            if (!gameState.chosenRoute) {
+                if (overlayEl) overlayEl.style.display = 'flex';
+                if (mainContentEl) mainContentEl.style.display = 'none';
+                return;
+            } else {
+                if (overlayEl) overlayEl.style.display = 'none';
+                if (mainContentEl) mainContentEl.style.display = 'flex';
+            }
+
+            // テキストの書き換え
+            const currentRouteInfo = ROUTE_DATA[gameState.chosenRoute];
+            if (currentRouteInfo) {
+                const titleEl = document.getElementById('route-title');
+                const descEl = document.getElementById('route-desc');
+                if (titleEl) titleEl.innerText = currentRouteInfo.title;
+                if (descEl) descEl.innerText = currentRouteInfo.desc;
+            }
+
+            // スタンプスロットの描画更新
+            for (let i = 1; i <= 5; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                if (slot) {
+                    if (gameState.collectedSpots.includes(i)) {
+                        slot.classList.add('active');
+                        slot.innerHTML = `<img src="${STAMP_IMAGES[i]}" alt="Stamp ${i}">`;
+                    } else {
+                        slot.classList.remove('active');
+                        slot.innerHTML = `<span class="stamp-number">0${i}</span>`;
+                    }
+                }
+            }
+
+            // コンプリート判定
+            const completeZone = document.getElementById('complete-zone');
+            if (completeZone) {
+                if (gameState.collectedSpots.length === 5) {
+                    const completeImg = document.getElementById('complete-image');
+                    if (completeImg) {
+                        completeImg.src = gameState.chosenRoute === 'A' ? 'complete-A.png' : 'complete-B.png';
+                    }
+                    completeZone.style.display = 'block';
+                } else {
+                    completeZone.style.display = 'none';
+                }
+            }
+        }
+
+        // リセット機能
+        function resetGame() {
+            if (confirm('すべての進行状況と選択したルートをリセットします。よろしいですか？')) {
+                localStorage.clear();
+                gameState.chosenRoute = null;
+                gameState.collectedSpots = [];
+                window.location.href = window.location.pathname;
+            }
+        }
+    </script>
