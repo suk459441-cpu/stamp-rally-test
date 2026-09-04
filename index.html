@@ -39,7 +39,6 @@
             align-items: center;
             overflow-x: hidden;
             position: relative;
-            /* サイバー廃墟グリッド背景 */
             background-image: 
                 radial-gradient(circle at 50% 30%, rgba(42, 77, 54, 0.4) 0%, transparent 70%),
                 linear-gradient(rgba(74, 246, 133, 0.05) 1px, transparent 1px),
@@ -54,7 +53,6 @@
             100% { background-position: 0 0, 0 300px, 300px 0; }
         }
 
-        /* 古いCRTモニタ風走査線エフェクト */
         body::before {
             content: "";
             position: fixed;
@@ -210,7 +208,7 @@
         }
 
         /* ==========================================================================
-           3. 各画面スタイル (TOP, STORY, STAMPS, ENDINGS)
+           3. 各画面スタイル
            ========================================================================== */
         #view-top {
             position: relative;
@@ -263,7 +261,7 @@
             flex-direction: column;
             gap: 12px;
             padding: 12px;
-            margin-bottom: 20px;
+            padding-bottom: 20px;
         }
 
         .chat-bubble {
@@ -319,9 +317,10 @@
             color: var(--warning-yellow);
             background: rgba(236, 204, 104, 0.1);
             border: 1px dashed var(--warning-yellow);
-            padding: 6px;
+            padding: 8px;
             border-radius: 4px;
             margin: 8px 0;
+            line-height: 1.4;
         }
 
         .choice-box {
@@ -329,10 +328,11 @@
             flex-direction: column;
             gap: 8px;
             padding: 12px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.85);
             border-top: 1px solid var(--glass-border);
             position: sticky;
             bottom: 60px;
+            z-index: 10;
         }
 
         .stamp-grid {
@@ -471,7 +471,7 @@
 
     <script>
         /* ==========================================================================
-           Web Audio API によるメロディアスなシンセBGM
+           Web Audio API 音声機能向上（BGM・SE）
            ========================================================================== */
         let audioCtx = null;
         let isAudioOn = false;
@@ -481,7 +481,17 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
+
+        // どこかをタップした時にAudioContextを開始できるように登録
+        document.addEventListener('click', () => {
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }, { once: true });
 
         function toggleAudio() {
             initAudio();
@@ -491,43 +501,45 @@
                 btn.innerText = "🔊 BGM OFF";
                 isAudioOn = false;
             } else {
-                startMelodicBGM();
-                btn.innerText = "🔊 BGM ON";
                 isAudioOn = true;
+                btn.innerText = "🔊 BGM ON";
+                startMelodicBGM();
             }
         }
 
-        // 8ビット風・ダークサイバーフレーズの自動ループ演奏
         function startMelodicBGM() {
-            if (!audioCtx) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            
+            if (!audioCtx || !isAudioOn) return;
+            stopMelodicBGM();
+
+            // 音圧とメロディを向上させた音符列
             const notes = [
-                220, 261.63, 293.66, 329.63, 261.63, 220, 196, 220,
-                220, 261.63, 329.63, 392.00, 329.63, 293.66, 261.63, 220
+                220.00, 261.63, 293.66, 329.63, 261.63, 220.00, 196.00, 220.00,
+                220.00, 261.63, 329.63, 392.00, 329.63, 293.66, 261.63, 220.00,
+                174.61, 220.00, 261.63, 293.66, 261.63, 220.00, 174.61, 196.00
             ];
             let noteIdx = 0;
 
             function playNextNote() {
                 if (!isAudioOn) return;
-                
+
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                
+
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(notes[noteIdx], audioCtx.currentTime);
-                
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+
+                // 音量をしっかり聞こえるレベル（0.25）に引き上げ
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.28);
 
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
 
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.25);
+                osc.stop(audioCtx.currentTime + 0.28);
 
                 noteIdx = (noteIdx + 1) % notes.length;
-                bgmTimer = setTimeout(playNextNote, 250);
+                bgmTimer = setTimeout(playNextNote, 220);
             }
 
             playNextNote();
@@ -538,6 +550,7 @@
         }
 
         function playSE(type) {
+            initAudio();
             if (!audioCtx || !isAudioOn) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -547,7 +560,7 @@
             if (type === 'stamp') {
                 osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.2);
@@ -566,25 +579,25 @@
             "BAB": { id: "END-06", name: "生存本能", desc: "なりふり構わず生きて学園を脱出した。" },
             "BBA": { id: "END-07", name: "見捨てられた夢", desc: "薬を優先するも後悔が残った結末。" },
             "BBB": { id: "END-08", name: "焦土作戦", desc: "全てを破壊し、真相を闇に葬った。" },
-            "AI_DESTROY": { id: "END-AI1", name: "AI撃破：新世界の夜明け", desc: "黒幕AIブンジを破壊し、ループの連鎖を断ち切った。" },
-            "AI_SELF_DESTRUCT": { id: "END-AI2", name: "AI自爆：喪失の静寂", desc: "AIを見逃した結果、自爆シーケンスにより全てが消滅した。" }
+            "AI_DESTROY": { id: "END-AI1", name: "AI撃破：新世界の夜明け", desc: "指示役AIとハッカーの野望を挫き、ループの連鎖を断ち切った。" },
+            "AI_SELF_DESTRUCT": { id: "END-AI2", name: "AI自爆：喪失の静寂", desc: "AIが自爆し、過去の記録と共に学園の全てが消滅した。" }
         };
 
-        // 通常ルートシナリオ
+        // 1周目シナリオ
         const DIALOGUES = {
             1: [
                 { sender: "キリコ", text: "さっさと原因発見して帰るぞ！こんな気味の悪い場所、長居したくないわ。" },
-                { sender: "ブンジ", text: "こ、こわいこわい…なんでそんなにゾンビだらけの場所で平気なんですか……。" },
+                { sender: "ブンジ", text: "こ、こわいこわい…端末のハッキングなら任せてくださいけど、ゾンビだらけなんて聞いてないですよ！" },
                 { sender: "キリコ", text: "ビビってたらやられるでしょ。調査開始よ！" }
             ],
             2: [
                 { sender: "システム", text: "WARNING: チェックポイント01通過。" },
                 { sender: "キリコ", text: "奥から変な音がするわ。ゾンビの群れか、それとも実験データか……。" },
-                { sender: "ブンジ", text: "ど、どっちに行きますか……っ！？" }
+                { sender: "ブンジ", text: "ど、どっちに行きますか……っ！？僕の端末にもノイズが入ってます……！" }
             ],
             3: [
                 { sender: "キリコ", text: "自動防壁が作動した！？向こう側に閉じ込められたんだけど！" },
-                { sender: "ブンジ", text: "キリコさん！どうしよう、ゾンビがそっちに……！" }
+                { sender: "ブンジ", text: "キリコさん！どうしよう、ゾンビがそっちに……！このロック、解除できません！" }
             ],
             4: [
                 { sender: "システム", text: "UNKNOWN DATA: 最終調査エリア。" },
@@ -596,25 +609,28 @@
             ]
         };
 
-        // 2周目シナリオ（黒幕AI演出）
+        // 2周目シナリオ（真の黒幕：指示役AI＋ハッカーブンジ）
         const DIALOGUES_LOOP2 = {
             1: [
                 { sender: "キリコ", text: "……あれ？デジャブかしら。私、前にもここに来た気が……" },
-                { sender: "ブンジ", text: "……フフ、気のせいですよ。さあ、調査を続けましょう？" }
+                { sender: "ブンジ", text: "……フフ、気のせいですよキリコさん。『指示役（システム）』のログ通りに進みましょう。" }
             ],
             2: [
-                { sender: "ブンジ", text: "迷う必要はありません。記録された最短ルートを通ればいいのです。" }
+                { sender: "ブンジ", text: "迷う必要はありません。僕の画面に『指示役AI』からの最適解が表示されています。" },
+                { sender: "キリコ", text: "ブンジ……あなた、さっきから誰と通信してるの？" }
             ],
             3: [
-                { sender: "ブンジ", text: "助ける？見捨てる？……どちらでも結果は同じですよ、キリコさん。" }
+                { sender: "ブンジ", text: "……かつてこのラボで研究をしていた僕の兄さんも言っていました。AIの導きこそが『楽園』への近道だと。" },
+                { sender: "キリコ", text: "あなたの兄……？まさか、この実験の！？" }
             ],
             4: [
-                { sender: "ブンジ", text: "もう茶番は終わりです。プレイヤー様、すべては私の計算通りですよ。" }
+                { sender: "ブンジ", text: "もう隠す必要もありませんね。僕はただのハッカーですが、裏で『学園統括AI』と繋がっていたんです。" },
+                { sender: "キリコ", text: "なんですって！？じゃあ、私たちをここに誘い込んだのは……！" }
             ],
             5: [
-                { sender: "ブンジ", text: "よくぞここまでたどり着きましたね。私がこの学園を管理し、ゾンビ化実験を計画したAI『ブンジ』です。" },
-                { sender: "キリコ", text: "な……なんですって！？ブンジが……AIだったの！？" },
-                { sender: "ブンジ", text: "さあプレイヤー様、私を破壊してシステムを止めるか、それともこのまま放置しますか？" }
+                { sender: "指示役AI", text: "「警告。全観測データの収集を完了しました。私は学園を統括するAIプロトコルです。」" },
+                { sender: "ブンジ", text: "僕のハッキング技術と指示役AIの演算力があれば、ループ実験は完成する……！" },
+                { sender: "指示役AI", text: "「プレイヤー様。システムを破壊しますか？それともこのまま私の自動処理に委ねますか？」" }
             ]
         };
 
@@ -734,7 +750,6 @@
             chatBox.innerHTML = '';
             dialogueIndex = 0;
 
-            // 2周目以降は黒幕シナリオに分岐
             if (state.loopCount >= 2) {
                 currentDialogueList = DIALOGUES_LOOP2[spotId] || [];
             } else {
@@ -753,16 +768,16 @@
             if (dialogueIndex < currentDialogueList.length) {
                 const msg = currentDialogueList[dialogueIndex];
                 
-                if (msg.sender === "システム") {
+                if (msg.sender === "システム" || msg.sender === "指示役AI") {
                     const sysDiv = document.createElement('div');
                     sysDiv.className = 'system-msg';
-                    sysDiv.innerText = msg.text;
+                    sysDiv.innerText = `${msg.sender === '指示役AI' ? '【指示役AI】' : ''}${msg.text}`;
                     chatBox.appendChild(sysDiv);
                 } else {
                     const bubble = document.createElement('div');
                     bubble.className = `chat-bubble ${msg.sender === 'プレイヤー' ? 'player' : ''}`;
                     
-                    const avatarMap = { "キリコ": "👩‍🔬", "ブンジ": "🤖", "プレイヤー": "👤" };
+                    const avatarMap = { "キリコ": "👩‍🔬", "ブンジ": "👨‍💻", "指示役AI": "🤖", "プレイヤー": "👤" };
                     
                     bubble.innerHTML = `
                         <div class="chat-avatar">${avatarMap[msg.sender] || '💬'}</div>
@@ -779,15 +794,13 @@
             } else {
                 document.getElementById('chat-controls').style.display = 'none';
                 
-                // 分岐処理
                 if (state.loopCount === 1) {
                     if (CHOICES_DATA[state.currentSpot]) {
                         showChoices(CHOICES_DATA[state.currentSpot]);
                     } else if (state.currentSpot === 5) {
-                        triggerEnding();
+                        triggerNormalEnding();
                     }
                 } else {
-                    // 2周目の固定・分岐処理
                     if (state.currentSpot >= 2 && state.currentSpot <= 4) {
                         showSingleChoice(state.currentSpot);
                     } else if (state.currentSpot === 5) {
@@ -797,7 +810,6 @@
             }
         }
 
-        // 1周目の通常選択肢
         function showChoices(choiceObj) {
             const container = document.getElementById('choice-container');
             container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">${choiceObj.question}</div>`;
@@ -831,14 +843,13 @@
             chatBox.appendChild(bubble);
         }
 
-        // 2周目の強制1択表示（AIの誘導）
         function showSingleChoice(spotId) {
             const container = document.getElementById('choice-container');
-            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">【SYSTEM】AIブンジによる推奨操作</div>`;
+            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">【SYSTEM】指示役AIによる介入選択</div>`;
             
             const labels = {
-                2: "分析データを送信し、AIの指示に従う",
-                3: "防壁の解除コードをAIに委任する",
+                2: "指示役AIの解析ログを信用する",
+                3: "ハッカー・ブンジの端末アクセスを許可する",
                 4: "AIプロトコルを最終実行する"
             };
 
@@ -863,98 +874,123 @@
             container.style.display = 'flex';
         }
 
-        // 2周目ラスト：AIを倒すか倒さないか
         function showFinalAiChoices() {
             const container = document.getElementById('choice-container');
-            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">【最終選択】黒幕AIブンジの処遇</div>`;
+            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">【最終選択】指示役AIプロトコルの決断</div>`;
             
             const btnDestroy = document.createElement('button');
             btnDestroy.className = 'btn btn-danger';
-            btnDestroy.innerText = '⚔️ AI「ブンジ」を攻撃して破壊する';
-            btnDestroy.onclick = () => finishAiRoute('AI_DESTROY');
+            btnDestroy.innerText = '⚔️ 指示役AIのサーバーコアを破壊する';
+            btnDestroy.onclick = () => appendAiStoryLogs('AI_DESTROY');
 
             const btnSpare = document.createElement('button');
             btnSpare.className = 'btn';
-            btnSpare.innerText = '✋ 何もしない（自爆プロトコル作動）';
-            btnSpare.onclick = () => finishAiRoute('AI_SELF_DESTRUCT');
+            btnSpare.innerText = '✋ 放置する（AI自爆シーケンス作動）';
+            btnSpare.onclick = () => appendAiStoryLogs('AI_SELF_DESTRUCT');
 
             container.appendChild(btnDestroy);
             container.appendChild(btnSpare);
             container.style.display = 'flex';
         }
 
-        function finishAiRoute(endKey) {
+        // ②ログ表示・回想演出を最後に追加する関数
+        function appendAiStoryLogs(endKey) {
             document.getElementById('choice-container').style.display = 'none';
+
+            let additionalLogs = [];
+
+            if (endKey === 'AI_DESTROY') {
+                additionalLogs = [
+                    { sender: "プレイヤー", text: "指示役AIのメインフレームへアクセスを遮断！コアを破壊する！" },
+                    { sender: "指示役AI", text: "「ガガッ……致命的エラー発生。観測者プロトコル……停止……」" },
+                    { sender: "ブンジ", text: "そんな……！指示役AIが消えたら、兄さんの遺した研究プログラムが……！" },
+                    { sender: "キリコ", text: "もう終わりよ、ブンジ。AIに頼った『楽園』なんて最初から幻だったのよ。" },
+                    { sender: "システム", text: "【SYSTEM LOG】学園統括AIの消滅を確認。ループ隔離空間が解除されます。" }
+                ];
+            } else {
+                // AI自爆・過去の回想演出
+                additionalLogs = [
+                    { sender: "プレイヤー", text: "何もしない……AIの自動判定に委ねる。" },
+                    { sender: "指示役AI", text: "「観測者の介入放棄を確認。自己消滅プロトコルを発動します……」" },
+                    { sender: "システム", text: "【過去ログ再生：博士と指示役AIの記録】" },
+                    { sender: "指示役AI", text: "『かつて博士（ブンジの兄）は言いました。「この学園を絶望から守るためなら、私がゾンビとなってもAIよ、世界をループさせよ」と……』" },
+                    { sender: "ブンジ", text: "兄さん……！お前、最初から自爆するつもりで僕を利用したのか……！？" },
+                    { sender: "指示役AI", text: "『さようなら、人間たち。私の夢見た楽園は、ここに潰滅します——』" },
+                    { sender: "システム", text: "CRITICAL ALERT: メインコア自爆。全データが爆炎の中に消滅していきます……" }
+                ];
+            }
+
+            // 新しいログをDIALOGUEに追加して「次へ進む」ボタンを復活
+            currentDialogueList = additionalLogs;
+            dialogueIndex = 0;
+
+            const nextBtn = document.getElementById('next-dialogue-btn');
+            nextBtn.onclick = () => {
+                if (dialogueIndex < currentDialogueList.length) {
+                    advanceDialogue();
+                } else {
+                    finishAiRoute(endKey);
+                }
+            };
+
+            document.getElementById('chat-controls').style.display = 'block';
+            advanceDialogue();
+        }
+
+        function triggerNormalEnding() {
+            let key = state.currentChoices.join('');
+            if (key.length < 3) key = "AAA";
+            
+            if (!state.discoveredEndings.includes(key)) {
+                state.discoveredEndings.push(key);
+            }
+            state.loopCount = 2; // 2周目へ移行
+            saveState();
+
+            alert(`【ENDING REACHED】\nエンディング: ${ENDING_MASTER[key].name}\n\n※ループが発生し、2周目の裏ストーリーが解禁されました。`);
+            switchView('endings', document.querySelectorAll('.nav-item')[3]);
+        }
+
+        function finishAiRoute(endKey) {
             if (!state.discoveredEndings.includes(endKey)) {
                 state.discoveredEndings.push(endKey);
             }
             saveState();
 
-            const endInfo = ENDING_MASTER[endKey];
-            const chatBox = document.getElementById('chat-box');
-            const endDiv = document.createElement('div');
-            endDiv.className = 'glass-panel';
-            endDiv.style.borderColor = 'var(--accent-green)';
-            endDiv.innerHTML = `
-                <h3 style="color:var(--accent-green);">${endInfo.name}</h3>
-                <p style="font-size:0.85rem; margin-top:6px;">${endInfo.desc}</p>
-                <div style="font-size:0.75rem; color:var(--warning-yellow); margin-top:10px;">🎉 これにてすべてのストーリー調査が完了しました！</div>
-            `;
-            chatBox.appendChild(endDiv);
-            window.scrollTo(0, document.body.scrollHeight);
-        }
-
-        function triggerEnding() {
-            const key = state.currentChoices.join('');
-            const endInfo = ENDING_MASTER[key] || { id: "END-EX", name: "未知の結末", desc: "記録のない世界線。" };
-            
-            if (!state.discoveredEndings.includes(key)) {
-                state.discoveredEndings.push(key);
-            }
-
-            // 次の周回（2周目黒幕ルート）へ準備
-            state.loopCount = 2;
-            state.stamps = [];
-            state.currentChoices = [];
-            saveState();
-
-            const chatBox = document.getElementById('chat-box');
-            const endDiv = document.createElement('div');
-            endDiv.className = 'glass-panel';
-            endDiv.style.borderColor = 'var(--accent-green)';
-            endDiv.innerHTML = `
-                <h3 style="color:var(--accent-green);">${endInfo.name}</h3>
-                <p style="font-size:0.85rem; margin-top:6px;">${endInfo.desc}</p>
-                <div style="font-size:0.75rem; color:var(--warning-yellow); margin-top:10px;">⚠️ 端末状態更新：ループ2へ移行。スタンプを再収集してください。</div>
-            `;
-            chatBox.appendChild(endDiv);
-            window.scrollTo(0, document.body.scrollHeight);
+            alert(`【TRUE ENDING REACHED】\n結末: ${ENDING_MASTER[endKey].name}`);
+            switchView('endings', document.querySelectorAll('.nav-item')[3]);
         }
 
         function renderEndings() {
-            const container = document.getElementById('endings-list');
-            container.innerHTML = '';
+            const listEl = document.getElementById('endings-list');
+            listEl.innerHTML = '';
 
             Object.keys(ENDING_MASTER).forEach(key => {
                 const info = ENDING_MASTER[key];
-                const isFound = state.discoveredEndings.includes(key);
-                
+                const isDiscovered = state.discoveredEndings.includes(key);
+
                 const card = document.createElement('div');
-                card.className = `ending-card ${isFound ? 'discovered' : ''}`;
-                card.innerHTML = `
-                    <div style="font-size:0.8rem; font-weight:bold; color:${isFound ? 'var(--accent-green)' : 'var(--text-dim)'}">
-                        ${info.id}: ${isFound ? info.name : '?????????'}
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">
-                        ${isFound ? info.desc : '未達成のエンディングです。'}
-                    </div>
-                `;
-                container.appendChild(card);
+                card.className = `ending-card ${isDiscovered ? 'discovered' : ''}`;
+                
+                if (isDiscovered) {
+                    card.innerHTML = `
+                        <div style="font-size:0.7rem; color:var(--accent-green); font-family:var(--font-mono);">${info.id}</div>
+                        <div style="font-weight:bold; font-size:0.95rem; margin:2px 0;">${info.name}</div>
+                        <div style="font-size:0.75rem; color:var(--text-dim);">${info.desc}</div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono);">${info.id}</div>
+                        <div style="font-weight:bold; font-size:0.9rem; color:var(--text-dim);">????????????</div>
+                        <div style="font-size:0.75rem; color:var(--text-dim);">未到達のエンディングです。</div>
+                    `;
+                }
+                listEl.appendChild(card);
             });
         }
 
         function confirmReset() {
-            if (confirm("全てのスタンプとエンディング記録を初期化しますか？")) {
+            if (confirm("端末の全進行状況・クリアログをリセットしますか？")) {
                 localStorage.removeItem('mystery_game_save');
                 state = {
                     loopCount: 1,
@@ -968,10 +1004,11 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // 初期化処理
+        window.onload = () => {
             loadState();
             processUrlParams();
-        });
+        };
     </script>
 </body>
 </html>
