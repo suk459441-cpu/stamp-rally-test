@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>謎解きスタンプラリー2026 - 博士の夢見たゾンビの楽園</title>
+    <style>
+        /* ==========================================================================
+           1. 廃墟美 × 自然回帰 × 古い端末（UI/UX基本構造）
+           ========================================================================== */
+        :root {
+            --bg-dark: #070d0a;
+            --main-green: #2a4d36;
+            --accent-green: #4af685;
+            --rust-brown: #5c3a21;
+            --text-light: #d8e6dd;
+            --text-dim: #7a9485;
+            --glass-bg: rgba(10, 20, 14, 0.75);
+            --glass-border: rgba(74, 246, 133, 0.25);
+            --alert-red: #ff4757;
+            --warning-yellow: #eccc68;
+            --font-mono: 'Courier New', Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(42, 77, 54, 0.3) 0%, transparent 70%),
+                linear-gradient(180deg, #040806 0%, #0d1a12 100%);
+            background-attachment: fixed;
+        }
+
+        /* 走査線・古いCRTモニタ風エフェクト */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* アプリケーションコンテナ（スマホ縦持ち最優先） */
+        #app-container {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+            background: rgba(5, 10, 7, 0.6);
+            border-left: 1px solid rgba(74, 246, 133, 0.1);
+            border-right: 1px solid rgba(74, 246, 133, 0.1);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            padding-bottom: 70px; /* ナビゲーションバー分 */
+        }
+
+        /* ==========================================================================
+           2. サイバー＆アークティックコンポーネント (UIパーツ)
+           ========================================================================== */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px;
+            position: relative;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-panel::before {
+            content: "SYSTEM LOG // DATA READ";
+            position: absolute;
+            top: -9px; left: 12px;
+            font-size: 0.65rem;
+            font-family: var(--font-mono);
+            background: var(--bg-dark);
+            padding: 0 6px;
+            color: var(--accent-green);
+            border: 1px solid var(--glass-border);
+            border-radius: 3px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            background: rgba(42, 77, 54, 0.4);
+            border: 1px solid var(--accent-green);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin-top: 10px;
+            box-shadow: inset 0 0 10px rgba(74, 246, 133, 0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            background: var(--accent-green);
+            color: var(--bg-dark);
+        }
+
+        .btn-danger {
+            border-color: var(--alert-red);
+            background: rgba(255, 71, 87, 0.15);
+            color: #ff8892;
+        }
+
+        .btn-danger:active {
+            background: var(--alert-red);
+            color: #fff;
+        }
+
+        /* ヘッダー・オーディオコントロール */
+        header {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(4, 8, 6, 0.8);
+        }
+
+        .terminal-status {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--accent-green);
+        }
+
+        .audio-btn {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        /* ボトムナビゲーション */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            height: 60px;
+            background: rgba(7, 13, 10, 0.95);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-dim);
+            font-size: 0.65rem;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .nav-item.active {
+            color: var(--accent-green);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+
+        /* ビュー制御 */
+        .view {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================================================
+           3. 各画面スタイル (TOP, STORY, MAP, DATA, STAMPS, ENDING)
+           ========================================================================== */
+
+        /* --- TOP / ファーストビュー --- */
+        #view-top {
+            position: relative;
+            min-height: calc(100vh - 130px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+            background: 
+                linear-gradient(180deg, rgba(7,13,10,0.2) 0%, rgba(7,13,10,0.95) 100%),
+                radial-gradient(ellipse at center, rgba(42,77,54,0.4) 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .title-group {
+            margin-top: 40px;
+        }
+
+        .sub-title {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            letter-spacing: 0.2em;
+            margin-bottom: 8px;
+            font-family: var(--font-mono);
+        }
+
+        .main-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(74, 246, 133, 0.5);
+            letter-spacing: 0.05em;
+        }
+
+        .visual-ruin {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 1px dashed var(--glass-border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            position: relative;
+            background: rgba(10, 25, 16, 0.4);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .visual-ruin::after {
+            content: "🌿🧟‍♂️🌿";
+            font-size: 3.5rem;
+            opacity: 0.8;
+        }
+
+        /* --- STORY / チャットUI --- */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .chat-bubble {
+            display: flex;
+            gap: 10px;
+            max-width: 90%;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .chat-bubble.player {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .chat-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 6px;
+            background: #1e3325;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .chat-content {
+            background: rgba(20, 35, 25, 0.8);
+            border: 1px solid rgba(74, 246, 133, 0.2);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .chat-bubble.player .chat-content {
+            background: rgba(42, 77, 54, 0.6);
+            border-color: var(--accent-green);
+        }
+
+        .chat-sender {
+            font-size: 0.7rem;
+            color: var(--accent-green);
+            margin-bottom: 3px;
+            font-family: var(--font-mono);
+        }
+
+        .system-msg {
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--warning-yellow);
+            background: rgba(236, 204, 104, 0.1);
+            border: 1px dashed var(--warning-yellow);
+            padding: 6px;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+
+        .choice-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(0,0,0,0.5);
+            border-top: 1px solid var(--glass-border);
+            position: sticky;
+            bottom: 60px;
+        }
+
+        /* --- STAMPS & MAP & DATA --- */
+        .stamp-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .stamp-card {
+            aspect-ratio: 1;
+            background: rgba(10, 20, 15, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stamp-card.acquired {
+            border-color: var(--accent-green);
+            background: rgba(74, 246, 133, 0.08);
+        }
+
+        .stamp-mark {
+            font-size: 2rem;
+            opacity: 0.2;
+        }
+
+        .stamp-card.acquired .stamp-mark {
+            opacity: 1;
+            transform: scale(1.1) rotate(-5deg);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .stamp-label {
+            font-size: 0.65rem;
+            margin-top: 4px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+        }
+
+        .data-card {
+            background: rgba(15, 28, 20, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .data-title {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            margin-bottom: 6px;
+        }
+
+        .data-body {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        .ending-card {
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: rgba(5, 12, 8, 0.5);
+        }
+
+        .ending-card.discovered {
+            border-color: var(--accent-green);
+            background: rgba(42, 77, 54, 0.2);
+        }
+
+        .ending-card .count-tag {
+            float: right;
+            font-size: 0.65rem;
+            font-family: var(--font-mono);
+            color: var(--warning-yellow);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <header>
+            <div class="terminal-status">
+                <span id="sys-loop">LOOP: 1</span> | <span id="sys-status">STATUS: IDLE</span>
+            </div>
+            <button class="audio-btn" id="audio-toggle" onclick="toggleAudio()">🔊 BGM OFF</button>
+        </header>
+
+        <div id="view-top" class="view active">
+            <div class="title-group">
+                <div class="sub-title">博士の夢見たゾンビの楽園</div>
+                <div class="main-title">謎解きスタンプラリー<br>2026</div>
+            </div>
+
+            <div class="visual-ruin"></div>
+
+            <div style="width: 100%;">
+                <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; line-height: 1.5;">
+                    [警告] 本システムは学園跡地の調査端末です。<br>過度の侵食によりログデータが変質しています。
+                </p>
+                <button class="btn" onclick="startInvestigation()">調査を開始する</button>
+            </div>
+        </div>
+
+        <div id="view-story" class="view">
+            <div class="glass-panel" style="margin-bottom: 0;">
+                <span id="story-location-tag" style="font-size: 0.7rem; color: var(--accent-green); font-family: var(--font-mono);">CHECKPOINT: START</span>
+            </div>
+            
+            <div id="chat-box" class="chat-container">
+                </div>
+
+            <div id="chat-controls" style="padding: 0 12px 12px 12px;">
+                <button class="btn" id="next-dialogue-btn" onclick="advanceDialogue()">次へ進む ▶</button>
+            </div>
+
+            <div id="choice-container" class="choice-box" style="display: none;">
+                </div>
+        </div>
+
+        <div id="view-stamps" class="view">
+            <div class="glass-panel">
+                <h3>調査スタンプ記録</h3>
+                <p style="font-size:0.75rem; color: var(--text-dim); margin-bottom: 10px;">学園内各所のQRコードを同期してください。</p>
+                <div class="stamp-grid">
+                    <div class="stamp-card" id="stamp-1"><div class="stamp-mark">☣️</div><div class="stamp-label">01: START</div></div>
+                    <div class="stamp-card" id="stamp-2"><div class="stamp-mark">🌿</div><div class="stamp-label">02: CP1</div></div>
+                    <div class="stamp-card" id="stamp-3"><div class="stamp-mark">🔬</div><div class="stamp-label">03: CP2</div></div>
+                    <div class="stamp-card" id="stamp-4"><div class="stamp-mark">🧬</div><div class="stamp-label">04: CP3</div></div>
+                    <div class="stamp-card" id="stamp-5"><div class="stamp-mark">🏁</div><div class="stamp-label">05: GOAL</div></div>
+                </div>
+            </div>
+
+            <div class="glass-panel" style="border-style: dashed;">
+                <h4 style="font-size:0.8rem; color:var(--warning-yellow);">[現場テスト用] QRスキャン擬似実行</h4>
+                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;">
+                    <button class="btn" style="padding: 6px; font-size: 0.7rem;" onclick="simulateQR(1)">QR1</button>
+                    <button class="btn" style="padding: 6px; font-size: 0.7rem;" onclick="simulateQR(2)">QR2</button>
+                    <button class="btn" style="padding: 6px; font-size: 0.7rem;" onclick="simulateQR(3)">QR3</button>
+                    <button class="btn" style="padding: 6px; font-size: 0.7rem;" onclick="simulateQR(4)">QR4</button>
+                    <button class="btn" style="padding: 6px; font-size: 0.7rem;" onclick="simulateQR(5)">QR5</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-data" class="view">
+            <div class="glass-panel">
+                <h3>回収された研究資料</h3>
+                <p style="font-size:0.75rem; color: var(--text-dim); margin-bottom: 10px;">復元された断片テキストデータ。</p>
+                
+                <div class="data-card">
+                    <div class="data-title">LOG #012: 植物の異常繁茂について</div>
+                    <div class="data-body" id="data-log-1">
+                        「ウイルスの空気感染を防ぐため、植物系の遺伝子改変体を撒いた。しかし、AIがその成長速度を誤計算したようだ。校舎が飲み込まれていく…」
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <div class="data-title">LOG #089: システム『ブンジ』の仕様</div>
+                    <div class="data-body" id="data-log-2">
+                        「自立型NPC『ブンジ』は調査員の精神的安定を保つためにおどおどした性格に設定されている。しかし周回ログが蓄積すると……」
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-endings" class="view">
+            <div class="glass-panel">
+                <h3>ENDINGS COLLECTION</h3>
+                <p style="font-size:0.75rem; color: var(--text-dim); margin-bottom: 12px;">到達した世界線の記録。</p>
+                <div id="endings-list">
+                    </div>
+                <button class="btn btn-danger" onclick="confirmReset()" style="margin-top: 15px;">全端末ログ初期化（リセット）</button>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-item active" onclick="switchView('top', this)">
+                <span class="nav-icon">🏚️</span>TOP
+            </button>
+            <button class="nav-item" onclick="switchView('story', this)">
+                <span class="nav-icon">💬</span>STORY
+            </button>
+            <button class="nav-item" onclick="switchView('stamps', this)">
+                <span class="nav-icon">📱</span>STAMPS
+            </button>
+            <button class="nav-item" onclick="switchView('data', this)">
+                <span class="nav-icon">📂</span>LOGS
+            </button>
+            <button class="nav-item" onclick="switchView('endings', this)">
+                <span class="nav-icon">🏆</span>ENDINGS
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        /* Web Audio API による自前BGM/SE生成（外部音源ファイル不要設計） */
+        let audioCtx = null;
+        let bgmOsc = null;
+        let isAudioOn = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleAudio() {
+            initAudio();
+            const btn = document.getElementById('audio-toggle');
+            if (isAudioOn) {
+                stopAmbientBGM();
+                btn.innerText = "🔊 BGM OFF";
+                isAudioOn = false;
+            } else {
+                startAmbientBGM();
+                btn.innerText = "🔊 BGM ON";
+                isAudioOn = true;
+            }
+        }
+
+        function startAmbientBGM() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // 低音ドローン（不穏な廃墟の環境音風）
+            bgmOsc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            bgmOsc.type = 'sine';
+            bgmOsc.frequency.setValueAtTime(55, audioCtx.currentTime); // A1 ノート
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            
+            bgmOsc.connect(gain);
+            gain.connect(audioCtx.destination);
+            bgmOsc.start();
+        }
+
+        function stopAmbientBGM() {
+            if (bgmOsc) {
+                bgmOsc.stop();
+                bgmOsc.disconnect();
+                bgmOsc = null;
+            }
+        }
+
+        function playSE(type) {
+            if (!audioCtx || !isAudioOn) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'stamp') {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            }
+        }
+    </script>
+
+    <script>
+        /* ==========================================================================
+           データモデル & 定数定義
+           ========================================================================== */
+        
+        // 8種類の通常エンディング構造 (2x2x2) + 2周目黒幕エンド
+        const ENDING_MASTER = {
+            "AAA": { id: "END-01", name: "原点回帰", desc: "原因究明・救出・拘束を選択。生存と解析を最優先したルート。" },
+            "AAB": { id: "END-02", name: "強行突破", desc: "脅威を力で排除しながら真相へ迫った記録。" },
+            "ABA": { id: "END-03", name: "孤立無援", desc: "仲間を失いながらも理性を保ち到達した終着点。" },
+            "ABB": { id: "END-04", name: "冷徹な静寂", desc: "全ての感情を切り捨て、調査ミッションを完遂した。" },
+            "BAA": { id: "END-05", name: "希望の処方箋", desc: "治療薬開発と人道支援に全力を注いだ希望の結末。" },
+            "BAB": { id: "END-06", name: "生存本能", desc: "なりふり構わず生きて学園を脱出した記録。" },
+            "BBA": { id: "END-07", name: "見捨てられた夢", desc: "薬を優先するも仲間を失い、静かな後悔が残った。" },
+            "BBB": { id: "END-08", name: "焦土作戦", desc: "全てを破壊し、ウイルスとともに真相を闇に葬った。" },
+            "LOOP2_AI": { id: "END-AI", name: "SYSTEM: MASTERMIND", desc: "【2周目限定】AI「ブンジ」が最初から全てを仕組んでいた。" }
+        };
+
+        // 会話スクリプトデータ
+        const DIALOGUES = {
+            1: [ // START (スタンプ1)
+                { sender: "キリコ", text: "さっさと原因発見して帰るぞ！こんな気味の悪い植物だらけの学校、長居したくないわ。" },
+                { sender: "ブンジ", text: "こ、こわいこわい…なんでそんなにゾンビだらけの場所に来てテンション高いんですか……。" },
+                { sender: "キリコ", text: "逆にね。ビビってたらやられるでしょ。プレイヤー、調査開始よ！" }
+            ],
+            2: [ // CP1 (スタンプ2) - 選択肢1
+                { sender: "システム", text: "WARNING: チェックポイント01通過。分岐地点に到達。" },
+                { sender: "キリコ", text: "研究棟の奥から変な音がするわ。ゾンビの群れか、それとも実験データか……。" },
+                { sender: "ブンジ", text: "ど、どっちに行きますか？僕はどっちも嫌ですけど……っ！" }
+            ],
+            3: [ // CP2 (スタンプ3) - 選択肢2
+                { sender: "キリコ", text: "自動防壁が作動した！？ちょっと、向こう側に閉じ込められたんだけど！" },
+                { sender: "ブンジ", text: "キリコさん！どうしよう、ゾンビがそっちに向かって……！" }
+            ],
+            4: [ // CP3 (スタンプ4) - 選択肢3
+                { sender: "システム", text: "UNKNOWN DATA: 最終調査エリア。" },
+                { sender: "キリコ", text: "かつての同僚たちが立ちふさがっている……。サンプルを無傷で持ち帰る？それとも……" },
+                { sender: "ブンジ", text: "も、もう弾がありませんよ……！決断してください！" }
+            ],
+            5: [ // GOAL (スタンプ5) - エンディング
+                { sender: "システム", text: "FINAL CHECKPOINT AUDIT" }
+            ]
+        };
+
+        // 選択肢マスター
+        const CHOICES_DATA = {
+            2: {
+                question: "【選択1】調査の優先方針は？",
+                options: [
+                    { label: "A: ウイルスの発生原因を究明する", value: "A" },
+                    { label: "B: 治療薬のデータを最優先で探す", value: "B" }
+                ]
+            },
+            3: {
+                question: "【選択2】防壁の向こうのキリコに対して",
+                options: [
+                    { label: "A: 危険を冒して救出に戻る", value: "A" },
+                    { label: "B: 任務のため置いて先を急ぐ", value: "B" }
+                ]
+            },
+            4: {
+                question: "【選択3】感染した研究員の群れへの対応",
+                options: [
+                    { label: "A: 麻酔・拘束して無傷で進む", value: "A" },
+                    { label: "B: 倒しながら最短で突っ切る", value: "B" }
+                ]
+            }
+        };
+
+        /* ==========================================================================
+           アプリケーション状態管理 (localStorage 連動)
+           ========================================================================== */
+        let state = {
+            loopCount: 1,
+            stamps: [], // 取得したスタンプID [1..5]
+            currentChoices: [], // 今回の周回の選択 ['A', 'B', 'A']
+            firstLoopChoices: [], // 1周目で保存した選択
+            discoveredEndings: [], // 発見済みエンディングIDリスト
+            currentStep: 0, // 現在進行中の対話インデックス
+            currentSpot: 1 // 現在のスポット
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('mystery_game_save');
+            if (saved) {
+                try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
+            }
+            updateHeader();
+        }
+
+        function saveState() {
+            localStorage.setItem('mystery_game_save', JSON.stringify(state));
+            updateHeader();
+        }
+
+        function updateHeader() {
+            document.getElementById('sys-loop').innerText = `LOOP: ${state.loopCount}`;
+            document.getElementById('sys-status').innerText = `STAMPS: ${state.stamps.length}/5`;
+            
+            // 3周目以降テキスト伏線変化の適応
+            if (state.loopCount >= 3) {
+                document.getElementById('data-log-2').innerText = 
+                    "「自立型NPC『ブンジ』のログに異常あり。『黒幕エンド』を通過した端末では、ブンジの発言ログの文脈が不自然に反転している…」";
+            }
+        }
+
+        /* ==========================================================================
+           ビュー遷移・画面制御
+           ========================================================================== */
+        function switchView(viewName, navEl) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            if (navEl) navEl.classList.add('active');
+
+            if (viewName === 'stamps') renderStamps();
+            if (viewName === 'endings') renderEndings();
+        }
+
+        function startInvestigation() {
+            initAudio();
+            if (state.stamps.length === 0) {
+                acquireStamp(1); // スタート用スタンプ自動付与（またはQR読み込み待ち）
+            }
+            switchView('story', document.querySelectorAll('.nav-item')[1]);
+        }
+
+        /* ==========================================================================
+           スタンプ＆QR処理
+           ========================================================================== */
+        function processUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const stampParam = params.get('stamp') || params.get('spot');
+            if (stampParam) {
+                const id = parseInt(stampParam, 10);
+                if (id >= 1 && id <= 5) {
+                    acquireStamp(id);
+                }
+            }
+        }
+
+        function simulateQR(id) {
+            acquireStamp(id);
+            switchView('story', document.querySelectorAll('.nav-item')[1]);
+        }
+
+        function acquireStamp(id) {
+            if (!state.stamps.includes(id)) {
+                state.stamps.push(id);
+                playSE('stamp');
+                saveState();
+            }
+            state.currentSpot = id;
+            loadStorySpot(id);
+        }
+
+        function renderStamps() {
+            for (let i = 1; i <= 5; i++) {
+                const el = document.getElementById(`stamp-${i}`);
+                if (state.stamps.includes(i)) {
+                    el.classList.add('acquired');
+                } else {
+                    el.classList.remove('acquired');
+                }
+            }
+        }
+
+        /* ==========================================================================
+           ストーリー＆チャットロジック
+           ========================================================================== */
+        let currentDialogueList = [];
+        let dialogueIndex = 0;
+
+        function loadStorySpot(spotId) {
+            document.getElementById('story-location-tag').innerText = `CHECKPOINT 0${spotId} LOGS`;
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            dialogueIndex = 0;
+
+            // 3周目以降、AI（ブンジ）の発言にノイズ（違和感）を混ぜる
+            let rawDialogues = DIALOGUES[spotId] || [];
+            currentDialogueList = rawDialogues.map(d => {
+                if (state.loopCount >= 3 && d.sender === "ブンジ") {
+                    return { ...d, text: d.text + " ……フフ、以前も同じ選択をしましたね？" };
+                }
+                return d;
+            });
+
+            document.getElementById('choice-container').style.display = 'none';
+            document.getElementById('chat-controls').style.display = 'block';
+
+            advanceDialogue();
+        }
+
+        function advanceDialogue() {
+            const chatBox = document.getElementById('chat-box');
+
+            if (dialogueIndex < currentDialogueList.length) {
+                const msg = currentDialogueList[dialogueIndex];
+                
+                if (msg.sender === "システム") {
+                    const sysDiv = document.createElement('div');
+                    sysDiv.className = 'system-msg';
+                    sysDiv.innerText = msg.text;
+                    chatBox.appendChild(sysDiv);
+                } else {
+                    const bubble = document.createElement('div');
+                    bubble.className = `chat-bubble ${msg.sender === 'プレイヤー' ? 'player' : ''}`;
+                    
+                    const avatarMap = { "キリコ": "👩‍🔬", "ブンジ": "🤖", "プレイヤー": "👤" };
+                    
+                    bubble.innerHTML = `
+                        <div class="chat-avatar">${avatarMap[msg.sender] || '💬'}</div>
+                        <div>
+                            <div class="chat-sender">${msg.sender}</div>
+                            <div class="chat-content">${msg.text}</div>
+                        </div>
+                    `;
+                    chatBox.appendChild(bubble);
+                }
+
+                dialogueIndex++;
+                window.scrollTo(0, document.body.scrollHeight);
+            } else {
+                // セリフ終了後の分岐処理
+                document.getElementById('chat-controls').style.display = 'none';
+                
+                // チェックポイント2,3,4(Spot 2,3,4)の場合は選択肢表示
+                if (CHOICES_DATA[state.currentSpot]) {
+                    showChoices(CHOICES_DATA[state.currentSpot]);
+                } else if (state.currentSpot === 5) {
+                    // GOAL到達：エンディング判定
+                    triggerEnding();
+                }
+            }
+        }
+
+        function showChoices(choiceObj) {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">${choiceObj.question}</div>`;
+            
+            choiceObj.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = opt.label;
+                btn.onclick = () => selectChoice(opt.value);
+                container.appendChild(btn);
+            });
+            
+            container.style.display = 'flex';
+        }
+
+        function selectChoice(val) {
+            state.currentChoices.push(val);
+            saveState();
+
+            // プレイヤーの選択をチャットに反映
+            const chatBox = document.getElementById('chat-box');
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble player';
+            bubble.innerHTML = `
+                <div class="chat-avatar">👤</div>
+                <div>
+                    <div class="chat-sender">プレイヤー</div>
+                    <div class="chat-content">選択: ${val}</div>
+                </div>
+            `;
+            chatBox.appendChild(bubble);
+
+            document.getElementById('choice-container').style.display = 'none';
+            
+            // システムメッセージ
+            const sysDiv = document.createElement('div');
+            sysDiv.className = 'system-msg';
+            sysDiv.innerText = `選択肢 [${val}] を記録。次のチェックポイントへ向かってください。`;
+            chatBox.appendChild(sysDiv);
+        }
+
+        /* ==========================================================================
+           エンディング判定 & 周回システム
+           ========================================================================== */
+        function triggerEnding() {
+            const chatBox = document.getElementById('chat-box');
+            let endKey = "";
+            let endData = null;
+
+            // 周回ルール判定
+            if (state.loopCount === 2) {
+                // 2周目：強制 AI黒幕エンド
+                endKey = "LOOP2_AI";
+                endData = ENDING_MASTER[endKey];
+            } else {
+                // 1周目および3周目以降：選択肢の組み合わせ(例: "AAA")
+                const code = state.currentChoices.join('');
+                endKey = code.length === 3 ? code : "AAA"; 
+                endData = ENDING_MASTER[endKey] || ENDING_MASTER["AAA"];
+
+                if (state.loopCount === 1) {
+                    state.firstLoopChoices = [...state.currentChoices];
+                }
+            }
+
+            // 発見済みエンディングに追加
+            if (!state.discoveredEndings.includes(endKey)) {
+                state.discoveredEndings.push(endKey);
+            }
+
+            // 表示
+            const endDiv = document.createElement('div');
+            endDiv.className = 'glass-panel';
+            endDiv.style.borderColor = 'var(--accent-green)';
+            endDiv.innerHTML = `
+                <h2 style="color:var(--accent-green); font-size:1.2rem;">${endData.name}</h2>
+                <p style="font-size:0.75rem; color:var(--text-dim); margin-top:2px;">CODE: ${endData.id}</p>
+                <p style="margin-top:10px; font-size:0.85rem;">${endData.desc}</p>
+                <button class="btn" style="margin-top:15px;" onclick="nextLoop()">次の周回を開始する (LOOP ${state.loopCount + 1})</button>
+            `;
+            chatBox.appendChild(endDiv);
+            saveState();
+        }
+
+        function nextLoop() {
+            state.loopCount += 1;
+            state.stamps = [];
+            state.currentChoices = [];
+            state.currentSpot = 1;
+            saveState();
+            
+            alert(`周回データ更新: LOOP ${state.loopCount} に入ります。`);
+            switchView('top', document.querySelectorAll('.nav-item')[0]);
+        }
+
+        function renderEndings() {
+            const listEl = document.getElementById('endings-list');
+            listEl.innerHTML = '';
+
+            // 全9種（通常8 + 黒幕1）をループ描画
+            Object.keys(ENDING_MASTER).forEach(key => {
+                const item = ENDING_MASTER[key];
+                const isFound = state.discoveredEndings.includes(key);
+                
+                // 擬似的な到達人数（バックエンドAPI連携用のプレースホルダー）
+                const mockCount = isFound ? Math.floor(Math.sin(key.length) * 100 + 150) : 0;
+
+                const card = document.createElement('div');
+                card.className = `ending-card ${isFound ? 'discovered' : ''}`;
+                card.innerHTML = `
+                    <span class="count-tag">${isFound ? `到達人数: ${mockCount}人` : '未確認'}</span>
+                    <div style="font-weight:bold; font-size:0.85rem; color:${isFound ? 'var(--accent-green)' : 'var(--text-dim)'}">
+                        ${isFound ? item.name : '??? [調査データなし]'}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">
+                        ${isFound ? item.desc : '特定の選択肢ログのクリアで開示されます。'}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        function confirmReset() {
+            if (confirm("端末の全周回・獲得ログを初期化します。よろしいですか？")) {
+                localStorage.removeItem('mystery_game_save');
+                location.reload();
+            }
+        }
+
+        /* ==========================================================================
+           初期化実行
+           ========================================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            processUrlParams();
+        });
+    </script>
+</body>
+</html>
