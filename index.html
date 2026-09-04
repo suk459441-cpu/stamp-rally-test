@@ -236,6 +236,7 @@
             text-shadow: 0 0 10px rgba(74, 246, 133, 0.5);
         }
 
+        /* ④ 真ん中の絵文字表示を削除 */
         .visual-ruin {
             width: 180px;
             height: 180px;
@@ -248,12 +249,6 @@
             position: relative;
             background: rgba(10, 25, 16, 0.6);
             box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        .visual-ruin::after {
-            content: "🌿🧟‍♂️🌿";
-            font-size: 3.5rem;
-            opacity: 0.8;
         }
 
         .chat-container {
@@ -321,6 +316,21 @@
             border-radius: 4px;
             margin: 8px 0;
             line-height: 1.4;
+        }
+
+        /* ③ 次のチェックポイントを目指せ 表示枠 */
+        .next-guide-msg {
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            background: rgba(74, 246, 133, 0.15);
+            border: 1px solid var(--accent-green);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px;
+            box-shadow: 0 0 10px rgba(74, 246, 133, 0.2);
+            animation: fadeIn 0.4s ease;
         }
 
         .choice-box {
@@ -423,6 +433,10 @@
             
             <div id="chat-box" class="chat-container"></div>
 
+            <div id="next-guide-container" style="display: none;">
+                <div class="next-guide-msg">謎を解いて次のチェックポイントを目指せ</div>
+            </div>
+
             <div id="chat-controls" style="padding: 0 12px 12px 12px;">
                 <button class="btn" id="next-dialogue-btn" onclick="advanceDialogue()">次へ進む ▶</button>
             </div>
@@ -471,7 +485,7 @@
 
     <script>
         /* ==========================================================================
-           Web Audio API 音声機能向上（BGM・SE）
+           ⑤ Web Audio API 音声機能（BGM自動再生・ボタンタップ音SE）
            ========================================================================== */
         let audioCtx = null;
         let isAudioOn = false;
@@ -486,12 +500,38 @@
             }
         }
 
-        // どこかをタップした時にAudioContextを開始できるように登録
-        document.addEventListener('click', () => {
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
+        // ⑤ タップ・クリック時の共通効果音 (SE) & 自動BGM起動
+        function playTapSound() {
+            initAudio();
+            // BGMがまだ開始していない場合は自動起動
+            if (!isAudioOn) {
+                isAudioOn = true;
+                const btn = document.getElementById('audio-toggle');
+                if (btn) btn.innerText = "🔊 BGM ON";
+                startMelodicBGM();
             }
-        }, { once: true });
+
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.08);
+        }
+
+        // 画面上の任意のタッチ操作でAudioContextを有効化
+        document.addEventListener('click', (e) => {
+            initAudio();
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                playTapSound();
+            }
+        });
 
         function toggleAudio() {
             initAudio();
@@ -511,7 +551,6 @@
             if (!audioCtx || !isAudioOn) return;
             stopMelodicBGM();
 
-            // 音圧とメロディを向上させた音符列
             const notes = [
                 220.00, 261.63, 293.66, 329.63, 261.63, 220.00, 196.00, 220.00,
                 220.00, 261.63, 329.63, 392.00, 329.63, 293.66, 261.63, 220.00,
@@ -528,8 +567,7 @@
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(notes[noteIdx], audioCtx.currentTime);
 
-                // 音量をしっかり聞こえるレベル（0.25）に引き上げ
-                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.28);
 
                 osc.connect(gain);
@@ -551,7 +589,7 @@
 
         function playSE(type) {
             initAudio();
-            if (!audioCtx || !isAudioOn) return;
+            if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
@@ -605,11 +643,13 @@
                 { sender: "ブンジ", text: "も、もう弾がありませんよ……！決断してください！" }
             ],
             5: [
-                { sender: "システム", text: "FINAL CHECKPOINT AUDIT" }
+                { sender: "システム", text: "FINAL CHECKPOINT AUDIT" },
+                { sender: "キリコ", text: "ここが最奥部……全ての謎のログがここに集約されているようね。" },
+                { sender: "ブンジ", text: "ついに辿り着きましたね。端末の全ログデータを解析します！" }
             ]
         };
 
-        // 2周目シナリオ（真の黒幕：指示役AI＋ハッカーブンジ）
+        // 2周目シナリオ
         const DIALOGUES_LOOP2 = {
             1: [
                 { sender: "キリコ", text: "……あれ？デジャブかしら。私、前にもここに来た気が……" },
@@ -630,7 +670,7 @@
             5: [
                 { sender: "指示役AI", text: "「警告。全観測データの収集を完了しました。私は学園を統括するAIプロトコルです。」" },
                 { sender: "ブンジ", text: "僕のハッキング技術と指示役AIの演算力があれば、ループ実験は完成する……！" },
-                { sender: "指示役AI", text: "「プレイヤー様。システムを破壊しますか？それともこのまま私の自動処理に委ねますか？」" }
+                { sender: "指示役AI", text: "「プレイヤー様。すべてのチェックポイントを監査しました。選択の時です。」" }
             ]
         };
 
@@ -666,7 +706,7 @@
             stamps: [],
             currentChoices: [],
             discoveredEndings: [],
-            currentSpot: 1
+            currentSpot: 0
         };
 
         function loadState() {
@@ -702,17 +742,37 @@
             initAudio();
             if (!state.stamps.includes(1)) {
                 acquireStamp(1);
+            } else {
+                state.currentSpot = 1;
+                loadStorySpot(1);
             }
             switchView('story', document.querySelectorAll('.nav-item')[1]);
         }
 
+        /* ➀ 順番通りの読み込み制限判定 */
         function processUrlParams() {
             const params = new URLSearchParams(window.location.search);
             const stampParam = params.get('stamp') || params.get('spot');
             if (stampParam) {
                 const id = parseInt(stampParam, 10);
                 if (id >= 1 && id <= 5) {
-                    acquireStamp(id);
+                    const expectedNext = state.stamps.length + 1;
+                    if (id === expectedNext || state.stamps.includes(id)) {
+                        acquireStamp(id);
+                        switchView('story', document.querySelectorAll('.nav-item')[1]);
+                    } else {
+                        // 順番が違う場合
+                        alert(`【警告】順番が違います！\n先にチェックポイント 0${expectedNext} を読み込んでください。`);
+                        switchView('story', document.querySelectorAll('.nav-item')[1]);
+                        document.getElementById('chat-box').innerHTML = `
+                            <div class="system-msg">
+                                【エラー】正しい順番でQRコードを読み込んでください。<br>
+                                次に探すべきチェックポイント: 0${expectedNext}
+                            </div>
+                        `;
+                        document.getElementById('chat-controls').style.display = 'none';
+                        document.getElementById('next-guide-container').style.display = 'block';
+                    }
                 }
             }
         }
@@ -757,6 +817,7 @@
             }
 
             document.getElementById('choice-container').style.display = 'none';
+            document.getElementById('next-guide-container').style.display = 'none';
             document.getElementById('chat-controls').style.display = 'block';
 
             advanceDialogue();
@@ -794,17 +855,25 @@
             } else {
                 document.getElementById('chat-controls').style.display = 'none';
                 
+                // 1周目処理
                 if (state.loopCount === 1) {
                     if (CHOICES_DATA[state.currentSpot]) {
                         showChoices(CHOICES_DATA[state.currentSpot]);
                     } else if (state.currentSpot === 5) {
-                        triggerNormalEnding();
+                        // ➁ 5つ目はログを表示した後にエンディングボタンを表示
+                        showEndingTransitionBtn();
+                    } else {
+                        // ③ ログ完了後に案内表示
+                        document.getElementById('next-guide-container').style.display = 'block';
                     }
                 } else {
+                    // 2周目処理
                     if (state.currentSpot >= 2 && state.currentSpot <= 4) {
                         showSingleChoice(state.currentSpot);
                     } else if (state.currentSpot === 5) {
                         showFinalAiChoices();
+                    } else {
+                        document.getElementById('next-guide-container').style.display = 'block';
                     }
                 }
             }
@@ -841,6 +910,9 @@
                 </div>
             `;
             chatBox.appendChild(bubble);
+
+            // ③ 選択完了後に「謎を解いて次のチェックポイントを目指せ」を表示
+            document.getElementById('next-guide-container').style.display = 'block';
         }
 
         function showSingleChoice(spotId) {
@@ -869,9 +941,30 @@
                     </div>
                 `;
                 chatBox.appendChild(bubble);
+                document.getElementById('next-guide-container').style.display = 'block';
             };
             container.appendChild(btn);
             container.style.display = 'flex';
+        }
+
+        /* ➁ 5つ目のログ完了後にエンディングへ進むボタンを表示 */
+        function showEndingTransitionBtn() {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = `<div style="font-size:0.8rem; color:var(--accent-green); margin-bottom:4px;">【ミッション完了】全ログの確認が終了しました。</div>`;
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.innerText = '🏆 エンディング画面を開く';
+            btn.onclick = () => triggerNormalEnding();
+            
+            container.appendChild(btn);
+            container.style.display = 'flex';
+        }
+
+        function triggerNormalEnding() {
+            const key = state.currentChoices.join('');
+            const endKey = ENDING_MASTER[key] ? key : "AAA";
+            unlockEnding(endKey);
         }
 
         function showFinalAiChoices() {
@@ -881,83 +974,23 @@
             const btnDestroy = document.createElement('button');
             btnDestroy.className = 'btn btn-danger';
             btnDestroy.innerText = '⚔️ 指示役AIのサーバーコアを破壊する';
-            btnDestroy.onclick = () => appendAiStoryLogs('AI_DESTROY');
+            btnDestroy.onclick = () => unlockEnding('AI_DESTROY');
 
-            const btnSpare = document.createElement('button');
-            btnSpare.className = 'btn';
-            btnSpare.innerText = '✋ 放置する（AI自爆シーケンス作動）';
-            btnSpare.onclick = () => appendAiStoryLogs('AI_SELF_DESTRUCT');
+            const btnSelf = document.createElement('button');
+            btnSelf.className = 'btn';
+            btnSelf.innerText = '🤖 AIの自動処理に委ねる（自爆プロトコル）';
+            btnSelf.onclick = () => unlockEnding('AI_SELF_DESTRUCT');
 
             container.appendChild(btnDestroy);
-            container.appendChild(btnSpare);
+            container.appendChild(btnSelf);
             container.style.display = 'flex';
         }
 
-        // ②ログ表示・回想演出を最後に追加する関数
-        function appendAiStoryLogs(endKey) {
-            document.getElementById('choice-container').style.display = 'none';
-
-            let additionalLogs = [];
-
-            if (endKey === 'AI_DESTROY') {
-                additionalLogs = [
-                    { sender: "プレイヤー", text: "指示役AIのメインフレームへアクセスを遮断！コアを破壊する！" },
-                    { sender: "指示役AI", text: "「ガガッ……致命的エラー発生。観測者プロトコル……停止……」" },
-                    { sender: "ブンジ", text: "そんな……！指示役AIが消えたら、兄さんの遺した研究プログラムが……！" },
-                    { sender: "キリコ", text: "もう終わりよ、ブンジ。AIに頼った『楽園』なんて最初から幻だったのよ。" },
-                    { sender: "システム", text: "【SYSTEM LOG】学園統括AIの消滅を確認。ループ隔離空間が解除されます。" }
-                ];
-            } else {
-                // AI自爆・過去の回想演出
-                additionalLogs = [
-                    { sender: "プレイヤー", text: "何もしない……AIの自動判定に委ねる。" },
-                    { sender: "指示役AI", text: "「観測者の介入放棄を確認。自己消滅プロトコルを発動します……」" },
-                    { sender: "システム", text: "【過去ログ再生：博士と指示役AIの記録】" },
-                    { sender: "指示役AI", text: "『かつて博士（ブンジの兄）は言いました。「この学園を絶望から守るためなら、私がゾンビとなってもAIよ、世界をループさせよ」と……』" },
-                    { sender: "ブンジ", text: "兄さん……！お前、最初から自爆するつもりで僕を利用したのか……！？" },
-                    { sender: "指示役AI", text: "『さようなら、人間たち。私の夢見た楽園は、ここに潰滅します——』" },
-                    { sender: "システム", text: "CRITICAL ALERT: メインコア自爆。全データが爆炎の中に消滅していきます……" }
-                ];
-            }
-
-            // 新しいログをDIALOGUEに追加して「次へ進む」ボタンを復活
-            currentDialogueList = additionalLogs;
-            dialogueIndex = 0;
-
-            const nextBtn = document.getElementById('next-dialogue-btn');
-            nextBtn.onclick = () => {
-                if (dialogueIndex < currentDialogueList.length) {
-                    advanceDialogue();
-                } else {
-                    finishAiRoute(endKey);
-                }
-            };
-
-            document.getElementById('chat-controls').style.display = 'block';
-            advanceDialogue();
-        }
-
-        function triggerNormalEnding() {
-            let key = state.currentChoices.join('');
-            if (key.length < 3) key = "AAA";
-            
-            if (!state.discoveredEndings.includes(key)) {
-                state.discoveredEndings.push(key);
-            }
-            state.loopCount = 2; // 2周目へ移行
-            saveState();
-
-            alert(`【ENDING REACHED】\nエンディング: ${ENDING_MASTER[key].name}\n\n※ループが発生し、2周目の裏ストーリーが解禁されました。`);
-            switchView('endings', document.querySelectorAll('.nav-item')[3]);
-        }
-
-        function finishAiRoute(endKey) {
-            if (!state.discoveredEndings.includes(endKey)) {
-                state.discoveredEndings.push(endKey);
+        function unlockEnding(endingKey) {
+            if (!state.discoveredEndings.includes(endingKey)) {
+                state.discoveredEndings.push(endingKey);
             }
             saveState();
-
-            alert(`【TRUE ENDING REACHED】\n結末: ${ENDING_MASTER[endKey].name}`);
             switchView('endings', document.querySelectorAll('.nav-item')[3]);
         }
 
@@ -967,48 +1000,39 @@
 
             Object.keys(ENDING_MASTER).forEach(key => {
                 const info = ENDING_MASTER[key];
-                const isDiscovered = state.discoveredEndings.includes(key);
+                const isUnlocked = state.discoveredEndings.includes(key);
 
                 const card = document.createElement('div');
-                card.className = `ending-card ${isDiscovered ? 'discovered' : ''}`;
-                
-                if (isDiscovered) {
-                    card.innerHTML = `
-                        <div style="font-size:0.7rem; color:var(--accent-green); font-family:var(--font-mono);">${info.id}</div>
-                        <div style="font-weight:bold; font-size:0.95rem; margin:2px 0;">${info.name}</div>
-                        <div style="font-size:0.75rem; color:var(--text-dim);">${info.desc}</div>
-                    `;
-                } else {
-                    card.innerHTML = `
-                        <div style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono);">${info.id}</div>
-                        <div style="font-weight:bold; font-size:0.9rem; color:var(--text-dim);">????????????</div>
-                        <div style="font-size:0.75rem; color:var(--text-dim);">未到達のエンディングです。</div>
-                    `;
-                }
+                card.className = `ending-card ${isUnlocked ? 'discovered' : ''}`;
+                card.innerHTML = `
+                    <div style="font-size:0.7rem; color:var(--accent-green); font-family:var(--font-mono);">${info.id}</div>
+                    <div style="font-weight:bold; font-size:1rem; margin:2px 0;">${isUnlocked ? info.name : '🔒 未到達の記憶'}</div>
+                    <div style="font-size:0.75rem; color:var(--text-dim);">${isUnlocked ? info.desc : '特定の選択および周回条件を満たすことで開放されます。'}</div>
+                `;
                 listEl.appendChild(card);
             });
         }
 
         function confirmReset() {
-            if (confirm("端末の全進行状況・クリアログをリセットしますか？")) {
+            if (confirm("端末の全記録を初期化して最初のループに戻りますか？")) {
                 localStorage.removeItem('mystery_game_save');
                 state = {
                     loopCount: 1,
                     stamps: [],
                     currentChoices: [],
                     discoveredEndings: [],
-                    currentSpot: 1
+                    currentSpot: 0
                 };
                 saveState();
-                location.reload();
+                location.href = location.pathname;
             }
         }
 
-        // 初期化処理
-        window.onload = () => {
+        // 初期化実行
+        window.addEventListener('DOMContentLoaded', () => {
             loadState();
             processUrlParams();
-        };
+        });
     </script>
 </body>
 </html>
