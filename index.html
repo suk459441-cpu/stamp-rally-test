@@ -207,18 +207,39 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* QR読み取り時のスキャンエフェクト overlay */
+        #scan-effect-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(74, 246, 133, 0.15);
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+            border: 4px solid var(--accent-green);
+            box-shadow: inset 0 0 50px rgba(74, 246, 133, 0.5);
+            animation: pulseScan 0.8s ease-out forwards;
+        }
+
+        @keyframes pulseScan {
+            0% { opacity: 0; transform: scale(1.05); }
+            30% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; }
+        }
+
         /* ==========================================================================
            3. 各画面スタイル
            ========================================================================== */
+        /* 丸枠を削除し、上に詰めたTOP画面構造 */
         #view-top {
             position: relative;
             min-height: calc(100vh - 130px);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
-            padding: 40px 20px;
+            padding: 30px 20px;
             text-align: center;
+            gap: 25px;
         }
 
         .sub-title {
@@ -234,21 +255,6 @@
             font-weight: 800;
             color: #ffffff;
             text-shadow: 0 0 10px rgba(74, 246, 133, 0.5);
-        }
-
-        /* ④ 真ん中の絵文字表示を削除 */
-        .visual-ruin {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            border: 1px dashed var(--glass-border);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 30px 0;
-            position: relative;
-            background: rgba(10, 25, 16, 0.6);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
 
         .chat-container {
@@ -318,7 +324,6 @@
             line-height: 1.4;
         }
 
-        /* ③ 次のチェックポイントを目指せ 表示枠 */
         .next-guide-msg {
             text-align: center;
             font-weight: bold;
@@ -402,6 +407,8 @@
 </head>
 <body>
 
+    <div id="scan-effect-overlay"></div>
+
     <div id="app-container">
         <header>
             <div class="terminal-status">
@@ -411,16 +418,14 @@
         </header>
 
         <div id="view-top" class="view active">
-            <div style="margin-top: 20px;">
+            <div>
                 <div class="sub-title">博士の夢見たゾンビの楽園</div>
                 <div class="main-title">謎解きスタンプラリー<br>2026</div>
             </div>
 
-            <div class="visual-ruin"></div>
-
-            <div style="width: 100%;">
-                <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; line-height: 1.5;">
-                    [警告] 学園跡地調査端末。<br>QRコードを検知するとストーリーが進行します。
+            <div style="width: 100%; margin-top: 10px;">
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.6;">
+                    [警告] 学園跡地調査端末。<br>各所のQRコードを読み込むことでストーリーが進行し、ログが同期されます。
                 </p>
                 <button class="btn" onclick="startInvestigation()">調査端末を起動する</button>
             </div>
@@ -485,7 +490,7 @@
 
     <script>
         /* ==========================================================================
-           ⑤ Web Audio API 音声機能（BGM自動再生・ボタンタップ音SE）
+           Web Audio API 音声機能 & SE演出
            ========================================================================== */
         let audioCtx = null;
         let isAudioOn = false;
@@ -500,10 +505,8 @@
             }
         }
 
-        // ⑤ タップ・クリック時の共通効果音 (SE) & 自動BGM起動
         function playTapSound() {
             initAudio();
-            // BGMがまだ開始していない場合は自動起動
             if (!isAudioOn) {
                 isAudioOn = true;
                 const btn = document.getElementById('audio-toggle');
@@ -525,7 +528,6 @@
             osc.stop(audioCtx.currentTime + 0.08);
         }
 
-        // 画面上の任意のタッチ操作でAudioContextを有効化
         document.addEventListener('click', (e) => {
             initAudio();
             if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
@@ -567,7 +569,7 @@
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(notes[noteIdx], audioCtx.currentTime);
 
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.28);
 
                 osc.connect(gain);
@@ -602,6 +604,15 @@
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'scan') {
+                // QR読み取り用スキャン効果音（サイバー感のある近未来サウンド）
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
             }
         }
 
@@ -621,7 +632,6 @@
             "AI_SELF_DESTRUCT": { id: "END-AI2", name: "AI自爆：喪失の静寂", desc: "AIが自爆し、過去の記録と共に学園の全てが消滅した。" }
         };
 
-        // 1周目シナリオ
         const DIALOGUES = {
             1: [
                 { sender: "キリコ", text: "さっさと原因発見して帰るぞ！こんな気味の悪い場所、長居したくないわ。" },
@@ -645,11 +655,11 @@
             5: [
                 { sender: "システム", text: "FINAL CHECKPOINT AUDIT" },
                 { sender: "キリコ", text: "ここが最奥部……全ての謎のログがここに集約されているようね。" },
-                { sender: "ブンジ", text: "ついに辿り着きましたね。端末の全ログデータを解析します！" }
+                { sender: "ブンジ", text: "ついに辿り着きましたね。端末の全ログデータを解析します！" },
+                { sender: "システム", text: "全チェックポイントのログ同期完了。最終判定を行います。" }
             ]
         };
 
-        // 2周目シナリオ
         const DIALOGUES_LOOP2 = {
             1: [
                 { sender: "キリコ", text: "……あれ？デジャブかしら。私、前にもここに来た気が……" },
@@ -749,19 +759,20 @@
             switchView('story', document.querySelectorAll('.nav-item')[1]);
         }
 
-        /* ➀ 順番通りの読み込み制限判定 */
+        /* 順番通りの読み込み制限判定 & QRスキャン演出 */
         function processUrlParams() {
             const params = new URLSearchParams(window.location.search);
             const stampParam = params.get('stamp') || params.get('spot');
             if (stampParam) {
                 const id = parseInt(stampParam, 10);
                 if (id >= 1 && id <= 5) {
+                    triggerScanEffect(); // QRスキャン演出発動
+
                     const expectedNext = state.stamps.length + 1;
                     if (id === expectedNext || state.stamps.includes(id)) {
                         acquireStamp(id);
                         switchView('story', document.querySelectorAll('.nav-item')[1]);
                     } else {
-                        // 順番が違う場合
                         alert(`【警告】順番が違います！\n先にチェックポイント 0${expectedNext} を読み込んでください。`);
                         switchView('story', document.querySelectorAll('.nav-item')[1]);
                         document.getElementById('chat-box').innerHTML = `
@@ -774,6 +785,15 @@
                         document.getElementById('next-guide-container').style.display = 'block';
                     }
                 }
+            }
+        }
+
+        function triggerScanEffect() {
+            playSE('scan');
+            const overlay = document.getElementById('scan-effect-overlay');
+            if (overlay) {
+                overlay.style.display = 'block';
+                setTimeout(() => { overlay.style.display = 'none'; }, 800);
             }
         }
 
@@ -860,10 +880,9 @@
                     if (CHOICES_DATA[state.currentSpot]) {
                         showChoices(CHOICES_DATA[state.currentSpot]);
                     } else if (state.currentSpot === 5) {
-                        // ➁ 5つ目はログを表示した後にエンディングボタンを表示
+                        // ② ログ会話が終わった後にボタンを表示してエンディング画面へ移動
                         showEndingTransitionBtn();
                     } else {
-                        // ③ ログ完了後に案内表示
                         document.getElementById('next-guide-container').style.display = 'block';
                     }
                 } else {
@@ -879,160 +898,139 @@
             }
         }
 
-        function showChoices(choiceObj) {
+        function showChoices(choiceData) {
             const container = document.getElementById('choice-container');
-            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">${choiceObj.question}</div>`;
-            
-            choiceObj.options.forEach(opt => {
+            container.innerHTML = `<div style="font-size:0.85rem; color:var(--warning-yellow); margin-bottom:6px; font-weight:bold;">${choiceData.question}</div>`;
+
+            choiceData.options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'btn';
                 btn.innerText = opt.label;
-                btn.onclick = () => selectChoice(opt.value);
+                btn.onclick = () => selectOption(opt.value);
                 container.appendChild(btn);
             });
-            
+
             container.style.display = 'flex';
         }
 
-        function selectChoice(val) {
+        function selectOption(val) {
             state.currentChoices.push(val);
             saveState();
-
             document.getElementById('choice-container').style.display = 'none';
-            const chatBox = document.getElementById('chat-box');
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble player';
-            bubble.innerHTML = `
-                <div class="chat-avatar">👤</div>
-                <div>
-                    <div class="chat-sender">プレイヤー</div>
-                    <div class="chat-content">【選択】${val}の方針で進む</div>
-                </div>
-            `;
-            chatBox.appendChild(bubble);
-
-            // ③ 選択完了後に「謎を解いて次のチェックポイントを目指せ」を表示
             document.getElementById('next-guide-container').style.display = 'block';
         }
 
         function showSingleChoice(spotId) {
             const container = document.getElementById('choice-container');
-            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">【SYSTEM】指示役AIによる介入選択</div>`;
-            
-            const labels = {
-                2: "指示役AIの解析ログを信用する",
-                3: "ハッカー・ブンジの端末アクセスを許可する",
-                4: "AIプロトコルを最終実行する"
-            };
+            container.innerHTML = `<div style="font-size:0.85rem; color:var(--accent-green); margin-bottom:6px;">【指示役AI】の誘導に従いますか？</div>`;
 
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.innerText = labels[spotId];
+            btn.innerText = "指示通りに進行する";
             btn.onclick = () => {
                 container.style.display = 'none';
-                const chatBox = document.getElementById('chat-box');
-                const bubble = document.createElement('div');
-                bubble.className = 'chat-bubble player';
-                bubble.innerHTML = `
-                    <div class="chat-avatar">👤</div>
-                    <div>
-                        <div class="chat-sender">プレイヤー</div>
-                        <div class="chat-content">${labels[spotId]}</div>
-                    </div>
-                `;
-                chatBox.appendChild(bubble);
                 document.getElementById('next-guide-container').style.display = 'block';
             };
             container.appendChild(btn);
             container.style.display = 'flex';
         }
 
-        /* ➁ 5つ目のログ完了後にエンディングへ進むボタンを表示 */
+        // ② クリア後会話ログ完了時に表示する遷移ボタン
         function showEndingTransitionBtn() {
             const container = document.getElementById('choice-container');
-            container.innerHTML = `<div style="font-size:0.8rem; color:var(--accent-green); margin-bottom:4px;">【ミッション完了】全ログの確認が終了しました。</div>`;
-            
+            container.innerHTML = `<div style="font-size:0.85rem; color:var(--accent-green); margin-bottom:6px; text-align:center;">全ログの検証完了</div>`;
+
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.innerText = '🏆 エンディング画面を開く';
-            btn.onclick = () => triggerNormalEnding();
-            
+            btn.innerText = "クリアしてエンディングを見る ▶";
+            btn.onclick = () => resolveNormalEnding();
             container.appendChild(btn);
             container.style.display = 'flex';
         }
 
-        function triggerNormalEnding() {
+        function resolveNormalEnding() {
             const key = state.currentChoices.join('');
-            const endKey = ENDING_MASTER[key] ? key : "AAA";
-            unlockEnding(endKey);
+            const endData = ENDING_MASTER[key] || ENDING_MASTER["AAA"];
+            
+            if (!state.discoveredEndings.includes(endData.id)) {
+                state.discoveredEndings.push(endData.id);
+            }
+
+            // 次の周（2周目）への準備
+            state.loopCount = 2;
+            state.stamps = [];
+            state.currentChoices = [];
+            saveState();
+
+            switchView('endings', document.querySelectorAll('.nav-item')[3]);
+            alert(`【エンディング到達】\n${endData.name}\n\n※2周目のロックが解除されました。周回して真相に迫ってください。`);
         }
 
         function showFinalAiChoices() {
             const container = document.getElementById('choice-container');
-            container.innerHTML = `<div style="font-size:0.8rem; color:var(--warning-yellow); margin-bottom:4px;">【最終選択】指示役AIプロトコルの決断</div>`;
-            
-            const btnDestroy = document.createElement('button');
-            btnDestroy.className = 'btn btn-danger';
-            btnDestroy.innerText = '⚔️ 指示役AIのサーバーコアを破壊する';
-            btnDestroy.onclick = () => unlockEnding('AI_DESTROY');
+            container.innerHTML = `<div style="font-size:0.85rem; color:var(--alert-red); margin-bottom:6px; font-weight:bold;">【最終決断】指示役AIと学園の運命は？</div>`;
 
-            const btnSelf = document.createElement('button');
-            btnSelf.className = 'btn';
-            btnSelf.innerText = '🤖 AIの自動処理に委ねる（自爆プロトコル）';
-            btnSelf.onclick = () => unlockEnding('AI_SELF_DESTRUCT');
+            const btn1 = document.createElement('button');
+            btn1.className = 'btn';
+            btn1.innerText = "1. AIシステムを破壊し、学園を解放する";
+            btn1.onclick = () => resolveAiEnding("AI_DESTROY");
 
-            container.appendChild(btnDestroy);
-            container.appendChild(btnSelf);
+            const btn2 = document.createElement('button');
+            btn2.className = 'btn btn-danger';
+            btn2.innerText = "2. AIを暴走・自爆させ全ての記録を消し去る";
+            btn2.onclick = () => resolveAiEnding("AI_SELF_DESTRUCT");
+
+            container.appendChild(btn1);
+            container.appendChild(btn2);
             container.style.display = 'flex';
         }
 
-        function unlockEnding(endingKey) {
-            if (!state.discoveredEndings.includes(endingKey)) {
-                state.discoveredEndings.push(endingKey);
+        function resolveAiEnding(endingType) {
+            const endData = ENDING_MASTER[endingType];
+            if (!state.discoveredEndings.includes(endData.id)) {
+                state.discoveredEndings.push(endData.id);
             }
             saveState();
+
             switchView('endings', document.querySelectorAll('.nav-item')[3]);
+            alert(`【TRUE ENDING 到達】\n${endData.name}\n${endData.desc}`);
         }
 
         function renderEndings() {
-            const listEl = document.getElementById('endings-list');
-            listEl.innerHTML = '';
+            const container = document.getElementById('endings-list');
+            container.innerHTML = '';
 
-            Object.keys(ENDING_MASTER).forEach(key => {
-                const info = ENDING_MASTER[key];
-                const isUnlocked = state.discoveredEndings.includes(key);
+            Object.keys(ENDING_MASTER).forEach(k => {
+                const end = ENDING_MASTER[k];
+                const isFound = state.discoveredEndings.includes(end.id);
 
                 const card = document.createElement('div');
-                card.className = `ending-card ${isUnlocked ? 'discovered' : ''}`;
+                card.className = `ending-card ${isFound ? 'discovered' : ''}`;
                 card.innerHTML = `
-                    <div style="font-size:0.7rem; color:var(--accent-green); font-family:var(--font-mono);">${info.id}</div>
-                    <div style="font-weight:bold; font-size:1rem; margin:2px 0;">${isUnlocked ? info.name : '🔒 未到達の記憶'}</div>
-                    <div style="font-size:0.75rem; color:var(--text-dim);">${isUnlocked ? info.desc : '特定の選択および周回条件を満たすことで開放されます。'}</div>
+                    <div style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono);">${end.id}</div>
+                    <div style="font-weight:bold; font-size:0.95rem; margin:2px 0; color:${isFound ? 'var(--accent-green)' : 'var(--text-dim)'};">
+                        ${isFound ? end.name : '？？？？？？？？'}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-dim);">${isFound ? end.desc : '未到達のマルチエンディングログです。'}</div>
                 `;
-                listEl.appendChild(card);
+                container.appendChild(card);
             });
         }
 
         function confirmReset() {
-            if (confirm("端末の全記録を初期化して最初のループに戻りますか？")) {
+            if (confirm("端末の全データおよび到達エンディングを初期化しますか？")) {
                 localStorage.removeItem('mystery_game_save');
-                state = {
-                    loopCount: 1,
-                    stamps: [],
-                    currentChoices: [],
-                    discoveredEndings: [],
-                    currentSpot: 0
-                };
+                state = { loopCount: 1, stamps: [], currentChoices: [], discoveredEndings: [], currentSpot: 0 };
                 saveState();
-                location.href = location.pathname;
+                location.reload();
             }
         }
 
         // 初期化実行
-        window.addEventListener('DOMContentLoaded', () => {
+        window.onload = () => {
             loadState();
             processUrlParams();
-        });
+        };
     </script>
 </body>
 </html>
