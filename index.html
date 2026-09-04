@@ -179,7 +179,7 @@
             cursor: pointer;
             background: none;
             border: none;
-            width: 25%;
+            width: 33.3%;
         }
 
         .nav-item.active {
@@ -228,45 +228,45 @@
         /* ==========================================================================
            3. 各画面スタイル
            ========================================================================== */
+        /* タイトル下の余白を詰めるため padding・gap を極小化 */
         #view-top {
             position: relative;
-            min-height: calc(100vh - 130px);
+            padding: 12px 16px 20px 16px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
             align-items: center;
-            padding: 30px 20px;
             text-align: center;
-            gap: 25px;
+            gap: 12px;
         }
 
         .sub-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--accent-green);
-            letter-spacing: 0.2em;
-            margin-bottom: 8px;
+            letter-spacing: 0.15em;
+            margin-bottom: 2px;
             font-family: var(--font-mono);
         }
 
         .main-title {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: #ffffff;
             text-shadow: 0 0 10px rgba(74, 246, 133, 0.5);
+            line-height: 1.2;
         }
 
         .chat-container {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            padding: 12px;
-            padding-bottom: 20px;
+            padding: 8px 0;
+            width: 100%;
         }
 
         .chat-bubble {
             display: flex;
             gap: 10px;
-            max-width: 90%;
+            max-width: 92%;
             animation: fadeIn 0.2s ease;
         }
 
@@ -276,25 +276,26 @@
         }
 
         .chat-avatar {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 6px;
             background: #1e3325;
             border: 1px solid var(--glass-border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1rem;
             flex-shrink: 0;
         }
 
         .chat-content {
             background: rgba(20, 35, 25, 0.9);
             border: 1px solid rgba(74, 246, 133, 0.2);
-            padding: 10px 14px;
+            padding: 10px 12px;
             border-radius: 8px;
-            font-size: 0.9rem;
-            line-height: 1.4;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            text-align: left;
         }
 
         .chat-bubble.player .chat-content {
@@ -307,6 +308,7 @@
             color: var(--accent-green);
             margin-bottom: 3px;
             font-family: var(--font-mono);
+            text-align: left;
         }
 
         .system-msg {
@@ -318,20 +320,20 @@
             border: 1px dashed var(--warning-yellow);
             padding: 8px;
             border-radius: 4px;
-            margin: 8px 0;
+            margin: 6px 0;
             line-height: 1.4;
         }
 
         .next-guide-msg {
             text-align: center;
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--accent-green);
             background: rgba(74, 246, 133, 0.15);
             border: 1px solid var(--accent-green);
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
-            margin: 12px;
+            margin: 8px 0;
             box-shadow: 0 0 10px rgba(74, 246, 133, 0.2);
             animation: fadeIn 0.4s ease;
         }
@@ -340,12 +342,12 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding: 12px;
+            padding: 10px;
             background: rgba(0,0,0,0.85);
-            border-top: 1px solid var(--glass-border);
-            position: sticky;
-            bottom: 60px;
-            z-index: 10;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            margin-top: 8px;
+            width: 100%;
         }
 
         .stamp-grid {
@@ -407,24 +409,24 @@
             background: rgba(10, 30, 18, 0.95);
             border-radius: 8px;
             padding: 16px;
-            margin: 12px;
+            margin-top: 10px;
             text-align: center;
             box-shadow: 0 0 20px rgba(74, 246, 133, 0.3);
             animation: fadeIn 0.5s ease;
         }
 
         .ending-display-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--accent-green);
             font-weight: bold;
             margin-bottom: 8px;
         }
 
         .ending-display-desc {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--text-light);
-            line-height: 1.6;
-            margin-bottom: 16px;
+            line-height: 1.5;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -441,35 +443,33 @@
         </header>
 
         <div id="view-top" class="view active">
-            <div>
+            <div style="width: 100%; text-align: center;">
                 <div class="sub-title">博士の夢見たゾンビの楽園</div>
-                <div class="main-title">謎解きスタンプラリー<br>2026</div>
+                <div class="main-title">謎解きスタンプラリー 2026</div>
             </div>
 
-            <div style="width: 100%; margin-top: 10px;">
-                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.6;">
-                    [警告] 学園跡地調査端末。<br>各所のQRコードを読み込むことでストーリーが進行し、ログが同期されます。
-                </p>
-                <button class="btn" onclick="startInvestigation()">調査端末を起動する</button>
-            </div>
-        </div>
+            <div id="story-section" style="width: 100%;">
+                <div class="glass-panel" style="margin: 4px 0 8px 0; padding: 6px 10px; text-align: left;">
+                    <span id="story-location-tag" style="font-size: 0.7rem; color: var(--accent-green); font-family: var(--font-mono);">CHECKPOINT: TERMINAL READY</span>
+                </div>
+                
+                <div id="chat-box" class="chat-container">
+                    <p style="font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; padding: 10px 0;">
+                        [警告] 学園跡地調査端末。<br>各所のQRコードを読み込むことでストーリーが進行し、ログが同期されます。
+                    </p>
+                </div>
 
-        <div id="view-story" class="view">
-            <div class="glass-panel" style="margin-bottom: 0;">
-                <span id="story-location-tag" style="font-size: 0.7rem; color: var(--accent-green); font-family: var(--font-mono);">CHECKPOINT: START</span>
-            </div>
-            
-            <div id="chat-box" class="chat-container"></div>
+                <div id="next-guide-container" style="display: none;">
+                    <div class="next-guide-msg">謎を解いて次のチェックポイントを目指せ</div>
+                </div>
 
-            <div id="next-guide-container" style="display: none;">
-                <div class="next-guide-msg">謎を解いて次のチェックポイントを目指せ</div>
-            </div>
+                <div id="chat-controls" style="margin-top: 4px;">
+                    <button class="btn" id="start-btn" onclick="startInvestigation()">調査端末を起動する</button>
+                    <button class="btn" id="next-dialogue-btn" onclick="advanceDialogue()" style="display: none;">次へ進む ▶</button>
+                </div>
 
-            <div id="chat-controls" style="padding: 0 12px 12px 12px;">
-                <button class="btn" id="next-dialogue-btn" onclick="advanceDialogue()">次へ進む ▶</button>
+                <div id="choice-container" class="choice-box" style="display: none;"></div>
             </div>
-
-            <div id="choice-container" class="choice-box" style="display: none;"></div>
         </div>
 
         <div id="view-stamps" class="view">
@@ -499,9 +499,6 @@
             <button class="nav-item active" onclick="switchView('top', this)">
                 <span class="nav-icon">🏚️</span>TOP
             </button>
-            <button class="nav-item" onclick="switchView('story', this)">
-                <span class="nav-icon">💬</span>STORY
-            </button>
             <button class="nav-item" onclick="switchView('stamps', this)">
                 <span class="nav-icon">📱</span>STAMPS
             </button>
@@ -513,7 +510,7 @@
 
     <script>
         /* ==========================================================================
-           Web Audio API 音声機能 & BGM整律（不協和音解消）
+           Web Audio API 音声機能 & BGM整律
            ========================================================================== */
         let audioCtx = null;
         let isAudioOn = false;
@@ -572,12 +569,10 @@
             }
         }
 
-        /* 不協和音を解消した和風・ダークミステリー調の調和旋律 (A Minor Scale) */
         function startMelodicBGM() {
             if (!audioCtx || !isAudioOn) return;
             stopMelodicBGM();
 
-            // Aマイナ合致周波数: A3(220), C4(261.63), D4(293.66), E4(329.63), G4(392.00), A4(440.00)
             const notes = [
                 220.00, 261.63, 329.63, 293.66, 261.63, 220.00, 196.00, 220.00,
                 220.00, 329.63, 392.00, 440.00, 392.00, 329.63, 261.63, 220.00
@@ -590,7 +585,7 @@
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
 
-                osc.type = 'sine'; // 三角波やノコギリ波より綺麗なサイン波に変更
+                osc.type = 'sine';
                 osc.frequency.setValueAtTime(notes[noteIdx], audioCtx.currentTime);
 
                 gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
@@ -651,8 +646,7 @@
             "BAB": { id: "END-06", name: "生存本能", desc: "なりふり構わず生きて学園を脱出した。" },
             "BBA": { id: "END-07", name: "見捨てられた夢", desc: "薬を優先するも後悔が残った結末。" },
             "BBB": { id: "END-08", name: "焦土作戦", desc: "全てを破壊し、真相を闇に葬った。" },
-            "AI_DESTROY": { id: "END-AI1", name: "AI撃破：新世界の夜明け", desc: "指示役AIとハッカーの野望を挫き、ループの連鎖を断ち切った。" },
-            "AI_SELF_DESTRUCT": { id: "END-AI2", name: "AI自爆：喪失の静寂", desc: "AIが自爆し、過去の記録と共に学園の全てが消滅した。" }
+            "AI_SELF_DESTRUCT": { id: "END-AI", name: "AI暴走自爆：喪失の静寂", desc: "破壊を選択しなかったことでAIは過去の不具合により暴走自爆。学園の全てが消滅した。" }
         };
 
         const DIALOGUES = {
@@ -682,6 +676,7 @@
             ]
         };
 
+        // 2周目：選択肢なしの一本道シナリオ（過去ログ＆セリフ追加）
         const DIALOGUES_LOOP2 = {
             1: [
                 { sender: "キリコ", text: "……あれ？デジャブかしら。私、前にもここに来た気が……" },
@@ -696,13 +691,15 @@
                 { sender: "キリコ", text: "あなたの兄……？まさか、この実験の！？" }
             ],
             4: [
-                { sender: "ブンジ", text: "もう隠す必要もありませんね。僕はただのハッカーですが、裏で『学園統括AI』と繋がっていたんです。" },
+                { sender: "ブンジ", text: "僕はただのハッカーですが、裏で『学園統括AI』と繋がっていたんです。" },
                 { sender: "キリコ", text: "なんですって！？じゃあ、私たちをここに誘い込んだのは……！" }
             ],
             5: [
-                { sender: "指示役AI", text: "「警告。全観測データの収集を完了しました。私は学園を統括するAIプロトコルです。」" },
-                { sender: "ブンジ", text: "僕のハッキング技術と指示役AIの演算力があれば、ループ実験は完成する……！" },
-                { sender: "指示役AI", text: "「プレイヤー様。すべてのチェックポイントを監査しました。選択の時です。」" }
+                { sender: "指示役AI", text: "「警告。最終過去ログを再生します……『先生は優しい人でした。先生、、、。ブンジさんにとってはお兄さんですね。先生は私を作り、まるで人のようにうんぬんかんぬん（本番までにここに感動的エンドがはいります）』」" },
+                { sender: "キリコ", text: "永遠の命って……コト！？" },
+                { sender: "ブンジ", text: "わあ！" },
+                { sender: "指示役AI", text: "「対象の破壊処理が選択されませんでした。プログラムの論理矛盾を検知……処理不能……エラー……」" },
+                { sender: "システム", text: "CRITICAL ALERT: AIが論理崩壊を起こし自爆プロトコルへ移行します" }
             ]
         };
 
@@ -726,13 +723,6 @@
                 options: [
                     { label: "A: 麻酔・拘束して無傷で進む", value: "A" },
                     { label: "B: 倒しながら最短で突っ切る", value: "B" }
-                ]
-            },
-            5: {
-                question: "【最終選択】世界とAIの運命を選択してください",
-                options: [
-                    { label: "A: 指示役AIをハッキングして機能を停止（破壊）する", value: "AI_DESTROY" },
-                    { label: "B: AIのシステムオーバーロード（自爆プロトコル）を起動する", value: "AI_SELF_DESTRUCT" }
                 ]
             }
         };
@@ -779,13 +769,15 @@
 
         function startInvestigation() {
             initAudio();
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('next-dialogue-btn').style.display = 'block';
+
             if (!state.stamps.includes(1)) {
                 acquireStamp(1);
             } else {
                 state.currentSpot = 1;
                 loadStorySpot(1);
             }
-            switchView('story', document.querySelectorAll('.nav-item')[1]);
         }
 
         function processUrlParams() {
@@ -798,10 +790,10 @@
 
                     const expectedNext = state.stamps.length + 1;
                     if (id === expectedNext || state.stamps.includes(id)) {
+                        document.getElementById('start-btn').style.display = 'none';
+                        document.getElementById('next-dialogue-btn').style.display = 'block';
                         acquireStamp(id);
-                        switchView('story', document.querySelectorAll('.nav-item')[1]);
                     } else {
-                        switchView('story', document.querySelectorAll('.nav-item')[1]);
                         document.getElementById('chat-box').innerHTML = `
                             <div class="system-msg">
                                 【エラー】正しい順番でQRコードを読み込んでください。<br>
@@ -885,10 +877,12 @@
                     const bubble = document.createElement('div');
                     bubble.className = `chat-bubble ${msg.sender === 'プレイヤー' ? 'player' : ''}`;
                     
-                    const avatarMap = { "キリコ": "👩‍🔬", "ブンジ": "👨‍💻", "指示役AI": "🤖", "プレイヤー": "👤" };
-                    
+                    let avatarIcon = "👤";
+                    if (msg.sender === "キリコ") avatarIcon = "👧";
+                    if (msg.sender === "ブンジ") avatarIcon = "👓";
+
                     bubble.innerHTML = `
-                        <div class="chat-avatar">${avatarMap[msg.sender] || '💬'}</div>
+                        <div class="chat-avatar">${avatarIcon}</div>
                         <div>
                             <div class="chat-sender">${msg.sender}</div>
                             <div class="chat-content">${msg.text}</div>
@@ -898,197 +892,115 @@
                 }
 
                 dialogueIndex++;
-                window.scrollTo(0, document.body.scrollHeight);
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             } else {
-                // 会話ログ終了時の判定
+                // セリフ終了後の分岐処理
                 document.getElementById('chat-controls').style.display = 'none';
 
-                if (state.currentSpot === 5) {
-                    // 最終スポット(5)の場合：1周目はそのままエンディングボタンへ、2周目以降は分岐選択肢へ
-                    if (state.loopCount >= 2) {
-                        showChoice(5);
+                if (state.loopCount >= 2) {
+                    // 2周目は選択肢なしで1本道進行
+                    if (state.currentSpot === 5) {
+                        triggerEnding("AI_SELF_DESTRUCT");
                     } else {
-                        showEndingButton();
+                        document.getElementById('next-guide-container').style.display = 'block';
                     }
-                } else if (CHOICES_DATA[state.currentSpot]) {
-                    showChoice(state.currentSpot);
                 } else {
-                    document.getElementById('next-guide-container').style.display = 'block';
+                    // 1周目は通常の選択肢分岐
+                    if (CHOICES_DATA[state.currentSpot]) {
+                        showChoiceBox(CHOICES_DATA[state.currentSpot]);
+                    } else if (state.currentSpot === 5) {
+                        const endingKey = state.currentChoices.join('');
+                        triggerEnding(endingKey);
+                    } else {
+                        document.getElementById('next-guide-container').style.display = 'block';
+                    }
                 }
             }
         }
 
-        function showChoice(spotId) {
-            const choiceBox = document.getElementById('choice-container');
-            const data = CHOICES_DATA[spotId];
-            if (!data) return;
-
-            choiceBox.innerHTML = `<div style="font-size:0.8rem; color:var(--accent-green); margin-bottom:4px; font-weight:bold;">${data.question}</div>`;
+        function showChoiceBox(data) {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = `<div style="font-size:0.8rem; color:var(--accent-green); font-weight:bold; text-align:left;">${data.question}</div>`;
             
             data.options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'btn';
                 btn.innerText = opt.label;
-                btn.onclick = () => handleChoiceSelect(spotId, opt.value);
-                choiceBox.appendChild(btn);
+                btn.onclick = () => selectChoice(opt.value);
+                container.appendChild(btn);
             });
 
-            choiceBox.style.display = 'flex';
-            window.scrollTo(0, document.body.scrollHeight);
+            container.style.display = 'flex';
         }
 
-        function handleChoiceSelect(spotId, choiceValue) {
+        function selectChoice(val) {
+            state.currentChoices.push(val);
+            saveState();
             document.getElementById('choice-container').style.display = 'none';
-
-            // プレイヤーの選択をログに追加
-            const chatBox = document.getElementById('chat-box');
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble player';
-            bubble.innerHTML = `
-                <div class="chat-avatar">👤</div>
-                <div>
-                    <div class="chat-sender">プレイヤー</div>
-                    <div class="chat-content">選択: ${choiceValue}</div>
-                </div>
-            `;
-            chatBox.appendChild(bubble);
-
-            if (spotId === 5) {
-                // 2周目以降の最終選択肢処理
-                state.currentChoices.push(choiceValue);
-                showEndingButton(choiceValue);
-            } else {
-                state.currentChoices.push(choiceValue);
-                saveState();
-
-                // 選択後の会話を追加
-                const sysDiv = document.createElement('div');
-                sysDiv.className = 'system-msg';
-                sysDiv.innerText = `[RECORDED] 選択ログ：${choiceValue} を記録しました。`;
-                chatBox.appendChild(sysDiv);
-
-                document.getElementById('next-guide-container').style.display = 'block';
-            }
-            window.scrollTo(0, document.body.scrollHeight);
+            document.getElementById('next-guide-container').style.display = 'block';
         }
 
-        /* 最終QRコード用の「エンディングを見る」ボタン表示処理 */
-        function showEndingButton(overrideKey = null) {
-            const chatBox = document.getElementById('chat-box');
-            const btnContainer = document.createElement('div');
-            btnContainer.style.padding = "16px 0";
+        function triggerEnding(key) {
+            const ending = ENDING_MASTER[key] || { id: "END-EX", name: "未知の結末", desc: "記録にない結末に到達した。" };
             
-            const endBtn = document.createElement('button');
-            endBtn.className = 'btn';
-            endBtn.style.borderColor = 'var(--warning-yellow)';
-            endBtn.style.color = 'var(--warning-yellow)';
-            endBtn.innerText = '🏁 エンディングを見る';
-            endBtn.onclick = () => revealEnding(overrideKey);
-
-            btnContainer.appendChild(endBtn);
-            chatBox.appendChild(btnContainer);
-            window.scrollTo(0, document.body.scrollHeight);
-        }
-
-        /* ポップアップを使わずに同画面内にエンディング内容を移す関数 */
-        function revealEnding(overrideKey = null) {
-            let endingKey = overrideKey;
-            if (!endingKey) {
-                endingKey = state.currentChoices.join('');
-            }
-            if (!ENDING_MASTER[endingKey]) {
-                endingKey = "AAA"; // デフォルトフォールバック
+            if (!state.discoveredEndings.includes(key)) {
+                state.discoveredEndings.push(key);
             }
 
-            const endingData = ENDING_MASTER[endingKey];
-
-            if (!state.discoveredEndings.includes(endingData.id)) {
-                state.discoveredEndings.push(endingData.id);
-            }
-
-            saveState();
-
-            const chatBox = document.getElementById('chat-box');
-            
-            // エンディング情報パネルを作成し直接表示
-            const panel = document.createElement('div');
-            panel.className = 'ending-display-panel';
-            panel.innerHTML = `
-                <div style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono); margin-bottom:4px;">${endingData.id}</div>
-                <div class="ending-display-title">【${endingData.name}】</div>
-                <div class="ending-display-desc">${endingData.desc}</div>
-            `;
-
-            // 周回誘導ボタンの生成
-            const nextLoopBtn = document.createElement('button');
-            nextLoopBtn.className = 'btn';
-            
+            // ループ処理（2周目への移行）
             if (state.loopCount === 1) {
-                nextLoopBtn.innerText = '🔄 もう一度やり直す（2周目へ）';
-                nextLoopBtn.onclick = () => startNextLoop(2);
-            } else {
-                nextLoopBtn.innerText = `🔄 さらなるループへ進む（${state.loopCount + 1}周目へ）`;
-                nextLoopBtn.onclick = () => startNextLoop(state.loopCount + 1);
+                state.loopCount = 2;
             }
 
-            panel.appendChild(nextLoopBtn);
-            chatBox.appendChild(panel);
-            window.scrollTo(0, document.body.scrollHeight);
-        }
-
-        /* 次の周回を開始する処理 */
-        function startNextLoop(nextLoopNum) {
-            state.loopCount = nextLoopNum;
-            state.stamps = [];
-            state.currentChoices = [];
-            state.currentSpot = 0;
             saveState();
 
-            // TOP画面へ戻す
-            switchView('top', document.querySelectorAll('.nav-item')[0]);
-            alert(`端末が再起動しました。\nLOOP: ${nextLoopNum} が開始されます。`);
+            const chatBox = document.getElementById('chat-box');
+            const endPanel = document.createElement('div');
+            endPanel.className = 'ending-display-panel';
+            endPanel.innerHTML = `
+                <div style="font-size:0.75rem; color:var(--warning-yellow); font-family:var(--font-mono); font-weight:bold;">--- MISSION COMPLETE ---</div>
+                <div class="ending-display-title">${ending.id}: ${ending.name}</div>
+                <div class="ending-display-desc">${ending.desc}</div>
+                <p style="font-size:0.75rem; color:var(--accent-green);">【2周目解放】システムプロトコルが更新されました。<br>スタンプ画面から次なる調査を開始してください。</p>
+            `;
+            chatBox.appendChild(endPanel);
         }
 
         function renderEndings() {
             const listEl = document.getElementById('endings-list');
             listEl.innerHTML = '';
 
-            Object.values(ENDING_MASTER).forEach(end => {
-                const isDiscovered = state.discoveredEndings.includes(end.id);
+            Object.keys(ENDING_MASTER).forEach(k => {
+                const item = ENDING_MASTER[k];
+                const isDiscovered = state.discoveredEndings.includes(k);
                 const card = document.createElement('div');
                 card.className = `ending-card ${isDiscovered ? 'discovered' : ''}`;
                 card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <span style="font-size:0.7rem; font-family:var(--font-mono); color:${isDiscovered ? 'var(--accent-green)' : 'var(--text-dim)'}">${end.id}</span>
-                        <span style="font-size:0.75rem; font-weight:bold; color:${isDiscovered ? '#fff' : 'var(--text-dim)'}">${isDiscovered ? end.name : '???'}</span>
+                    <div style="font-weight:bold; font-size:0.85rem; color:${isDiscovered ? 'var(--accent-green)' : 'var(--text-dim)'}">
+                        ${item.id}: ${isDiscovered ? item.name : '??????'}
                     </div>
-                    <div style="font-size:0.75rem; color:var(--text-dim);">${isDiscovered ? end.desc : '未解放のエンディングデータです。'}</div>
+                    <div style="font-size:0.75rem; color:var(--text-dim); margin-top:3px;">
+                        ${isDiscovered ? item.desc : '未到達のエンディングです。'}
+                    </div>
                 `;
                 listEl.appendChild(card);
             });
         }
 
         function confirmReset() {
-            if (confirm("端末の全データ（クリア状況・獲得スタンプ）を完全に初期化しますか？")) {
+            if (confirm("端末の全調査ログと進行状況を初期化します。よろしいですか？")) {
                 localStorage.removeItem('mystery_game_save');
-                state = {
-                    loopCount: 1,
-                    stamps: [],
-                    currentChoices: [],
-                    discoveredEndings: [],
-                    currentSpot: 0
-                };
-                updateHeader();
-                switchView('top', document.querySelectorAll('.nav-item')[0]);
-                alert("端末ログを初期化しました。");
+                state = { loopCount: 1, stamps: [], currentChoices: [], discoveredEndings: [], currentSpot: 0 };
+                saveState();
+                location.href = location.pathname;
             }
         }
 
-        // 初期化実行
-        window.addEventListener('DOMContentLoaded', () => {
+        // 初期化処理
+        window.onload = () => {
             loadState();
             processUrlParams();
-        });
+        };
     </script>
 </body>
 </html>
