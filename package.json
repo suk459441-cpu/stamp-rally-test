@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "test": "node --test",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=js/*.js"
+  }
+}

@@ -1,0 +1,444 @@
+
+        /* ==========================================================================
+           1. UI/UX基本構造 & バックグラウンドデザイン
+           ========================================================================== */
+        :root {
+            --bg-dark: #050a07;
+            --main-green: #1f3a29;
+            --accent-green: #4af685;
+            --rust-brown: #5c3a21;
+            --text-light: #d8e6dd;
+            --text-dim: #7a9485;
+            --glass-bg: rgba(8, 16, 11, 0.85);
+            --glass-border: rgba(74, 246, 133, 0.3);
+            --alert-red: #ff4757;
+            --warning-yellow: #eccc68;
+            --font-mono: 'Courier New', Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(42, 77, 54, 0.4) 0%, transparent 70%),
+                linear-gradient(rgba(74, 246, 133, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(74, 246, 133, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            background-attachment: fixed;
+            animation: bgShift 20s infinite linear;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 0 0, 0 300px, 300px 0; }
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            background-size: 100% 4px;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+            background: rgba(5, 10, 7, 0.75);
+            border-left: 1px solid var(--glass-border);
+            border-right: 1px solid var(--glass-border);
+            box-shadow: 0 0 40px rgba(0,0,0,0.9);
+            padding-bottom: 70px;
+        }
+
+        /* ==========================================================================
+           2. UIパーツ & コンポーネント
+           ========================================================================== */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px;
+            position: relative;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            background: rgba(42, 77, 54, 0.5);
+            border: 1px solid var(--accent-green);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin-top: 8px;
+            box-shadow: inset 0 0 10px rgba(74, 246, 133, 0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            background: var(--accent-green);
+            color: var(--bg-dark);
+        }
+
+        .btn-danger {
+            border-color: var(--alert-red);
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff8892;
+        }
+
+        .btn-danger:active {
+            background: var(--alert-red);
+            color: #fff;
+        }
+
+        header {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(4, 8, 6, 0.9);
+        }
+
+        .terminal-status {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--accent-green);
+        }
+
+        .audio-btn {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            height: 60px;
+            background: rgba(7, 13, 10, 0.95);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-dim);
+            font-size: 0.65rem;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 33.3%;
+        }
+
+        .nav-item.active {
+            color: var(--accent-green);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+
+        .view {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #scan-effect-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(74, 246, 133, 0.15);
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+            border: 4px solid var(--accent-green);
+            box-shadow: inset 0 0 50px rgba(74, 246, 133, 0.5);
+            animation: pulseScan 0.8s ease-out forwards;
+        }
+
+        @keyframes pulseScan {
+            0% { opacity: 0; transform: scale(1.05); }
+            30% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; }
+        }
+
+        /* ==========================================================================
+           3. 各画面スタイル
+           ========================================================================== */
+        /* タイトル下の余白を詰めるため padding・gap を極小化 */
+        #view-top {
+            position: relative;
+            padding: 12px 16px 20px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+        }
+
+        .sub-title {
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            letter-spacing: 0.15em;
+            margin-bottom: 2px;
+            font-family: var(--font-mono);
+        }
+
+        .main-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(74, 246, 133, 0.5);
+            line-height: 1.2;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 8px 0;
+            width: 100%;
+        }
+
+        .chat-bubble {
+            display: flex;
+            gap: 10px;
+            max-width: 92%;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .chat-bubble.player {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: #1e3325;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .chat-content {
+            background: rgba(20, 35, 25, 0.9);
+            border: 1px solid rgba(74, 246, 133, 0.2);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            text-align: left;
+        }
+
+        .chat-bubble.player .chat-content {
+            background: rgba(42, 77, 54, 0.7);
+            border-color: var(--accent-green);
+        }
+
+        .chat-sender {
+            font-size: 0.7rem;
+            color: var(--accent-green);
+            margin-bottom: 3px;
+            font-family: var(--font-mono);
+            text-align: left;
+        }
+
+        .system-msg {
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--warning-yellow);
+            background: rgba(236, 204, 104, 0.1);
+            border: 1px dashed var(--warning-yellow);
+            padding: 8px;
+            border-radius: 4px;
+            margin: 6px 0;
+            line-height: 1.4;
+        }
+
+        .next-guide-msg {
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.88rem;
+            color: var(--accent-green);
+            background: rgba(74, 246, 133, 0.15);
+            border: 1px solid var(--accent-green);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+            box-shadow: 0 0 10px rgba(74, 246, 133, 0.2);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .choice-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(0,0,0,0.85);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .stamp-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .stamp-card {
+            aspect-ratio: 1;
+            background: rgba(10, 20, 15, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .stamp-card.acquired {
+            border-color: var(--accent-green);
+            background: rgba(74, 246, 133, 0.15);
+        }
+
+        .stamp-mark {
+            font-size: 2rem;
+            opacity: 0.2;
+        }
+
+        .stamp-image {
+            width: 56%;
+            max-width: 72px;
+            aspect-ratio: 1;
+            object-fit: contain;
+            opacity: 0.25;
+            filter: grayscale(1);
+            transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease;
+        }
+
+        .stamp-card.acquired .stamp-mark {
+            opacity: 1;
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .stamp-card.acquired .stamp-image {
+            opacity: 1;
+            filter: none;
+            transform: scale(1.08) rotate(-5deg);
+        }
+
+        .stamp-label {
+            font-size: 0.65rem;
+            margin-top: 4px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+        }
+
+        .ending-card {
+            border: 1px solid var(--glass-border);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: rgba(5, 12, 8, 0.5);
+        }
+
+        .ending-card.discovered {
+            border-color: var(--accent-green);
+            background: rgba(42, 77, 54, 0.25);
+        }
+
+        .ending-display-panel {
+            border: 2px solid var(--accent-green);
+            background: rgba(10, 30, 18, 0.95);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(74, 246, 133, 0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .ending-display-title {
+            font-size: 1.2rem;
+            color: var(--accent-green);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .ending-display-desc {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+[v-cloak] {
+    display: none;
+}
