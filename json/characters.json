@@ -1,0 +1,28 @@
+{
+  "kiriko": {
+    "name": "キリコ",
+    "avatar": "👧",
+    "type": "character"
+  },
+  "bunji": {
+    "name": "ブンジ",
+    "avatar": "👦",
+    "type": "character"
+  },
+  "system": {
+    "name": "システム",
+    "avatar": "",
+    "type": "system"
+  },
+  "guideAi": {
+    "name": "指示役AI",
+    "avatar": "",
+    "type": "system",
+    "prefix": "【指示役AI】"
+  },
+  "player": {
+    "name": "プレイヤー",
+    "avatar": "👤",
+    "type": "player"
+  }
+}
