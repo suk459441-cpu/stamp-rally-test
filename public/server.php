@@ -15,10 +15,16 @@ if (PHP_SAPI === 'cli-server') {
         ? false
         : realpath($projectRoot . DIRECTORY_SEPARATOR . ltrim($targetPath, '/'));
     $isFrontendAsset = $targetPath === '/index.html'
-        || str_starts_with($targetPath, '/css/')
-        || str_starts_with($targetPath, '/js/')
-        || str_starts_with($targetPath, '/json/')
-        || str_starts_with($targetPath, '/img/');
+        || (
+            $projectRoot !== false
+            && $resolvedPath !== false
+            && (
+                str_starts_with($resolvedPath, $projectRoot . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR)
+                || str_starts_with($resolvedPath, $projectRoot . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR)
+                || str_starts_with($resolvedPath, $projectRoot . DIRECTORY_SEPARATOR . 'json' . DIRECTORY_SEPARATOR)
+                || str_starts_with($resolvedPath, $projectRoot . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR)
+            )
+        );
 
     if (
         $isFrontendAsset
