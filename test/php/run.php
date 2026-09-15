@@ -9,6 +9,7 @@ use App\Services\Exment\ExmentClientInterface;
 use App\Services\Exment\HttpResponse;
 use App\Services\Exment\HttpTransportInterface;
 use App\Services\Exment\StampRallyRecordRepository;
+use App\Services\Line\LineAuthClient;
 use App\Services\Line\LineLoginUrlBuilder;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
@@ -79,6 +80,29 @@ final class FakeHttpTransport implements HttpTransportInterface
     }
 }
 
+final class FakeLineTransport implements HttpTransportInterface
+{
+    /** @var list<array{method: string, url: string, headers: array<string, string>, body: string|null}> */
+    public array $requests = [];
+
+    /** @param list<HttpResponse> $responses */
+    public function __construct(private array $responses)
+    {
+    }
+
+    public function request(string $method, string $url, array $headers = [], ?string $body = null): HttpResponse
+    {
+        $this->requests[] = [
+            'method' => $method,
+            'url' => $url,
+            'headers' => $headers,
+            'body' => $body,
+        ];
+
+        return array_shift($this->responses) ?? new HttpResponse(500, '{}');
+    }
+}
+
 $failures = 0;
 
 function assertSameValue(mixed $expected, mixed $actual, string $message): void
@@ -127,6 +151,14 @@ assertSameValue('https://exment.example.test', $config->exment->baseUrl, 'Exment
 assertSameValue('exment-api-key', $config->exment->apiKey, 'Exment API key is loaded');
 assertSameValue('stamp_rally_records', $config->exment->stampRallyTable, 'Exment table name is loaded');
 
+$missingApiKeyConfig = AppConfig::fromEnv([
+    'EXMENT_BASE_URL' => 'https://exment.example.test',
+    'EXMENT_API_KEY' => '',
+    'EXMENT_CLIENT_ID' => 'exment-client',
+    'EXMENT_CLIENT_SECRET' => 'exment-secret',
+]);
+assertFalseValue($missingApiKeyConfig->exment->isConfigured(), 'Exment config requires API key');
+
 $defaultConfig = AppConfig::fromEnv(['APP_ENV' => null]);
 assertSameValue('production', $defaultConfig->env, 'APP_ENV defaults to production');
 assertFalseValue($defaultConfig->debug, 'APP_DEBUG defaults to false');
@@ -146,6 +178,15 @@ $loginUrl = (new LineLoginUrlBuilder($config->line))->build('state-123', 'nonce-
 assertTrueValue(str_starts_with($loginUrl, 'https://access.line.me/oauth2/v2.1/authorize?'), 'LINE login URL uses LINE authorize endpoint');
 assertTrueValue(str_contains($loginUrl, 'client_id=line-channel'), 'LINE login URL includes client ID');
 assertTrueValue(str_contains($loginUrl, 'state=state-123'), 'LINE login URL includes state');
+
+$lineTransport = new FakeLineTransport([
+    new HttpResponse(200, json_encode(['access_token' => 'line-access-token'], JSON_THROW_ON_ERROR)),
+    new HttpResponse(200, json_encode(['userId' => 'U-line-123'], JSON_THROW_ON_ERROR)),
+]);
+$lineUserId = (new LineAuthClient($config->line, $lineTransport))->fetchUserIdFromAuthorizationCode('auth-code-123');
+assertSameValue('U-line-123', $lineUserId, 'LINE auth client resolves user ID from callback code');
+assertSameValue('https://api.line.me/oauth2/v2.1/token', $lineTransport->requests[0]['url'], 'LINE auth client calls token endpoint');
+assertSameValue('https://api.line.me/v2/profile', $lineTransport->requests[1]['url'], 'LINE auth client calls profile endpoint');
 
 $transport = new FakeHttpTransport();
 $apiClient = new ExmentApiClient($config->exment, $transport);
@@ -230,8 +271,13 @@ assertSameValue(401, $response->getStatusCode(), 'Stamp rally init requires logi
 assertSameValue([
     'ok' => false,
     'requiresLogin' => true,
-    'loginUrl' => RouteNames::LINE_LOGIN_START,
+    'loginUrl' => (AppConfig::fromEnv()->basePath === '' ? RouteNames::LINE_LOGIN_START : AppConfig::fromEnv()->basePath . RouteNames::LINE_LOGIN_START),
 ], $payload, 'Stamp rally init returns LINE login instruction');
+assertSameValue('private, no-store', $response->getHeaderLine('Cache-Control'), 'Stamp rally init login response is non-cacheable');
+
+$callbackRequest = (new ServerRequestFactory())->createServerRequest('GET', RouteNames::LINE_LOGIN_CALLBACK);
+$callbackResponse = $app->handle($callbackRequest);
+assertTrueValue($callbackResponse->getStatusCode() !== 404, 'LINE callback route is registered');
 
 if ($failures > 0) {
     fwrite(STDERR, "{$failures} PHP test assertion(s) failed.\n");

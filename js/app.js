@@ -61,14 +61,18 @@ return Vue.createApp({
                 this.state.loopCount = loopCount;
             }
 
-            this.state.discoveredEndings = this.parseCsv(value.collected_endings);
+            if (Object.prototype.hasOwnProperty.call(value, 'collected_endings')) {
+                this.state.discoveredEndings = this.parseCsv(value.collected_endings);
+            }
 
             const loopChoiceMap = {
                 1: value.loop1_choices,
                 2: value.loop2_choices,
                 3: value.loop3_choices
             };
-            this.state.currentChoices = this.parseCsv(loopChoiceMap[this.state.loopCount]);
+            if (Object.prototype.hasOwnProperty.call(loopChoiceMap, this.state.loopCount) && loopChoiceMap[this.state.loopCount] !== undefined) {
+                this.state.currentChoices = this.parseCsv(loopChoiceMap[this.state.loopCount]);
+            }
             this.saveState();
         },
 

@@ -323,6 +323,33 @@ test('API initialize redirects to LINE login when the server requires login', as
     assert.equal(context.window.location.href, '/auth/line/start');
 });
 
+test('API initialize uses APP_BASE_PATH-style pathname for init and login URLs', async () => {
+    const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+    context.window.location.pathname = '/rally/index.html';
+    context.__apiFetchCalls = [];
+    context.fetch = async (requestPath, options) => {
+        context.__apiFetchCalls.push({ requestPath, options });
+        return {
+            ok: false,
+            status: 401,
+            async json() {
+                return {
+                    ok: false,
+                    requiresLogin: true,
+                    loginUrl: '/auth/line/start'
+                };
+            }
+        };
+    };
+
+    const result = await vm.runInContext('StampRallyApi.initialize()', context);
+
+    assert.equal(context.__apiFetchCalls[0].requestPath, '/rally/api/stamp-rally/init');
+    assert.equal(context.window.location.href, '/rally/auth/line/start');
+    assert.equal(result.loginUrl, '/rally/auth/line/start');
+});
+
 test('API save methods return only the requested payloads', async () => {
     const { context } = await loadRally({ loadApp: false, stubApi: false });
     const result = await vm.runInContext(`
@@ -382,6 +409,38 @@ test('app applies Exment record values returned by initialization', async () => 
     const saved = JSON.parse(storage.get('mystery_game_save'));
     assert.equal(saved.loopCount, 2);
     assert.deepEqual(saved.discoveredEndings, ['END-01', 'END-05']);
+});
+
+test('app keeps locally restored progress when optional Exment fields are missing', async () => {
+    const { context } = await loadRally({
+        loadApp: false,
+        savedState: {
+            loopCount: 2,
+            stamps: [1, 2],
+            currentChoices: ['B', 'A'],
+            discoveredEndings: ['END-01'],
+            currentSpot: 2
+        }
+    });
+
+    context.__initializeResult = {
+        ok: true,
+        created: false,
+        record: {
+            value: {
+                loop_count: '2',
+                loop1_choices: 'A,A,A'
+            }
+        }
+    };
+
+    runScript(context, 'app.js');
+    await context.window.StampRallyAppPromise;
+    await context.__mountedResult;
+
+    const app = context.__app;
+    assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-01']);
+    assert.deepEqual(Array.from(app.state.currentChoices), ['B', 'A']);
 });
 
 test('switchView updates the active Vue view', async () => {

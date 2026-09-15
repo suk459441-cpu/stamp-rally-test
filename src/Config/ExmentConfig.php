@@ -18,6 +18,7 @@ final class ExmentConfig
     public function isConfigured(): bool
     {
         return $this->baseUrl !== ''
+            && $this->apiKey !== ''
             && $this->clientId !== ''
             && $this->clientSecret !== ''
             && $this->stampRallyTable !== '';
