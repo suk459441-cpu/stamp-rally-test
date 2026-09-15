@@ -1,0 +1,7 @@
+vendor/
+composer.phar
+windows-ca.pem
+cacert.pem
+.composer-cache/
+.env
+*.log
