@@ -1,6 +1,8 @@
 {
   "scripts": {
     "test": "node --test",
-    "coverage": "node --test --experimental-test-coverage --test-coverage-include=js/*.js"
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=js/*.js",
+    "php:test": "php test/php/run.php",
+    "test:all": "npm run coverage && npm run php:test"
   }
 }
