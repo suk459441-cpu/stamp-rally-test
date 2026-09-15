@@ -44,9 +44,43 @@ return Vue.createApp({
 
     methods: {
         async initializeRally() {
-            await StampRallyApi.initialize();
+            const initResult = await StampRallyApi.initialize();
             this.loadState();
+            this.applyServerRecord(initResult?.record);
             this.processUrlParams();
+        },
+
+        applyServerRecord(record) {
+            if (!record || !record.value) {
+                return;
+            }
+
+            const value = record.value;
+            const loopCount = parseInt(value.loop_count, 10);
+            if (!Number.isNaN(loopCount) && loopCount > 0) {
+                this.state.loopCount = loopCount;
+            }
+
+            this.state.discoveredEndings = this.parseCsv(value.collected_endings);
+
+            const loopChoiceMap = {
+                1: value.loop1_choices,
+                2: value.loop2_choices,
+                3: value.loop3_choices
+            };
+            this.state.currentChoices = this.parseCsv(loopChoiceMap[this.state.loopCount]);
+            this.saveState();
+        },
+
+        parseCsv(value) {
+            if (typeof value !== 'string' || value.trim() === '') {
+                return [];
+            }
+
+            return value
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
         },
 
         loadState() {

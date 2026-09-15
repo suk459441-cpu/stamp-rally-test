@@ -190,7 +190,7 @@ async function loadRally({ search = '', savedState = null, loadApp = true, stubA
         vm.runInContext(`
             StampRallyApi.initialize = async () => {
                 globalThis.__apiCalls.push({ method: 'initialize' });
-                return null;
+                return globalThis.__initializeResult || null;
             };
             StampRallyApi.saveChoice = async (choice) => {
                 globalThis.__apiCalls.push({ method: 'saveChoice', choice });
@@ -259,17 +259,80 @@ test('dataLoader.js normalizes paths and rejects missing JSON', async () => {
     ]);
 });
 
-test('API placeholder methods return only the requested payloads', async () => {
+test('API initialize calls the server without sending userId', async () => {
+    const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+    context.__apiFetchCalls = [];
+    context.fetch = async (requestPath, options) => {
+        context.__apiFetchCalls.push({ requestPath, options });
+        return {
+            ok: true,
+            status: 200,
+            async json() {
+                return {
+                    ok: true,
+                    created: false,
+                    record: { id: 1, value: { LINE_ID: 'U123', loop_count: 1 } }
+                };
+            }
+        };
+    };
+
+    const result = await vm.runInContext('StampRallyApi.initialize()', context);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+        ok: true,
+        created: false,
+        record: { id: 1, value: { LINE_ID: 'U123', loop_count: 1 } }
+    });
+    assert.deepEqual(JSON.parse(JSON.stringify(context.__apiFetchCalls)), [
+        {
+            requestPath: '/api/stamp-rally/init',
+            options: {
+                method: 'GET',
+                credentials: 'include',
+                headers: { Accept: 'application/json' }
+            }
+        }
+    ]);
+    assert.equal(JSON.stringify(context.__apiFetchCalls).includes('userId'), false);
+});
+
+test('API initialize redirects to LINE login when the server requires login', async () => {
+    const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+    context.fetch = async () => ({
+        ok: false,
+        status: 401,
+        async json() {
+            return {
+                ok: false,
+                requiresLogin: true,
+                loginUrl: '/auth/line/start'
+            };
+        }
+    });
+
+    const result = await vm.runInContext('StampRallyApi.initialize()', context);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+        ok: false,
+        requiresLogin: true,
+        loginUrl: '/auth/line/start'
+    });
+    assert.equal(context.window.location.href, '/auth/line/start');
+});
+
+test('API save methods return only the requested payloads', async () => {
     const { context } = await loadRally({ loadApp: false, stubApi: false });
     const result = await vm.runInContext(`
         Promise.all([
-            StampRallyApi.initialize(),
             StampRallyApi.saveChoice('A'),
             StampRallyApi.saveEnding('END-01')
         ])
     `, context);
 
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), [null, { choice: 'A' }, { endingId: 'END-01' }]);
+    assert.deepEqual(JSON.parse(JSON.stringify(result)), [{ choice: 'A' }, { endingId: 'END-01' }]);
     assert.equal(JSON.stringify(result).includes('userId'), false);
 });
 
@@ -288,6 +351,37 @@ test('app mounts, restores saved state, and keeps image paths under img/', async
     assert.deepEqual(Array.from(app.state.stamps), [1, 2]);
     assert.equal(app.stamps.every((stamp) => stamp.image.startsWith('img/')), true);
     assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), [{ method: 'initialize' }]);
+});
+
+test('app applies Exment record values returned by initialization', async () => {
+    const { context, storage } = await loadRally({ loadApp: false });
+
+    context.__initializeResult = {
+        ok: true,
+        created: false,
+        record: {
+            value: {
+                loop_count: '2',
+                collected_endings: 'END-01, END-05',
+                loop1_choices: 'A,A,A',
+                loop2_choices: 'B, A'
+            }
+        }
+    };
+
+    runScript(context, 'app.js');
+    await context.window.StampRallyAppPromise;
+    await context.__mountedResult;
+
+    const app = context.__app;
+
+    assert.equal(app.state.loopCount, 2);
+    assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-01', 'END-05']);
+    assert.deepEqual(Array.from(app.state.currentChoices), ['B', 'A']);
+
+    const saved = JSON.parse(storage.get('mystery_game_save'));
+    assert.equal(saved.loopCount, 2);
+    assert.deepEqual(saved.discoveredEndings, ['END-01', 'END-05']);
 });
 
 test('switchView updates the active Vue view', async () => {
