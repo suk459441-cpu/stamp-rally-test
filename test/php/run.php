@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Config\AppConfig;
 use App\Routes\RouteNames;
+use App\Services\Auth\LineUserIdResolver;
 use App\Services\Exment\ExmentApiClient;
 use App\Services\Exment\ExmentClientInterface;
 use App\Services\Exment\HttpResponse;
@@ -144,6 +145,7 @@ $config = AppConfig::fromEnv([
 assertSameValue('local', $config->env, 'APP_ENV is loaded');
 assertTrueValue($config->debug, 'APP_DEBUG true string becomes true');
 assertSameValue('/rally', $config->basePath, 'APP_BASE_PATH is loaded');
+assertSameValue('https://example.test', $config->publicSiteUrl, 'Public site URL is loaded');
 assertTrueValue($config->line->isConfigured(), 'LINE config reports configured');
 assertSameValue('https://example.test/auth/line/callback', $config->line->redirectUri, 'LINE redirect URI is derived from site URL');
 assertTrueValue($config->exment->isConfigured(), 'Exment config reports configured');
@@ -180,13 +182,19 @@ assertTrueValue(str_contains($loginUrl, 'client_id=line-channel'), 'LINE login U
 assertTrueValue(str_contains($loginUrl, 'state=state-123'), 'LINE login URL includes state');
 
 $lineTransport = new FakeLineTransport([
-    new HttpResponse(200, json_encode(['access_token' => 'line-access-token'], JSON_THROW_ON_ERROR)),
-    new HttpResponse(200, json_encode(['userId' => 'U-line-123'], JSON_THROW_ON_ERROR)),
+    new HttpResponse(200, json_encode(['id_token' => 'line-id-token'], JSON_THROW_ON_ERROR)),
+    new HttpResponse(200, json_encode(['sub' => 'U-line-123'], JSON_THROW_ON_ERROR)),
 ]);
-$lineUserId = (new LineAuthClient($config->line, $lineTransport))->fetchUserIdFromAuthorizationCode('auth-code-123');
+$lineUserId = (new LineAuthClient($config->line, $lineTransport))->fetchUserIdFromAuthorizationCode('auth-code-123', 'nonce-456');
 assertSameValue('U-line-123', $lineUserId, 'LINE auth client resolves user ID from callback code');
 assertSameValue('https://api.line.me/oauth2/v2.1/token', $lineTransport->requests[0]['url'], 'LINE auth client calls token endpoint');
-assertSameValue('https://api.line.me/v2/profile', $lineTransport->requests[1]['url'], 'LINE auth client calls profile endpoint');
+assertSameValue('https://api.line.me/oauth2/v2.1/verify', $lineTransport->requests[1]['url'], 'LINE auth client calls verify endpoint');
+assertSameValue('id_token=line-id-token&client_id=line-channel&nonce=nonce-456', $lineTransport->requests[1]['body'], 'LINE auth client verifies ID token with nonce');
+
+$cookieRequest = (new ServerRequestFactory())
+    ->createServerRequest('GET', RouteNames::STAMP_RALLY_INIT)
+    ->withCookieParams(['user_id' => ' U-cookie-123 ']);
+assertSameValue('U-cookie-123', (new LineUserIdResolver())->resolve($cookieRequest), 'LINE user ID resolver reads user_id cookie');
 
 $transport = new FakeHttpTransport();
 $apiClient = new ExmentApiClient($config->exment, $transport);
@@ -271,7 +279,7 @@ assertSameValue(401, $response->getStatusCode(), 'Stamp rally init requires logi
 assertSameValue([
     'ok' => false,
     'requiresLogin' => true,
-    'loginUrl' => (AppConfig::fromEnv()->basePath === '' ? RouteNames::LINE_LOGIN_START : AppConfig::fromEnv()->basePath . RouteNames::LINE_LOGIN_START),
+    'loginUrl' => AppConfig::fromEnv()->publicSiteUrl . (AppConfig::fromEnv()->basePath === '' ? RouteNames::LINE_LOGIN_START : AppConfig::fromEnv()->basePath . RouteNames::LINE_LOGIN_START),
 ], $payload, 'Stamp rally init returns LINE login instruction');
 assertSameValue('private, no-store', $response->getHeaderLine('Cache-Control'), 'Stamp rally init login response is non-cacheable');
 
