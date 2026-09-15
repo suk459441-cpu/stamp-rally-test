@@ -13,7 +13,7 @@ final class JsonResponse
      */
     public static function write(ResponseInterface $response, array $payload, int $status = 200): ResponseInterface
     {
-        $response->getBody()->write((string) json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        $response->getBody()->write((string) json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         return $response
             ->withHeader('Content-Type', 'application/json; charset=utf-8')

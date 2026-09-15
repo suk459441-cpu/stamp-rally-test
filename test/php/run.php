@@ -57,7 +57,7 @@ assertTrueValue($config->exment->isConfigured(), 'Exment config reports configur
 assertSameValue('https://exment.example.test', $config->exment->baseUrl, 'Exment base URL trims trailing slash');
 assertSameValue('stamp_rally_records', $config->exment->stampRallyTable, 'Exment table name is loaded');
 
-$defaultConfig = AppConfig::fromEnv([]);
+$defaultConfig = AppConfig::fromEnv(['APP_ENV' => null]);
 assertSameValue('production', $defaultConfig->env, 'APP_ENV defaults to production');
 assertFalseValue($defaultConfig->debug, 'APP_DEBUG defaults to false');
 assertFalseValue($defaultConfig->line->isConfigured(), 'LINE config reports missing values');

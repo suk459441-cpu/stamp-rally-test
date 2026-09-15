@@ -18,9 +18,12 @@ final class AppConfig
     /**
      * @param array<string, string|bool|int|null> $env
      */
-    public static function fromEnv(array $env = []): self
+    public static function fromEnv(?array $env = null): self
     {
-        $env = $env === [] ? $_ENV : $env;
+        if ($env === null) {
+            $processEnv = getenv();
+            $env = array_merge(is_array($processEnv) ? $processEnv : [], $_ENV);
+        }
 
         return new self(
             env: self::stringValue($env, 'APP_ENV', 'production'),
