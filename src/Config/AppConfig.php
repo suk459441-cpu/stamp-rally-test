@@ -25,22 +25,24 @@ final class AppConfig
             $env = array_merge(is_array($processEnv) ? $processEnv : [], $_ENV);
         }
 
+        $siteUrl = rtrim(self::stringValue($env, 'NUXT_PUBLIC_SITE_URL', ''), '/');
+        $lineRedirectUri = $siteUrl === '' ? '' : "{$siteUrl}/auth/line/callback";
+
         return new self(
             env: self::stringValue($env, 'APP_ENV', 'production'),
             debug: self::boolValue($env, 'APP_DEBUG', false),
             basePath: self::stringValue($env, 'APP_BASE_PATH', ''),
             line: new LineConfig(
-                channelId: self::stringValue($env, 'LINE_CHANNEL_ID', ''),
-                channelSecret: self::stringValue($env, 'LINE_CHANNEL_SECRET', ''),
-                redirectUri: self::stringValue($env, 'LINE_REDIRECT_URI', ''),
+                channelId: self::stringValue($env, 'NUXT_CHANNEL_ID', ''),
+                channelSecret: self::stringValue($env, 'NUXT_CHANNEL_SECRET', ''),
+                redirectUri: $lineRedirectUri,
             ),
             exment: new ExmentConfig(
                 baseUrl: rtrim(self::stringValue($env, 'EXMENT_BASE_URL', ''), '/'),
+                apiKey: self::stringValue($env, 'EXMENT_API_KEY', ''),
                 clientId: self::stringValue($env, 'EXMENT_CLIENT_ID', ''),
                 clientSecret: self::stringValue($env, 'EXMENT_CLIENT_SECRET', ''),
-                username: self::stringValue($env, 'EXMENT_USERNAME', ''),
-                password: self::stringValue($env, 'EXMENT_PASSWORD', ''),
-                stampRallyTable: self::stringValue($env, 'EXMENT_STAMP_RALLY_TABLE', 'stamp_rally'),
+                stampRallyTable: self::stringValue($env, 'EXMENT_STAMP_RALLY_TABLE', 'digital_stamp_rally'),
             ),
         );
     }
