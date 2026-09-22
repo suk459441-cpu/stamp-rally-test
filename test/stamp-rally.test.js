@@ -507,6 +507,53 @@ test('selectChoice saves the choice locally and calls the API without userId', a
     assert.equal(JSON.stringify(apiCalls).includes('userId'), false);
 });
 
+test('selectChoice ignores concurrent save requests while one is in flight', async () => {
+    const { context, app, apiCalls } = await loadRally();
+    app.state.currentChoices = [];
+
+    await vm.runInContext(`
+        StampRallyApi.saveChoice = (choices) => new Promise((resolve) => {
+            globalThis.__apiCalls.push({ method: 'saveChoice', choices });
+            globalThis.__resolveChoiceSave = resolve;
+        });
+    `, context);
+
+    const firstSave = app.selectChoice('A');
+    const secondSave = app.selectChoice('B');
+    const saveChoiceCalls = apiCalls.filter((call) => call.method === 'saveChoice');
+
+    assert.equal(app.isChoiceSaveInFlight, true);
+    assert.equal(saveChoiceCalls.length, 1);
+    assert.deepEqual(JSON.parse(JSON.stringify(saveChoiceCalls[0])), { method: 'saveChoice', choices: ['A'] });
+    assert.deepEqual(Array.from(app.state.currentChoices), []);
+
+    await vm.runInContext(`globalThis.__resolveChoiceSave({ choices: ['A'] });`, context);
+    await firstSave;
+    await secondSave;
+
+    assert.deepEqual(Array.from(app.state.currentChoices), ['A']);
+    assert.equal(app.isChoiceSaveInFlight, false);
+});
+
+test('selectChoice does not append duplicate choice when save fails', async () => {
+    const { context, app, elements } = await loadRally();
+    app.currentChoiceData = { options: ['A', 'B'] };
+    app.state.currentChoices = ['A'];
+
+    await vm.runInContext(`
+        StampRallyApi.saveChoice = async () => {
+            throw new Error('save failed');
+        };
+    `, context);
+
+    await assert.rejects(() => app.selectChoice('A'), /save failed/);
+
+    assert.deepEqual(Array.from(app.state.currentChoices), ['A']);
+    assert.equal(app.currentChoiceData !== null, true);
+    assert.equal(elements.has('next-guide-container'), false);
+    assert.equal(app.isChoiceSaveInFlight, false);
+});
+
 test('triggerEnding deduplicates endings, advances loop count, and saves END id', async () => {
     const { app, apiCalls, elements } = await loadRally();
 

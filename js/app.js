@@ -22,6 +22,7 @@ return Vue.createApp({
             currentDialogueList: [],
             dialogueIndex: 0,
             currentChoiceData: null,
+            isChoiceSaveInFlight: false,
             stamps: [
                 { id: 1, image: 'img/stamp1.PNG', label: '01: START' },
                 { id: 2, image: 'img/stamp2.PNG', label: '02: CP1' },
@@ -240,11 +241,21 @@ return Vue.createApp({
         },
 
         async selectChoice(val) {
-            this.state.currentChoices.push(val);
-            this.saveState();
-            await StampRallyApi.saveChoice([...this.state.currentChoices]);
-            this.currentChoiceData = null;
-            document.getElementById('next-guide-container').style.display = 'block';
+            if (this.isChoiceSaveInFlight) {
+                return;
+            }
+
+            const nextChoices = [...this.state.currentChoices, val];
+            this.isChoiceSaveInFlight = true;
+            try {
+                await StampRallyApi.saveChoice(nextChoices);
+                this.state.currentChoices = nextChoices;
+                this.saveState();
+                this.currentChoiceData = null;
+                document.getElementById('next-guide-container').style.display = 'block';
+            } finally {
+                this.isChoiceSaveInFlight = false;
+            }
         },
 
         async triggerEnding(key) {

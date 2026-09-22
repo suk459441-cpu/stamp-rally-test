@@ -12,6 +12,8 @@ use App\Services\Exment\HttpTransportInterface;
 use App\Services\Exment\StampRallyRecordRepository;
 use App\Services\Line\LineAuthClient;
 use App\Services\Line\LineLoginUrlBuilder;
+use Psr\Container\ContainerInterface;
+use Slim\Factory\AppFactory as SlimAppFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -116,6 +118,30 @@ final class FakeLineTransport implements HttpTransportInterface
     }
 }
 
+final class ArrayContainer implements ContainerInterface
+{
+    /**
+     * @param array<string, mixed> $entries
+     */
+    public function __construct(private array $entries)
+    {
+    }
+
+    public function get(string $id): mixed
+    {
+        if (!$this->has($id)) {
+            throw new RuntimeException("Missing container entry: {$id}");
+        }
+
+        return $this->entries[$id];
+    }
+
+    public function has(string $id): bool
+    {
+        return array_key_exists($id, $this->entries);
+    }
+}
+
 $failures = 0;
 
 function assertSameValue(mixed $expected, mixed $actual, string $message): void
@@ -138,6 +164,34 @@ function assertTrueValue(bool $actual, string $message): void
 function assertFalseValue(bool $actual, string $message): void
 {
     assertSameValue(false, $actual, $message);
+}
+
+function setLineUserIdForSession(?string $lineUserId): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    if ($lineUserId === null) {
+        unset($_SESSION['line_user_id']);
+        return;
+    }
+
+    $_SESSION['line_user_id'] = $lineUserId;
+}
+
+function createRallyAppWithConfig(AppConfig $config, ?StampRallyRecordRepository $repository = null): \Slim\App
+{
+    $entries = ['config' => $config];
+    if ($repository !== null) {
+        $entries['stamp_rally_repository'] = $repository;
+    }
+
+    SlimAppFactory::setContainer(new ArrayContainer($entries));
+    $app = \App\Bootstrap\AppFactory::create();
+    (require __DIR__ . '/../../src/routes.php')($app);
+
+    return $app;
 }
 
 $config = AppConfig::fromEnv([
@@ -340,8 +394,7 @@ assertSameValue([
     ],
 ], $choiceClient->calls, 'Repository updates Exment choices with PUT');
 
-$app = \App\Bootstrap\AppFactory::create();
-(require __DIR__ . '/../../src/routes.php')($app);
+$app = createRallyAppWithConfig(AppConfig::fromEnv());
 $request = (new ServerRequestFactory())->createServerRequest('GET', RouteNames::STAMP_RALLY_INIT);
 $response = $app->handle($request);
 $payload = json_decode((string) $response->getBody(), true);
@@ -357,6 +410,121 @@ assertSameValue('private, no-store', $response->getHeaderLine('Cache-Control'), 
 $callbackRequest = (new ServerRequestFactory())->createServerRequest('GET', RouteNames::LINE_LOGIN_CALLBACK);
 $callbackResponse = $app->handle($callbackRequest);
 assertTrueValue($callbackResponse->getStatusCode() !== 404, 'LINE callback route is registered');
+
+$configuredChoiceConfig = AppConfig::fromEnv([
+    'APP_ENV' => 'local',
+    'APP_DEBUG' => 'true',
+    'NUXT_PUBLIC_SITE_URL' => 'https://example.test',
+    'EXMENT_BASE_URL' => 'https://exment.example.test',
+    'EXMENT_API_KEY' => 'exment-api-key',
+    'EXMENT_CLIENT_ID' => 'exment-client',
+    'EXMENT_CLIENT_SECRET' => 'exment-secret',
+    'EXMENT_STAMP_RALLY_TABLE' => 'stamp_rally_records',
+]);
+
+$choiceRouteRepositoryClient = new FakeExmentClient(
+    [[
+        'data' => [[
+            'id' => 44,
+            'value' => [
+                'LINE_ID' => 'U-route-1',
+                'loop_count' => 1,
+            ],
+        ]],
+    ]],
+    [],
+    [
+        'id' => 44,
+        'value' => [
+            'LINE_ID' => 'U-route-1',
+            'loop_count' => 1,
+            'loop1_choices' => 'A,B',
+        ],
+    ],
+);
+$choiceRouteRepository = new StampRallyRecordRepository($choiceRouteRepositoryClient, 'stamp_rally_records');
+$choiceRouteApp = createRallyAppWithConfig($configuredChoiceConfig, $choiceRouteRepository);
+
+setLineUserIdForSession(null);
+$unauthorizedChoiceRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_CHOICE)
+    ->withParsedBody(['choices' => ['A']]);
+$unauthorizedChoiceResponse = $choiceRouteApp->handle($unauthorizedChoiceRequest);
+$unauthorizedChoicePayload = json_decode((string) $unauthorizedChoiceResponse->getBody(), true);
+assertSameValue(401, $unauthorizedChoiceResponse->getStatusCode(), 'Stamp rally choice route returns 401 when session user is missing');
+assertSameValue(['ok' => false, 'requiresLogin' => true], $unauthorizedChoicePayload, 'Stamp rally choice route returns login-required payload');
+
+setLineUserIdForSession('U-route-1');
+$csrfRejectedRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_CHOICE)
+    ->withParsedBody(['choices' => ['A']]);
+$csrfRejectedResponse = $choiceRouteApp->handle($csrfRejectedRequest);
+$csrfRejectedPayload = json_decode((string) $csrfRejectedResponse->getBody(), true);
+assertSameValue(403, $csrfRejectedResponse->getStatusCode(), 'Stamp rally choice route rejects state-changing requests without same-origin headers');
+assertSameValue(['ok' => false, 'error' => 'invalid_origin'], $csrfRejectedPayload, 'Stamp rally choice route reports invalid origin');
+
+$invalidChoicesRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_CHOICE)
+    ->withHeader('Origin', 'https://example.test')
+    ->withParsedBody(['choices' => ['A', '']]);
+$invalidChoicesResponse = $choiceRouteApp->handle($invalidChoicesRequest);
+$invalidChoicesPayload = json_decode((string) $invalidChoicesResponse->getBody(), true);
+assertSameValue(400, $invalidChoicesResponse->getStatusCode(), 'Stamp rally choice route validates choices payload');
+assertSameValue(['ok' => false, 'error' => 'invalid_choices'], $invalidChoicesPayload, 'Stamp rally choice route returns invalid_choices payload');
+
+$missingExmentChoiceConfig = AppConfig::fromEnv([
+    'APP_ENV' => 'local',
+    'APP_DEBUG' => 'true',
+    'NUXT_PUBLIC_SITE_URL' => 'https://example.test',
+    'EXMENT_BASE_URL' => 'https://exment.example.test',
+    'EXMENT_API_KEY' => '',
+    'EXMENT_CLIENT_ID' => 'exment-client',
+    'EXMENT_CLIENT_SECRET' => 'exment-secret',
+]);
+$missingExmentChoiceApp = createRallyAppWithConfig($missingExmentChoiceConfig);
+$missingExmentRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_CHOICE)
+    ->withHeader('Origin', 'https://example.test')
+    ->withParsedBody(['choices' => ['A']]);
+$missingExmentResponse = $missingExmentChoiceApp->handle($missingExmentRequest);
+$missingExmentPayload = json_decode((string) $missingExmentResponse->getBody(), true);
+assertSameValue(503, $missingExmentResponse->getStatusCode(), 'Stamp rally choice route returns 503 when Exment config is missing');
+assertSameValue(['ok' => false, 'error' => 'exment_not_configured'], $missingExmentPayload, 'Stamp rally choice route returns exment_not_configured payload');
+
+$successfulChoiceRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_CHOICE)
+    ->withHeader('Origin', 'https://example.test')
+    ->withParsedBody(['choices' => ['A', 'B']]);
+$successfulChoiceResponse = $choiceRouteApp->handle($successfulChoiceRequest);
+$successfulChoicePayload = json_decode((string) $successfulChoiceResponse->getBody(), true);
+assertSameValue(200, $successfulChoiceResponse->getStatusCode(), 'Stamp rally choice route saves choices when request is valid');
+assertSameValue([
+    'ok' => true,
+    'column' => 'loop1_choices',
+    'choices' => ['A', 'B'],
+    'record' => [
+        'id' => 44,
+        'value' => [
+            'LINE_ID' => 'U-route-1',
+            'loop_count' => 1,
+            'loop1_choices' => 'A,B',
+        ],
+    ],
+], $successfulChoicePayload, 'Stamp rally choice route returns saved choice payload');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U-route-1',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/44',
+        'payload' => [
+            'value' => [
+                'loop1_choices' => 'A,B',
+            ],
+        ],
+    ],
+], $choiceRouteRepositoryClient->calls, 'Stamp rally choice route writes choices using repository');
 
 if ($failures > 0) {
     fwrite(STDERR, "{$failures} PHP test assertion(s) failed.\n");

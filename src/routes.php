@@ -38,6 +38,62 @@ return static function (App $app): void {
         );
     };
 
+    $resolveRepository = static function (\App\Config\AppConfig $config) use ($app, $repository): StampRallyRecordRepository {
+        $container = $app->getContainer();
+        if ($container !== null && $container->has('stamp_rally_repository')) {
+            $candidate = $container->get('stamp_rally_repository');
+            if ($candidate instanceof StampRallyRecordRepository) {
+                return $candidate;
+            }
+        }
+
+        return $repository($config);
+    };
+
+    $normalizeOrigin = static function (string $value): string {
+        $parts = parse_url(trim($value));
+        if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
+            return '';
+        }
+
+        $origin = strtolower($parts['scheme']) . '://' . strtolower($parts['host']);
+        if (isset($parts['port'])) {
+            $origin .= ':' . (int) $parts['port'];
+        }
+
+        return $origin;
+    };
+
+    $isAllowedSameOrigin = static function (Request $request, \App\Config\AppConfig $config) use ($normalizeOrigin): bool {
+        $source = trim($request->getHeaderLine('Origin'));
+        if ($source === '') {
+            $source = trim($request->getHeaderLine('Referer'));
+        }
+
+        $requestOrigin = $normalizeOrigin($source);
+        if ($requestOrigin === '') {
+            return false;
+        }
+
+        $allowedOrigins = [];
+        if ($config->publicSiteUrl !== '') {
+            $allowedOrigins[] = $normalizeOrigin($config->publicSiteUrl);
+        }
+
+        $uri = $request->getUri();
+        if ($uri->getHost() !== '') {
+            $allowedOrigins[] = $normalizeOrigin((string) $uri->withPath('')->withQuery('')->withFragment(''));
+        }
+
+        foreach ($allowedOrigins as $allowedOrigin) {
+            if ($allowedOrigin !== '' && hash_equals($allowedOrigin, $requestOrigin)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
     $sanitizeChoices = static function (mixed $value): ?array {
         if (!is_array($value)) {
             return null;
@@ -116,7 +172,7 @@ return static function (App $app): void {
         ]);
     });
 
-    $app->post(RouteNames::STAMP_RALLY_CHOICE, static function (Request $request, Response $response) use ($app, $writePrivateJson, $repository, $sanitizeChoices): Response {
+    $app->post(RouteNames::STAMP_RALLY_CHOICE, static function (Request $request, Response $response) use ($app, $writePrivateJson, $resolveRepository, $sanitizeChoices, $isAllowedSameOrigin): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
         $userId = (new LineUserIdResolver())->resolve($request);
 
@@ -125,6 +181,13 @@ return static function (App $app): void {
                 'ok' => false,
                 'requiresLogin' => true,
             ], 401);
+        }
+
+        if (!$isAllowedSameOrigin($request, $config)) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'invalid_origin',
+            ], 403);
         }
 
         $body = $request->getParsedBody();
@@ -144,7 +207,7 @@ return static function (App $app): void {
         }
 
         try {
-            $result = $repository($config)->saveChoicesByLineId($userId, $choices);
+            $result = $resolveRepository($config)->saveChoicesByLineId($userId, $choices);
         } catch (\Throwable $exception) {
             return $writePrivateJson($response, [
                 'ok' => false,
