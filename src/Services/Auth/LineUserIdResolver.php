@@ -10,7 +10,11 @@ final class LineUserIdResolver
 {
     public function resolve(ServerRequestInterface $request): ?string
     {
-        $userId = trim((string) ($request->getCookieParams()['user_id'] ?? ''));
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        $userId = trim((string) ($_SESSION['line_user_id'] ?? ''));
 
         return $userId === '' ? null : $userId;
     }

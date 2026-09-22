@@ -191,10 +191,13 @@ assertSameValue('https://api.line.me/oauth2/v2.1/token', $lineTransport->request
 assertSameValue('https://api.line.me/oauth2/v2.1/verify', $lineTransport->requests[1]['url'], 'LINE auth client calls verify endpoint');
 assertSameValue('id_token=line-id-token&client_id=line-channel&nonce=nonce-456', $lineTransport->requests[1]['body'], 'LINE auth client verifies ID token with nonce');
 
-$cookieRequest = (new ServerRequestFactory())
-    ->createServerRequest('GET', RouteNames::STAMP_RALLY_INIT)
-    ->withCookieParams(['user_id' => ' U-cookie-123 ']);
-assertSameValue('U-cookie-123', (new LineUserIdResolver())->resolve($cookieRequest), 'LINE user ID resolver reads user_id cookie');
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+$_SESSION['line_user_id'] = ' U-session-123 ';
+$sessionRequest = (new ServerRequestFactory())->createServerRequest('GET', RouteNames::STAMP_RALLY_INIT);
+assertSameValue('U-session-123', (new LineUserIdResolver())->resolve($sessionRequest), 'LINE user ID resolver reads user ID from server session');
+unset($_SESSION['line_user_id']);
 
 $transport = new FakeHttpTransport();
 $apiClient = new ExmentApiClient($config->exment, $transport);
@@ -275,7 +278,7 @@ $request = (new ServerRequestFactory())->createServerRequest('GET', RouteNames::
 $response = $app->handle($request);
 $payload = json_decode((string) $response->getBody(), true);
 
-assertSameValue(401, $response->getStatusCode(), 'Stamp rally init requires login when user_id cookie is missing');
+assertSameValue(401, $response->getStatusCode(), 'Stamp rally init requires login when session user ID is missing');
 assertSameValue([
     'ok' => false,
     'requiresLogin' => true,

@@ -31,22 +31,6 @@ return static function (App $app): void {
             ->withHeader('Cache-Control', 'private, no-store');
     };
 
-    $buildCookieHeader = static function (string $name, string $value, int $maxAge, bool $secure): string {
-        $parts = [
-            rawurlencode($name) . '=' . rawurlencode($value),
-            'Path=/',
-            'Max-Age=' . $maxAge,
-            'HttpOnly',
-            'SameSite=Lax',
-        ];
-
-        if ($secure) {
-            $parts[] = 'Secure';
-        }
-
-        return implode('; ', $parts);
-    };
-
     $app->get(RouteNames::API_HEALTH, static function (Request $request, Response $response): Response {
         return JsonResponse::write($response, [
             'ok' => true,
@@ -128,7 +112,7 @@ return static function (App $app): void {
             ->withStatus(302);
     });
 
-    $app->get(RouteNames::LINE_LOGIN_CALLBACK, static function (Request $request, Response $response) use ($app, $toPublicPath, $buildCookieHeader): Response {
+    $app->get(RouteNames::LINE_LOGIN_CALLBACK, static function (Request $request, Response $response) use ($app, $toPublicPath): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
 
         if (!$config->line->isConfigured()) {
@@ -182,11 +166,9 @@ return static function (App $app): void {
         session_regenerate_id(true);
         unset($_SESSION['line_login_state']);
         unset($_SESSION['line_login_nonce']);
-
-        $isSecure = str_starts_with($config->line->redirectUri, 'https://');
+        $_SESSION['line_user_id'] = $userId;
 
         return $response
-            ->withAddedHeader('Set-Cookie', $buildCookieHeader('user_id', $userId, 60 * 60 * 24 * 30, $isSecure))
             ->withHeader('Location', $toPublicPath('/', $config->basePath))
             ->withStatus(302);
     });
