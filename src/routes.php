@@ -130,6 +130,19 @@ return static function (App $app): void {
         return $token === '' ? null : $token;
     };
 
+    $sanitizeEndingId = static function (mixed $value): ?string {
+        if (!is_string($value) && !is_numeric($value)) {
+            return null;
+        }
+
+        $endingId = trim((string) $value);
+        if ($endingId === '' || strlen($endingId) > 64) {
+            return null;
+        }
+
+        return $endingId;
+    };
+
     $stampIdFromToken = static function (string $token, array $stampTokens): ?int {
         foreach ($stampTokens as $stampId => $configuredToken) {
             if (is_string($configuredToken) && hash_equals($configuredToken, $token)) {
@@ -257,6 +270,16 @@ return static function (App $app): void {
             ], 502);
         }
 
+        if ($result['alreadyAcquired']) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'stamp_already_acquired',
+                'stamp' => $result['stamp'],
+                'stamps' => $result['stamps'],
+                'record' => $result['record'],
+            ], 409);
+        }
+
         return $writePrivateJson($response, [
             'ok' => true,
             'stamp' => $result['stamp'],
@@ -314,6 +337,65 @@ return static function (App $app): void {
             'ok' => true,
             'column' => $result['column'],
             'choices' => $result['choices'],
+            'record' => $result['record'],
+        ]);
+    });
+
+    $app->post(RouteNames::STAMP_RALLY_ENDING, function (Request $request, Response $response) use ($app, $writePrivateJson, $resolveRepository, $sanitizeEndingId, $isAllowedSameOrigin): Response {
+        $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
+        $userId = (new LineUserIdResolver())->resolve($request);
+
+        if ($userId === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'requiresLogin' => true,
+            ], 401);
+        }
+
+        if (!$isAllowedSameOrigin($request, $config)) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'invalid_origin',
+            ], 403);
+        }
+
+        $body = $request->getParsedBody();
+        $endingId = is_array($body) ? $sanitizeEndingId($body['endingId'] ?? null) : null;
+        if ($endingId === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'invalid_ending',
+            ], 400);
+        }
+
+        if (!$config->exment->isConfigured()) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_not_configured',
+            ], 503);
+        }
+
+        try {
+            $result = $resolveRepository($config)->saveEndingByLineId($userId, $endingId);
+        } catch (\DomainException $exception) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => $exception->getMessage(),
+            ], 400);
+        } catch (\Throwable $exception) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_request_failed',
+                'message' => $config->debug ? $exception->getMessage() : 'Failed to save stamp rally ending.',
+            ], 502);
+        }
+
+        return $writePrivateJson($response, [
+            'ok' => true,
+            'endingId' => $result['endingId'],
+            'endings' => $result['endings'],
+            'loopCount' => $result['loopCount'],
+            'cleared' => $result['cleared'],
             'record' => $result['record'],
         ]);
     });
