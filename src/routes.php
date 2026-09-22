@@ -50,10 +50,12 @@ return static function (App $app): void {
         $userId = (new LineUserIdResolver())->resolve($request);
 
         if ($userId === null) {
+            $loginPath = $toPublicPath(RouteNames::LINE_LOGIN_START, $config->basePath);
+
             return $writePrivateJson($response, [
                 'ok' => false,
                 'requiresLogin' => true,
-                'loginUrl' => $toPublicPath(RouteNames::LINE_LOGIN_START, $config->basePath),
+                'loginUrl' => $config->publicSiteUrl === '' ? $loginPath : $config->publicSiteUrl . $loginPath,
             ], 401);
         }
 
@@ -102,6 +104,7 @@ return static function (App $app): void {
         $state = bin2hex(random_bytes(16));
         $nonce = bin2hex(random_bytes(16));
         $_SESSION['line_login_state'] = $state;
+        $_SESSION['line_login_nonce'] = $nonce;
         $loginUrl = (new LineLoginUrlBuilder($config->line))->build($state, $nonce);
 
         return $response
@@ -127,6 +130,7 @@ return static function (App $app): void {
         $state = trim((string) ($query['state'] ?? ''));
         $code = trim((string) ($query['code'] ?? ''));
         $sessionState = trim((string) ($_SESSION['line_login_state'] ?? ''));
+        $sessionNonce = trim((string) ($_SESSION['line_login_nonce'] ?? ''));
 
         if ($state === '' || $sessionState === '' || !hash_equals($sessionState, $state)) {
             return JsonResponse::write($response, [
@@ -142,8 +146,15 @@ return static function (App $app): void {
             ], 400);
         }
 
+        if ($sessionNonce === '') {
+            return JsonResponse::write($response, [
+                'ok' => false,
+                'error' => 'missing_line_nonce',
+            ], 400);
+        }
+
         try {
-            $userId = (new LineAuthClient($config->line))->fetchUserIdFromAuthorizationCode($code);
+            $userId = (new LineAuthClient($config->line))->fetchUserIdFromAuthorizationCode($code, $sessionNonce);
         } catch (\Throwable $exception) {
             return JsonResponse::write($response, [
                 'ok' => false,
@@ -153,8 +164,9 @@ return static function (App $app): void {
         }
 
         session_regenerate_id(true);
-        $_SESSION['line_user_id'] = $userId;
         unset($_SESSION['line_login_state']);
+        unset($_SESSION['line_login_nonce']);
+        $_SESSION['line_user_id'] = $userId;
 
         return $response
             ->withHeader('Location', $toPublicPath('/', $config->basePath))

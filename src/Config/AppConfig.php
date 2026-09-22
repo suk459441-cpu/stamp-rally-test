@@ -10,6 +10,7 @@ final class AppConfig
         public readonly string $env,
         public readonly bool $debug,
         public readonly string $basePath,
+        public readonly string $publicSiteUrl,
         public readonly LineConfig $line,
         public readonly ExmentConfig $exment,
     ) {
@@ -32,6 +33,7 @@ final class AppConfig
             env: self::stringValue($env, 'APP_ENV', 'production'),
             debug: self::boolValue($env, 'APP_DEBUG', false),
             basePath: self::stringValue($env, 'APP_BASE_PATH', ''),
+            publicSiteUrl: $siteUrl,
             line: new LineConfig(
                 channelId: self::stringValue($env, 'NUXT_CHANNEL_ID', ''),
                 channelSecret: self::stringValue($env, 'NUXT_CHANNEL_SECRET', ''),

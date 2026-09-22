@@ -17,7 +17,7 @@ final class LineAuthClient
     ) {
     }
 
-    public function fetchUserIdFromAuthorizationCode(string $code): string
+    public function fetchUserIdFromAuthorizationCode(string $code, string $nonce): string
     {
         $tokenResponse = $this->transport->request(
             'POST',
@@ -40,28 +40,38 @@ final class LineAuthClient
         }
 
         $tokenPayload = json_decode($tokenResponse->body, true);
-        if (!is_array($tokenPayload) || !isset($tokenPayload['access_token']) || !is_string($tokenPayload['access_token'])) {
+        if (!is_array($tokenPayload) || !isset($tokenPayload['id_token']) || !is_string($tokenPayload['id_token'])) {
             throw new RuntimeException('LINE token endpoint returned invalid JSON.');
         }
 
-        $profileResponse = $this->transport->request(
-            'GET',
-            'https://api.line.me/v2/profile',
+        $verifyResponse = $this->transport->request(
+            'POST',
+            'https://api.line.me/oauth2/v2.1/verify',
             [
                 'Accept' => 'application/json',
-                'Authorization' => 'Bearer ' . $tokenPayload['access_token'],
+                'Content-Type' => 'application/x-www-form-urlencoded',
             ],
+            http_build_query([
+                'id_token' => $tokenPayload['id_token'],
+                'client_id' => $this->config->channelId,
+                'nonce' => $nonce,
+            ]),
         );
 
-        if ($profileResponse->statusCode < 200 || $profileResponse->statusCode >= 300) {
-            throw new RuntimeException("LINE profile endpoint returned HTTP {$profileResponse->statusCode}.");
+        if ($verifyResponse->statusCode < 200 || $verifyResponse->statusCode >= 300) {
+            throw new RuntimeException("LINE verify endpoint returned HTTP {$verifyResponse->statusCode}.");
         }
 
-        $profilePayload = json_decode($profileResponse->body, true);
-        if (!is_array($profilePayload) || !isset($profilePayload['userId']) || !is_string($profilePayload['userId'])) {
-            throw new RuntimeException('LINE profile endpoint returned invalid JSON.');
+        $verifyPayload = json_decode($verifyResponse->body, true);
+        if (!is_array($verifyPayload) || !isset($verifyPayload['sub']) || !is_string($verifyPayload['sub'])) {
+            throw new RuntimeException('LINE verify endpoint returned invalid JSON.');
         }
 
-        return trim($profilePayload['userId']);
+        $userId = trim($verifyPayload['sub']);
+        if ($userId === '') {
+            throw new RuntimeException('LINE verify endpoint returned empty user ID.');
+        }
+
+        return $userId;
     }
 }
