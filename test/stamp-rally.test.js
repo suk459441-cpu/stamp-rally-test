@@ -914,10 +914,11 @@ test('processUrlParams shows an error when token acquisition fails', async () =>
     assert.deepEqual(Array.from(context.__app.state.stamps), []);
     assert.equal(context.__app.state.currentSpot, 0);
     assert.match(elements.get('chat-box').innerHTML, /QR/);
+    assert.match(elements.get('chat-box').innerHTML, /ERROR: out_of_order_stamp/);
     assert.equal(elements.get('chat-controls').style.display, 'none');
 });
 
-test('processUrlParams syncs already acquired stamps without reopening the checkpoint event', async () => {
+test('processUrlParams syncs already acquired stamps and reopens the checkpoint event', async () => {
     const { context, elements, storage } = await loadRally({ search: '', loadApp: false });
 
     context.window.location.search = '?token=token-2';
@@ -945,10 +946,10 @@ test('processUrlParams syncs already acquired stamps without reopening the check
     await context.__mountedResult;
 
     assert.deepEqual(Array.from(context.__app.state.stamps), [1, 2]);
-    assert.equal(context.__app.state.currentSpot, 0);
-    assert.equal(elements.has('story-location-tag'), false);
-    assert.match(elements.get('chat-box').innerHTML, /QR/);
-    assert.equal(elements.get('chat-controls').style.display, 'none');
+    assert.equal(context.__app.state.currentSpot, 2);
+    assert.equal(elements.get('story-location-tag').innerText, 'CHECKPOINT 02 LOGS');
+    assert.equal(elements.get('start-btn').style.display, 'none');
+    assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
     assert.equal(context.__replacedUrl, '/index.html');
     assert.deepEqual(JSON.parse(storage.get('mystery_game_save')).stamps, [1, 2]);
 });
@@ -1081,15 +1082,35 @@ test('getCharacter falls back for unknown senderId values', async () => {
     });
 });
 
-test('triggerEnding handles unknown endings without resetting higher loop counts', async () => {
-    const { app, apiCalls } = await loadRally();
+test('triggerEnding shows END-EX temporal error without saving unknown endings', async () => {
+    const { app, apiCalls, elements } = await loadRally();
 
     app.state.loopCount = 3;
     await app.triggerEnding('UNKNOWN');
 
     assert.equal(app.state.loopCount, 3);
-    assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-EX']);
-    assert.equal(apiCalls.at(-1).endingId, 'END-EX');
+    assert.deepEqual(Array.from(app.state.discoveredEndings), []);
+    assert.equal(apiCalls.some((call) => call.method === 'saveEnding'), false);
+    assert.match(elements.get('chat-box').children[0].className, /temporal-error-panel/);
+    assert.match(elements.get('chat-box').children[0].innerHTML, /TEMPORAL ERROR/);
+    assert.match(elements.get('chat-box').children[0].innerHTML, /END-EX/);
+    assert.equal(elements.get('chat-controls').style.display, 'none');
+    assert.equal(elements.get('next-guide-container').style.display, 'block');
+});
+
+test('advanceDialogue uses END-EX temporal error for invalid first-loop choice patterns', async () => {
+    const { app, apiCalls, elements } = await loadRally();
+
+    app.state.currentSpot = 5;
+    app.state.currentChoices = ['A'];
+    app.state.loopCount = 1;
+    app.currentDialogueList = [];
+    await app.advanceDialogue();
+
+    assert.deepEqual(Array.from(app.state.discoveredEndings), []);
+    assert.equal(apiCalls.some((call) => call.method === 'saveEnding'), false);
+    assert.match(elements.get('chat-box').children[0].className, /temporal-error-panel/);
+    assert.match(elements.get('chat-box').children[0].innerHTML, /TEMPORAL ERROR/);
 });
 
 test('confirmReset clears saved progress and navigates to the current path', async () => {

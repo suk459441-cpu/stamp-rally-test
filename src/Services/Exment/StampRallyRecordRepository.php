@@ -129,7 +129,14 @@ final class StampRallyRecordRepository
             throw new \RuntimeException('Exment record ID is missing.');
         }
 
+        $loopCount = $this->normalizeLoopCount($record['value']['loop_count'] ?? 1);
+        $endings = $this->parseCsvStrings($record['value']['collected_endings'] ?? '');
         $stamps = $this->parseCollectedStamps($record['value']['collected_stamps'] ?? '');
+        $clearedAt = trim((string) ($record['value']['cleared_at'] ?? ''));
+        if ($clearedAt === '' && ($loopCount > 1 || $endings !== []) && count($stamps) === 5 && $stampId === 1) {
+            $stamps = [];
+        }
+
         if (in_array($stampId, $stamps, true)) {
             return [
                 'stamp' => $stampId,
@@ -187,8 +194,9 @@ final class StampRallyRecordRepository
             $endings[] = $endingId;
         }
 
-        $nextLoopCount = $isNewEnding ? min($loopCount + 1, 3) : $loopCount;
-        $canClear = count($stamps) === 5 && $loopCount >= 3;
+        $completedCurrentLoop = count($stamps) === 5;
+        $nextLoopCount = $completedCurrentLoop ? min($loopCount + 1, 3) : $loopCount;
+        $canClear = $completedCurrentLoop && $loopCount >= 3;
         $cleared = $canClear && $endingId === 'END-AI';
 
         $payload = [
@@ -200,8 +208,8 @@ final class StampRallyRecordRepository
             $payload['cleared_at'] = (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
         }
 
-        if ($isNewEnding && !$cleared) {
-            $payload['collected_stamps'] = '';
+        if ($completedCurrentLoop && !$cleared) {
+            $payload['collected_stamps'] = null;
         }
 
         $updatedRecord = $this->client->put($this->dataPath('/' . rawurlencode((string) $recordId)), [

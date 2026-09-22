@@ -180,6 +180,16 @@ return Vue.createApp({
             } catch (error) {
                 if (error?.code === 'stamp_already_acquired') {
                     this.syncServerStamps(error.result?.stamps);
+                    const acquiredId = parseInt(error.result?.stamp, 10);
+                    if (!Number.isNaN(acquiredId) && this.state.stamps.includes(acquiredId)) {
+                        this.removeTokenFromUrl();
+                        document.getElementById('start-btn').style.display = 'none';
+                        document.getElementById('next-dialogue-btn').style.display = 'block';
+                        this.state.currentSpot = acquiredId;
+                        this.loadStorySpot(acquiredId);
+                        return;
+                    }
+
                     this.removeTokenFromUrl();
                     document.getElementById('chat-box').innerHTML = `
                         <div class="system-msg">
@@ -191,10 +201,19 @@ return Vue.createApp({
                     return;
                 }
 
+                const errorCode = error?.code || error?.message || 'unknown_error';
+                const safeErrorCode = String(errorCode).replace(/[&<>"']/g, (char) => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                }[char]));
                 this.removeTokenFromUrl();
                 document.getElementById('chat-box').innerHTML = `
                     <div class="system-msg">
                         無効なQRコード、または読み取り順が正しくありません。次のチェックポイントを確認してください。
+                        <br><span style="font-family: var(--font-mono); color: var(--warning-yellow);">ERROR: ${safeErrorCode}</span>
                     </div>
                 `;
                 document.getElementById('chat-controls').style.display = 'none';
@@ -335,7 +354,12 @@ return Vue.createApp({
         },
 
         async triggerEnding(key) {
-            const ending = RALLY_ENDING_MASTER[key] || { id: 'END-EX', name: '未知の結末', desc: '記録にない結末に到達した。' };
+            const ending = RALLY_ENDING_MASTER[key];
+            if (!ending) {
+                this.showTemporalErrorEnding();
+                return;
+            }
+
             const updatedEndings = this.state.discoveredEndings.includes(ending.id)
                 ? [...this.state.discoveredEndings]
                 : [...this.state.discoveredEndings, ending.id];
@@ -359,6 +383,27 @@ return Vue.createApp({
                 <p style="font-size:0.75rem; color:var(--accent-green);">【2周目解放】システムプロトコルが更新されました。<br>スタンプ画面から次なる調査を開始してください。</p>
             `;
             chatBox.appendChild(endPanel);
+        },
+
+        showTemporalErrorEnding() {
+            const chatBox = document.getElementById('chat-box');
+            const speaker = this.getCharacter('kiriko');
+            const errorPanel = document.createElement('div');
+            errorPanel.className = 'ending-display-panel temporal-error-panel';
+            errorPanel.innerHTML = `
+                <div class="temporal-error-kicker">--- TEMPORAL ERROR ---</div>
+                <div class="ending-display-title">END-EX: 時空異常</div>
+                <div class="ending-display-desc">
+                    本来つながるはずのない記録に接続されています。
+                </div>
+                <div class="temporal-error-quote">
+                    <span class="temporal-error-speaker">${speaker.name}</span>
+                    <span>時空が歪んでる。おかしな分岐に入ってしまったみたい。このまま進めると、調査記録そのものが壊れるかもしれない。</span>
+                </div>
+            `;
+            chatBox.appendChild(errorPanel);
+            document.getElementById('chat-controls').style.display = 'none';
+            document.getElementById('next-guide-container').style.display = 'block';
         },
 
         handleEndingSaveError() {
