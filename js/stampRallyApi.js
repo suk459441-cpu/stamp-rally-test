@@ -53,9 +53,27 @@ const StampRallyApi = {
         return result;
     },
 
-    async saveChoice(choice) {
-        // Future: await fetch('/api/stamp-rally/choice', { method: 'POST', body: JSON.stringify({ choice }) })
-        return { choice };
+    async saveChoice(choices) {
+        const response = await fetch(this.toPublicPath('/api/stamp-rally/choice'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ choices })
+        });
+        const result = await response.json();
+
+        if (result && result.requiresLogin) {
+            throw new Error('Login is required to save stamp rally choices.');
+        }
+
+        if (!response.ok) {
+            throw new Error(result?.message || result?.error || 'Failed to save stamp rally choices.');
+        }
+
+        return result;
     },
 
     async saveEnding(endingId) {

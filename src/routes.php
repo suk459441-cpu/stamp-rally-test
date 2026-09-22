@@ -31,6 +31,39 @@ return static function (App $app): void {
             ->withHeader('Cache-Control', 'private, no-store');
     };
 
+    $repository = static function (\App\Config\AppConfig $config): StampRallyRecordRepository {
+        return new StampRallyRecordRepository(
+            new ExmentApiClient($config->exment),
+            $config->exment->stampRallyTable,
+        );
+    };
+
+    $sanitizeChoices = static function (mixed $value): ?array {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $choices = [];
+        foreach ($value as $choice) {
+            if (!is_string($choice) && !is_numeric($choice)) {
+                return null;
+            }
+
+            $normalized = trim((string) $choice);
+            if ($normalized === '') {
+                return null;
+            }
+
+            $choices[] = $normalized;
+        }
+
+        if ($choices === []) {
+            return null;
+        }
+
+        return $choices;
+    };
+
     $app->get(RouteNames::API_HEALTH, static function (Request $request, Response $response): Response {
         return JsonResponse::write($response, [
             'ok' => true,
@@ -67,11 +100,7 @@ return static function (App $app): void {
         }
 
         try {
-            $repository = new StampRallyRecordRepository(
-                new ExmentApiClient($config->exment),
-                $config->exment->stampRallyTable,
-            );
-            $result = $repository->findOrCreateByLineId($userId);
+            $result = $repository($config)->findOrCreateByLineId($userId);
         } catch (\Throwable $exception) {
             return $writePrivateJson($response, [
                 'ok' => false,
@@ -83,6 +112,51 @@ return static function (App $app): void {
         return $writePrivateJson($response, [
             'ok' => true,
             'created' => $result['created'],
+            'record' => $result['record'],
+        ]);
+    });
+
+    $app->post(RouteNames::STAMP_RALLY_CHOICE, static function (Request $request, Response $response) use ($app, $writePrivateJson, $repository, $sanitizeChoices): Response {
+        $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
+        $userId = (new LineUserIdResolver())->resolve($request);
+
+        if ($userId === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'requiresLogin' => true,
+            ], 401);
+        }
+
+        $body = $request->getParsedBody();
+        $choices = is_array($body) ? $sanitizeChoices($body['choices'] ?? null) : null;
+        if ($choices === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'invalid_choices',
+            ], 400);
+        }
+
+        if (!$config->exment->isConfigured()) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_not_configured',
+            ], 503);
+        }
+
+        try {
+            $result = $repository($config)->saveChoicesByLineId($userId, $choices);
+        } catch (\Throwable $exception) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_request_failed',
+                'message' => $config->debug ? $exception->getMessage() : 'Failed to save stamp rally choices.',
+            ], 502);
+        }
+
+        return $writePrivateJson($response, [
+            'ok' => true,
+            'column' => $result['column'],
+            'choices' => $result['choices'],
             'record' => $result['record'],
         ]);
     });

@@ -242,7 +242,7 @@ return Vue.createApp({
         async selectChoice(val) {
             this.state.currentChoices.push(val);
             this.saveState();
-            await StampRallyApi.saveChoice(val);
+            await StampRallyApi.saveChoice([...this.state.currentChoices]);
             this.currentChoiceData = null;
             document.getElementById('next-guide-container').style.display = 'block';
         },

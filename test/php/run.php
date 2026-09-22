@@ -24,6 +24,7 @@ final class FakeExmentClient implements ExmentClientInterface
     public function __construct(
         private array $getResults = [],
         private readonly array $postResult = [],
+        private readonly array $putResult = [],
     ) {
     }
 
@@ -50,6 +51,17 @@ final class FakeExmentClient implements ExmentClientInterface
         ];
 
         return $this->postResult;
+    }
+
+    public function put(string $path, array $payload): array
+    {
+        $this->calls[] = [
+            'method' => 'PUT',
+            'path' => $path,
+            'payload' => $payload,
+        ];
+
+        return $this->putResult;
     }
 }
 
@@ -205,10 +217,18 @@ $apiClient->get('/api/data/stamp_rally_records/query-column', [
     'q' => 'LINE_ID eq U123',
     'count' => 1,
 ]);
+$apiClient->put('/api/data/stamp_rally_records/10', [
+    'value' => [
+        'loop1_choices' => 'A,B',
+    ],
+]);
 assertSameValue('https://exment.example.test/oauth/token', $transport->requests[0]['url'], 'Exment API client requests an access token');
 assertSameValue('grant_type=api_key&client_id=exment-client&client_secret=exment-secret&api_key=exment-api-key&scope=value_read+value_write', $transport->requests[0]['body'], 'Exment API client uses API key grant');
 assertSameValue('Bearer issued-access-token', $transport->requests[1]['headers']['Authorization'], 'Exment API client uses issued access token as bearer token');
 assertSameValue('https://exment.example.test/api/data/stamp_rally_records/query-column?q=LINE_ID+eq+U123&count=1', $transport->requests[1]['url'], 'Exment API client builds query URL');
+assertSameValue('PUT', $transport->requests[2]['method'], 'Exment API client supports PUT requests');
+assertSameValue('https://exment.example.test/api/data/stamp_rally_records/10', $transport->requests[2]['url'], 'Exment API client builds update URL');
+assertSameValue('{"value":{"loop1_choices":"A,B"}}', $transport->requests[2]['body'], 'Exment API client encodes update payload');
 
 $existingClient = new FakeExmentClient([
     [
@@ -271,6 +291,54 @@ assertSameValue([
         ],
     ],
 ], $creatingClient->calls, 'Repository creates Exment record with LINE_ID and initial loop count');
+
+$choiceClient = new FakeExmentClient(
+    [
+        [
+            'data' => [
+                [
+                    'id' => 12,
+                    'value' => [
+                        'LINE_ID' => 'U456',
+                        'loop_count' => '2',
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [],
+    [
+        'id' => 12,
+        'value' => [
+            'LINE_ID' => 'U456',
+            'loop_count' => '2',
+            'loop2_choices' => 'B,A',
+        ],
+    ],
+);
+$choiceRepository = new StampRallyRecordRepository($choiceClient, 'stamp_rally_records');
+$choiceResult = $choiceRepository->saveChoicesByLineId('U456', ['B', 'A']);
+assertSameValue('loop2_choices', $choiceResult['column'], 'Repository saves choices to the loop-specific column');
+assertSameValue(['B', 'A'], $choiceResult['choices'], 'Repository returns normalized saved choices');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U456',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/12',
+        'payload' => [
+            'value' => [
+                'loop2_choices' => 'B,A',
+            ],
+        ],
+    ],
+], $choiceClient->calls, 'Repository updates Exment choices with PUT');
 
 $app = \App\Bootstrap\AppFactory::create();
 (require __DIR__ . '/../../src/routes.php')($app);

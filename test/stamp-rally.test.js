@@ -192,9 +192,9 @@ async function loadRally({ search = '', savedState = null, loadApp = true, stubA
                 globalThis.__apiCalls.push({ method: 'initialize' });
                 return globalThis.__initializeResult || null;
             };
-            StampRallyApi.saveChoice = async (choice) => {
-                globalThis.__apiCalls.push({ method: 'saveChoice', choice });
-                return { choice };
+            StampRallyApi.saveChoice = async (choices) => {
+                globalThis.__apiCalls.push({ method: 'saveChoice', choices });
+                return { choices };
             };
             StampRallyApi.saveEnding = async (endingId) => {
                 globalThis.__apiCalls.push({ method: 'saveEnding', endingId });
@@ -350,16 +350,56 @@ test('API initialize uses APP_BASE_PATH-style pathname for init and login URLs',
     assert.equal(result.loginUrl, '/rally/auth/line/start');
 });
 
-test('API save methods return only the requested payloads', async () => {
+test('API saveChoice posts choices without sending userId', async () => {
     const { context } = await loadRally({ loadApp: false, stubApi: false });
-    const result = await vm.runInContext(`
-        Promise.all([
-            StampRallyApi.saveChoice('A'),
-            StampRallyApi.saveEnding('END-01')
-        ])
-    `, context);
 
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), [{ choice: 'A' }, { endingId: 'END-01' }]);
+    context.__apiFetchCalls = [];
+    context.fetch = async (requestPath, options) => {
+        context.__apiFetchCalls.push({ requestPath, options });
+        return {
+            ok: true,
+            status: 200,
+            async json() {
+                return {
+                    ok: true,
+                    column: 'loop1_choices',
+                    choices: ['A', 'B'],
+                    record: { id: 1, value: { loop1_choices: 'A,B' } }
+                };
+            }
+        };
+    };
+
+    const result = await vm.runInContext(`StampRallyApi.saveChoice(['A', 'B'])`, context);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+        ok: true,
+        column: 'loop1_choices',
+        choices: ['A', 'B'],
+        record: { id: 1, value: { loop1_choices: 'A,B' } }
+    });
+    assert.deepEqual(JSON.parse(JSON.stringify(context.__apiFetchCalls)), [
+        {
+            requestPath: '/api/stamp-rally/choice',
+            options: {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ choices: ['A', 'B'] })
+            }
+        }
+    ]);
+    assert.equal(JSON.stringify(context.__apiFetchCalls).includes('userId'), false);
+});
+
+test('API saveEnding returns only the requested payload', async () => {
+    const { context } = await loadRally({ loadApp: false, stubApi: false });
+    const result = await vm.runInContext(`StampRallyApi.saveEnding('END-01')`, context);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(result)), { endingId: 'END-01' });
     assert.equal(JSON.stringify(result).includes('userId'), false);
 });
 
@@ -460,7 +500,7 @@ test('selectChoice saves the choice locally and calls the API without userId', a
 
     assert.deepEqual(Array.from(app.state.currentChoices), ['B']);
     assert.equal(elements.get('next-guide-container').style.display, 'block');
-    assert.deepEqual(JSON.parse(JSON.stringify(apiCalls.at(-1))), { method: 'saveChoice', choice: 'B' });
+    assert.deepEqual(JSON.parse(JSON.stringify(apiCalls.at(-1))), { method: 'saveChoice', choices: ['B'] });
 
     const saved = JSON.parse(storage.get('mystery_game_save'));
     assert.deepEqual(saved.currentChoices, ['B']);
@@ -492,6 +532,28 @@ test('processUrlParams acquires the expected next stamp', async () => {
     assert.equal(app.state.currentSpot, 1);
     assert.equal(elements.get('start-btn').style.display, 'none');
     assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
+});
+
+test('processUrlParams acquires stamps sequentially and opens each checkpoint event', async () => {
+    const { context, app, elements } = await loadRally({ search: '?stamp=1' });
+
+    assert.deepEqual(Array.from(app.state.stamps), [1]);
+    assert.equal(app.state.currentSpot, 1);
+    assert.equal(elements.get('story-location-tag').innerText, 'CHECKPOINT 01 LOGS');
+    assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
+    assert.equal(elements.get('chat-controls').style.display, 'block');
+
+    for (const stampId of [2, 3, 4, 5]) {
+        context.window.location.search = `?stamp=${stampId}`;
+        app.processUrlParams();
+
+        assert.deepEqual(Array.from(app.state.stamps), Array.from({ length: stampId }, (_, index) => index + 1));
+        assert.equal(app.state.currentSpot, stampId);
+        assert.equal(elements.get('story-location-tag').innerText, `CHECKPOINT 0${stampId} LOGS`);
+        assert.equal(elements.get('start-btn').style.display, 'none');
+        assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
+        assert.equal(elements.get('chat-controls').style.display, 'block');
+    }
 });
 
 test('processUrlParams rejects out-of-order stamps', async () => {
