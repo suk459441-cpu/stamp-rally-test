@@ -669,6 +669,64 @@ test('app keeps locally restored progress when optional Exment fields are missin
     assert.deepEqual(Array.from(app.state.currentChoices), ['B', 'A']);
 });
 
+test('app clears previous-loop choices when Exment advances to the next loop', async () => {
+    const { context, storage } = await loadRally({
+        loadApp: false,
+        savedState: {
+            loopCount: 1,
+            stamps: [1, 2, 3, 4, 5],
+            currentChoices: ['A', 'A', 'A'],
+            discoveredEndings: [],
+            currentSpot: 5
+        }
+    });
+
+    context.__initializeResult = {
+        ok: true,
+        created: false,
+        record: {
+            value: {
+                loop_count: '2',
+                collected_endings: 'END-01',
+                collected_stamps: ''
+            }
+        }
+    };
+
+    runScript(context, 'app.js');
+    await context.window.StampRallyAppPromise;
+    await context.__mountedResult;
+
+    assert.equal(context.__app.state.loopCount, 2);
+    assert.deepEqual(Array.from(context.__app.state.stamps), []);
+    assert.deepEqual(Array.from(context.__app.state.currentChoices), []);
+    assert.deepEqual(JSON.parse(storage.get('mystery_game_save')).currentChoices, []);
+});
+
+test('app applies third-loop choices from Exment records', async () => {
+    const { context } = await loadRally({ loadApp: false });
+
+    context.__initializeResult = {
+        ok: true,
+        created: false,
+        record: {
+            value: {
+                loop_count: '3',
+                collected_endings: 'END-01,END-02',
+                collected_stamps: '1',
+                loop3_choices: 'B,A,B'
+            }
+        }
+    };
+
+    runScript(context, 'app.js');
+    await context.window.StampRallyAppPromise;
+    await context.__mountedResult;
+
+    assert.equal(context.__app.state.loopCount, 3);
+    assert.deepEqual(Array.from(context.__app.state.currentChoices), ['B', 'A', 'B']);
+});
+
 test('switchView updates the active Vue view', async () => {
     const { app } = await loadRally();
 
