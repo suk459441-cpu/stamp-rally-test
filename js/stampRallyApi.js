@@ -76,6 +76,29 @@ const StampRallyApi = {
         return result;
     },
 
+    async acquireStamp(token) {
+        const response = await fetch(this.toPublicPath('/api/stamp-rally/stamp'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token })
+        });
+        const result = await response.json();
+
+        if (result && result.requiresLogin) {
+            throw new Error('Login is required to acquire stamp rally stamps.');
+        }
+
+        if (!response.ok) {
+            throw new Error(result?.message || result?.error || 'Failed to acquire stamp.');
+        }
+
+        return result;
+    },
+
     async saveEnding(endingId) {
         // Future: await fetch('/api/stamp-rally/ending', { method: 'POST', body: JSON.stringify({ endingId }) })
         return { endingId };

@@ -48,7 +48,7 @@ return Vue.createApp({
             const initResult = await StampRallyApi.initialize();
             this.loadState();
             this.applyServerRecord(initResult?.record);
-            this.processUrlParams();
+            await this.processUrlParams();
         },
 
         applyServerRecord(record) {
@@ -64,6 +64,14 @@ return Vue.createApp({
 
             if (Object.prototype.hasOwnProperty.call(value, 'collected_endings')) {
                 this.state.discoveredEndings = this.parseCsv(value.collected_endings);
+            }
+
+            if (Object.prototype.hasOwnProperty.call(value, 'collected_stamps')) {
+                this.state.stamps = this.parseCsv(value.collected_stamps)
+                    .map((item) => parseInt(item, 10))
+                    .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 5);
+            } else {
+                this.state.stamps = [];
             }
 
             const loopChoiceMap = {
@@ -117,39 +125,58 @@ return Vue.createApp({
             document.getElementById('next-dialogue-btn').style.display = 'block';
 
             if (!this.state.stamps.includes(1)) {
-                this.acquireStamp(1);
+                document.getElementById('chat-box').innerHTML = `
+                    <div class="system-msg">
+                        QRコードを読み取ってチェックポイントの記録を開始してください。
+                    </div>
+                `;
+                document.getElementById('chat-controls').style.display = 'none';
+                document.getElementById('next-guide-container').style.display = 'block';
             } else {
                 this.state.currentSpot = 1;
                 this.loadStorySpot(1);
             }
         },
 
-        processUrlParams() {
+        async processUrlParams() {
             const params = new URLSearchParams(window.location.search);
-            const stampParam = params.get('stamp') || params.get('spot');
-            if (!stampParam) return;
-
-            const id = parseInt(stampParam, 10);
-            if (id < 1 || id > 5) return;
+            const token = params.get('token');
+            if (!token) return;
 
             this.triggerScanEffect();
 
-            const expectedNext = this.state.stamps.length + 1;
-            if (id === expectedNext || this.state.stamps.includes(id)) {
-                document.getElementById('start-btn').style.display = 'none';
-                document.getElementById('next-dialogue-btn').style.display = 'block';
-                this.acquireStamp(id);
+            let result = null;
+            try {
+                result = await StampRallyApi.acquireStamp(token);
+            } catch (error) {
+                document.getElementById('chat-box').innerHTML = `
+                    <div class="system-msg">
+                        無効なQRコード、または読み取り順が正しくありません。次のチェックポイントを確認してください。
+                    </div>
+                `;
+                document.getElementById('chat-controls').style.display = 'none';
+                document.getElementById('next-guide-container').style.display = 'block';
                 return;
             }
 
-            document.getElementById('chat-box').innerHTML = `
-                <div class="system-msg">
-                    【エラー】正しい順番でQRコードを読み込んでください。<br>
-                    次に探すべきチェックポイント: 0${expectedNext}
-                </div>
-            `;
-            document.getElementById('chat-controls').style.display = 'none';
-            document.getElementById('next-guide-container').style.display = 'block';
+            const id = parseInt(result?.stamp, 10);
+            if (Number.isNaN(id) || id < 1 || id > 5) {
+                return;
+            }
+
+            if (Array.isArray(result.stamps)) {
+                this.state.stamps = result.stamps
+                    .map((item) => parseInt(item, 10))
+                    .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 5);
+                this.saveState();
+            }
+
+            if (this.state.stamps.includes(id)) {
+                document.getElementById('start-btn').style.display = 'none';
+                document.getElementById('next-dialogue-btn').style.display = 'block';
+                this.state.currentSpot = id;
+                this.loadStorySpot(id);
+            }
         },
 
         triggerScanEffect() {
