@@ -407,6 +407,53 @@ assertSameValue([
     ],
 ], $choiceClient->calls, 'Repository updates Exment choices with PUT');
 
+$thirdLoopChoiceClient = new FakeExmentClient(
+    [
+        [
+            'data' => [
+                [
+                    'id' => 13,
+                    'value' => [
+                        'LINE_ID' => 'U789',
+                        'loop_count' => 3,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [],
+    [
+        'id' => 13,
+        'value' => [
+            'LINE_ID' => 'U789',
+            'loop_count' => 3,
+            'loop3_choices' => 'A,B,A',
+        ],
+    ],
+);
+$thirdLoopChoiceRepository = new StampRallyRecordRepository($thirdLoopChoiceClient, 'stamp_rally_records');
+$thirdLoopChoiceResult = $thirdLoopChoiceRepository->saveChoicesByLineId('U789', ['A', 'B', 'A']);
+assertSameValue('loop3_choices', $thirdLoopChoiceResult['column'], 'Repository saves third-loop choices to loop3_choices');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U789',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/13',
+        'payload' => [
+            'value' => [
+                'loop3_choices' => 'A,B,A',
+            ],
+        ],
+    ],
+], $thirdLoopChoiceClient->calls, 'Repository updates third-loop choices with PUT');
+
 $stampClient = new FakeExmentClient(
     [
         [
@@ -865,6 +912,57 @@ assertSameValue([
         ],
     ],
 ], $choiceRouteRepositoryClient->calls, 'Stamp rally choice route writes choices using repository');
+
+$thirdLoopChoiceRouteClient = new FakeExmentClient(
+    [[
+        'data' => [[
+            'id' => 45,
+            'value' => [
+                'LINE_ID' => 'U-route-3',
+                'loop_count' => 3,
+            ],
+        ]],
+    ]],
+    [],
+    [
+        'id' => 45,
+        'value' => [
+            'LINE_ID' => 'U-route-3',
+            'loop_count' => 3,
+            'loop3_choices' => 'B,A,B',
+        ],
+    ],
+);
+$thirdLoopChoiceRouteRepository = new StampRallyRecordRepository($thirdLoopChoiceRouteClient, 'stamp_rally_records');
+$thirdLoopChoiceRouteApp = createRallyAppWithConfig($configuredChoiceConfig, $thirdLoopChoiceRouteRepository);
+
+setLineUserIdForSession('U-route-3');
+$thirdLoopChoiceRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_CHOICE)
+    ->withHeader('Origin', 'https://example.test')
+    ->withParsedBody(['choices' => ['B', 'A', 'B']]);
+$thirdLoopChoiceResponse = $thirdLoopChoiceRouteApp->handle($thirdLoopChoiceRequest);
+$thirdLoopChoicePayload = json_decode((string) $thirdLoopChoiceResponse->getBody(), true);
+assertSameValue(200, $thirdLoopChoiceResponse->getStatusCode(), 'Stamp rally choice route saves third-loop choices when request is valid');
+assertSameValue('loop3_choices', $thirdLoopChoicePayload['column'], 'Stamp rally choice route returns loop3_choices for third-loop records');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U-route-3',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/45',
+        'payload' => [
+            'value' => [
+                'loop3_choices' => 'B,A,B',
+            ],
+        ],
+    ],
+], $thirdLoopChoiceRouteClient->calls, 'Stamp rally choice route writes third-loop choices using repository');
 
 $endingRouteRepositoryClient = new FakeExmentClient(
     [[

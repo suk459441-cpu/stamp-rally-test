@@ -57,6 +57,7 @@ return Vue.createApp({
             }
 
             const value = record.value;
+            const previousLoopCount = this.state.loopCount;
             const loopCount = parseInt(value.loop_count, 10);
             if (!Number.isNaN(loopCount) && loopCount > 0) {
                 this.state.loopCount = loopCount;
@@ -79,6 +80,8 @@ return Vue.createApp({
             };
             if (Object.prototype.hasOwnProperty.call(loopChoiceMap, this.state.loopCount) && loopChoiceMap[this.state.loopCount] !== undefined) {
                 this.state.currentChoices = this.parseCsv(loopChoiceMap[this.state.loopCount]);
+            } else if (this.state.loopCount !== previousLoopCount) {
+                this.state.currentChoices = [];
             }
             this.saveState();
         },
