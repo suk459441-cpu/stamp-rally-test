@@ -8,6 +8,19 @@ use DomainException;
 
 final class StampRallyRecordRepository
 {
+    /** @var list<string> */
+    private const ALLOWED_ENDING_IDS = [
+        'END-01',
+        'END-02',
+        'END-03',
+        'END-04',
+        'END-05',
+        'END-06',
+        'END-07',
+        'END-08',
+        'END-AI',
+    ];
+
     public function __construct(
         private readonly ExmentClientInterface $client,
         private readonly string $tableKey,
@@ -152,7 +165,7 @@ final class StampRallyRecordRepository
     public function saveEndingByLineId(string $lineId, string $endingId): array
     {
         $endingId = trim($endingId);
-        if ($endingId === '') {
+        if ($endingId === '' || !in_array($endingId, self::ALLOWED_ENDING_IDS, true)) {
             throw new DomainException('invalid_ending');
         }
 
@@ -166,6 +179,7 @@ final class StampRallyRecordRepository
 
         $value = $record['value'] ?? [];
         $endings = $this->parseCsvStrings(is_array($value) ? ($value['collected_endings'] ?? '') : '');
+        $stamps = $this->parseCollectedStamps(is_array($value) ? ($value['collected_stamps'] ?? '') : '');
         $loopCount = $this->normalizeLoopCount(is_array($value) ? ($value['loop_count'] ?? 1) : 1);
         $isNewEnding = !in_array($endingId, $endings, true);
 
@@ -174,7 +188,8 @@ final class StampRallyRecordRepository
         }
 
         $nextLoopCount = $isNewEnding ? min($loopCount + 1, 3) : $loopCount;
-        $cleared = $loopCount >= 3 && $endingId === 'END-AI';
+        $canClear = count($stamps) === 5 && $loopCount >= 3;
+        $cleared = $canClear && $endingId === 'END-AI';
 
         $payload = [
             'collected_endings' => implode(',', $endings),

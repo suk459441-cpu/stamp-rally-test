@@ -253,7 +253,7 @@ return Vue.createApp({
             this.advanceDialogue();
         },
 
-        advanceDialogue() {
+        async advanceDialogue() {
             const chatBox = document.getElementById('chat-box');
 
             if (this.dialogueIndex < this.currentDialogueList.length) {
@@ -288,7 +288,11 @@ return Vue.createApp({
 
             if (this.state.loopCount >= 2) {
                 if (this.state.currentSpot === 5) {
-                    this.triggerEnding('AI_SELF_DESTRUCT');
+                    try {
+                        await this.triggerEnding('AI_SELF_DESTRUCT');
+                    } catch (error) {
+                        this.handleEndingSaveError();
+                    }
                 } else {
                     document.getElementById('next-guide-container').style.display = 'block';
                 }
@@ -299,7 +303,11 @@ return Vue.createApp({
                 this.currentChoiceData = RALLY_CHOICES_DATA[this.state.currentSpot];
             } else if (this.state.currentSpot === 5) {
                 const endingKey = this.state.currentChoices.join('');
-                this.triggerEnding(endingKey);
+                try {
+                    await this.triggerEnding(endingKey);
+                } catch (error) {
+                    this.handleEndingSaveError();
+                }
             } else {
                 document.getElementById('next-guide-container').style.display = 'block';
             }
@@ -325,18 +333,18 @@ return Vue.createApp({
 
         async triggerEnding(key) {
             const ending = RALLY_ENDING_MASTER[key] || { id: 'END-EX', name: '未知の結末', desc: '記録にない結末に到達した。' };
-
-            if (!this.state.discoveredEndings.includes(ending.id)) {
-                this.state.discoveredEndings.push(ending.id);
-            }
-
-            if (this.state.loopCount === 1) {
-                this.state.loopCount = 2;
-            }
-
-            this.saveState();
+            const updatedEndings = this.state.discoveredEndings.includes(ending.id)
+                ? [...this.state.discoveredEndings]
+                : [...this.state.discoveredEndings, ending.id];
+            const updatedLoopCount = this.state.loopCount === 1 ? 2 : this.state.loopCount;
             const result = await StampRallyApi.saveEnding(ending.id);
-            this.applyServerRecord(result?.record);
+            if (result?.record) {
+                this.applyServerRecord(result.record);
+            } else {
+                this.state.discoveredEndings = updatedEndings;
+                this.state.loopCount = updatedLoopCount;
+                this.saveState();
+            }
 
             const chatBox = document.getElementById('chat-box');
             const endPanel = document.createElement('div');
@@ -348,6 +356,16 @@ return Vue.createApp({
                 <p style="font-size:0.75rem; color:var(--accent-green);">【2周目解放】システムプロトコルが更新されました。<br>スタンプ画面から次なる調査を開始してください。</p>
             `;
             chatBox.appendChild(endPanel);
+        },
+
+        handleEndingSaveError() {
+            const chatBox = document.getElementById('chat-box');
+            const errorPanel = document.createElement('div');
+            errorPanel.className = 'system-msg';
+            errorPanel.innerText = '結末の保存に失敗しました。通信状況を確認してからもう一度お試しください。';
+            chatBox.appendChild(errorPanel);
+            document.getElementById('chat-controls').style.display = 'none';
+            document.getElementById('next-guide-container').style.display = 'block';
         },
 
         getCharacter(senderId) {

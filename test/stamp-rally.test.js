@@ -758,6 +758,24 @@ test('triggerEnding deduplicates endings, advances loop count, and saves END id'
     assert.equal(elements.get('chat-box').children.length, 2);
 });
 
+test('triggerEnding preserves local state when ending persistence fails', async () => {
+    const { context, app, elements } = await loadRally();
+    app.state.loopCount = 1;
+    app.state.discoveredEndings = [];
+
+    await vm.runInContext(`
+        StampRallyApi.saveEnding = async () => {
+            throw new Error('ending save failed');
+        };
+    `, context);
+
+    await assert.rejects(() => app.triggerEnding('AAA'), /ending save failed/);
+
+    assert.equal(app.state.loopCount, 1);
+    assert.deepEqual(Array.from(app.state.discoveredEndings), []);
+    assert.equal(elements.has('chat-box'), false);
+});
+
 test('processUrlParams ignores direct stamp parameters', async () => {
     const { app, apiCalls, elements } = await loadRally({ search: '?stamp=1' });
 
@@ -935,6 +953,28 @@ test('advanceDialogue shows choices, ordinary next guide, first-loop ending, and
     app.currentDialogueList = [];
     await app.advanceDialogue();
     assert.equal(apiCalls.at(-1).endingId, 'END-AI');
+});
+
+test('advanceDialogue handles ending persistence failures without unhandled rejections', async () => {
+    const { context, app, elements } = await loadRally();
+
+    await vm.runInContext(`
+        StampRallyApi.saveEnding = async () => {
+            throw new Error('save unavailable');
+        };
+    `, context);
+
+    app.state.currentSpot = 5;
+    app.state.currentChoices = ['A', 'A', 'A'];
+    app.state.loopCount = 1;
+    app.currentDialogueList = [];
+
+    await assert.doesNotReject(() => app.advanceDialogue());
+    assert.equal(app.state.loopCount, 1);
+    assert.deepEqual(Array.from(app.state.discoveredEndings), []);
+    assert.equal(elements.get('chat-box').children.length, 1);
+    assert.equal(elements.get('next-guide-container').style.display, 'block');
+    assert.equal(elements.get('chat-controls').style.display, 'none');
 });
 
 test('advanceDialogue renders system and character messages', async () => {
