@@ -200,6 +200,10 @@ final class StampRallyRecordRepository
             $payload['cleared_at'] = (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
         }
 
+        if ($isNewEnding && !$cleared) {
+            $payload['collected_stamps'] = '';
+        }
+
         $updatedRecord = $this->client->put($this->dataPath('/' . rawurlencode((string) $recordId)), [
             'value' => $payload,
         ]);
