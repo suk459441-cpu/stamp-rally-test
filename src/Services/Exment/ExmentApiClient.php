@@ -27,6 +27,11 @@ final class ExmentApiClient implements ExmentClientInterface
         return $this->requestJson('POST', $path, [], $payload);
     }
 
+    public function put(string $path, array $payload): array
+    {
+        return $this->requestJson('PUT', $path, [], $payload);
+    }
+
     /**
      * @param array<string, string|int> $query
      * @param array<string, mixed>|null $payload

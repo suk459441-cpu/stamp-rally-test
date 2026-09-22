@@ -63,6 +63,54 @@ final class StampRallyRecordRepository
         ]);
     }
 
+    /**
+     * @param list<string> $choices
+     * @return array{column: string, choices: list<string>, record: array<string, mixed>}
+     */
+    public function saveChoicesByLineId(string $lineId, array $choices): array
+    {
+        $result = $this->findOrCreateByLineId($lineId);
+        $record = $result['record'];
+        $recordId = $record['id'] ?? null;
+
+        if (!is_int($recordId) && !is_string($recordId)) {
+            throw new \RuntimeException('Exment record ID is missing.');
+        }
+
+        $loopCount = $this->normalizeLoopCount($record['value']['loop_count'] ?? 1);
+        $column = match ($loopCount) {
+            1 => 'loop1_choices',
+            2 => 'loop2_choices',
+            default => 'loop3_choices',
+        };
+
+        $updatedRecord = $this->client->put($this->dataPath('/' . rawurlencode((string) $recordId)), [
+            'value' => [
+                $column => implode(',', $choices),
+            ],
+        ]);
+
+        return [
+            'column' => $column,
+            'choices' => $choices,
+            'record' => $updatedRecord,
+        ];
+    }
+
+    private function normalizeLoopCount(mixed $value): int
+    {
+        $loopCount = (int) $value;
+        if ($loopCount < 1) {
+            return 1;
+        }
+
+        if ($loopCount > 3) {
+            return 3;
+        }
+
+        return $loopCount;
+    }
+
     private function dataPath(string $suffix = ''): string
     {
         return '/api/data/' . rawurlencode($this->tableKey) . $suffix;
