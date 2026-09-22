@@ -1134,16 +1134,28 @@ test('confirmReset clears saved progress and navigates to the current path', asy
 test('audio controls initialize, toggle, and play sound effects', async () => {
     const { context, elements } = await loadRally({ loadApp: false });
 
-    vm.runInContext(`
+    const result = vm.runInContext(`
         initAudio();
         playTapSound();
+        const afterTapOnly = { isAudioOn, label: document.getElementById('audio-toggle').innerText };
         toggleAudio();
+        const afterToggleOn = { isAudioOn, label: document.getElementById('audio-toggle').innerText };
+        playTapSound();
         toggleAudio();
+        const afterToggleOff = { isAudioOn, label: document.getElementById('audio-toggle').innerText, bgmTimer };
         playSE('stamp');
         playSE('scan');
+        ({ afterTapOnly, afterToggleOn, afterToggleOff });
     `, context);
 
-    assert.match(elements.get('audio-toggle').innerText, /BGM ON|BGM OFF/);
+    assert.equal(result.afterTapOnly.isAudioOn, false);
+    assert.equal(result.afterTapOnly.label, '');
+    assert.equal(result.afterToggleOn.isAudioOn, true);
+    assert.equal(result.afterToggleOn.label, 'BGM ON');
+    assert.equal(result.afterToggleOff.isAudioOn, false);
+    assert.equal(result.afterToggleOff.label, 'BGM OFF');
+    assert.equal(result.afterToggleOff.bgmTimer, null);
+    assert.equal(elements.get('audio-toggle').innerText, 'BGM OFF');
 });
 
 test('audio resumes a suspended context and ignores unknown sound effects', async () => {
