@@ -914,6 +914,7 @@ test('processUrlParams shows an error when token acquisition fails', async () =>
     assert.deepEqual(Array.from(context.__app.state.stamps), []);
     assert.equal(context.__app.state.currentSpot, 0);
     assert.match(elements.get('chat-box').innerHTML, /QR/);
+    assert.match(elements.get('chat-box').innerHTML, /ERROR: out_of_order_stamp/);
     assert.equal(elements.get('chat-controls').style.display, 'none');
 });
 

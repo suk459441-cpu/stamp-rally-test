@@ -202,11 +202,18 @@ return Vue.createApp({
                 }
 
                 const errorCode = error?.code || error?.message || 'unknown_error';
+                const safeErrorCode = String(errorCode).replace(/[&<>"']/g, (char) => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                }[char]));
                 this.removeTokenFromUrl();
                 document.getElementById('chat-box').innerHTML = `
                     <div class="system-msg">
                         無効なQRコード、または読み取り順が正しくありません。次のチェックポイントを確認してください。
-                        <br><span style="font-family: var(--font-mono); color: var(--warning-yellow);">ERROR: ${errorCode}</span>
+                        <br><span style="font-family: var(--font-mono); color: var(--warning-yellow);">ERROR: ${safeErrorCode}</span>
                     </div>
                 `;
                 document.getElementById('chat-controls').style.display = 'none';

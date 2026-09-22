@@ -572,6 +572,28 @@ assertSameValue([
     ],
 ], $stuckCompletedLoopClient->calls, 'Repository rewrites stuck completed loop stamps from stamp 1');
 
+$terminalClearedLoopClient = new FakeExmentClient([
+    [
+        'data' => [
+            [
+                'id' => 24,
+                'value' => [
+                    'LINE_ID' => 'U-stamp-terminal',
+                    'loop_count' => 3,
+                    'collected_endings' => 'END-AI',
+                    'collected_stamps' => '1,2,3,4,5',
+                    'cleared_at' => '2026-01-01 00:00:00',
+                ],
+            ],
+        ],
+    ],
+]);
+$terminalClearedLoopRepository = new StampRallyRecordRepository($terminalClearedLoopClient, 'stamp_rally_records');
+$terminalClearedLoopResult = $terminalClearedLoopRepository->acquireStampByLineId('U-stamp-terminal', 1);
+assertTrueValue($terminalClearedLoopResult['alreadyAcquired'], 'Repository keeps terminal cleared records in already acquired state');
+assertSameValue([1, 2, 3, 4, 5], $terminalClearedLoopResult['stamps'], 'Repository preserves terminal cleared stamp progression');
+assertSameValue(1, count($terminalClearedLoopClient->calls), 'Repository does not rewrite terminal cleared loop stamps');
+
 $stuckFirstLoopCompletedClient = new FakeExmentClient(
     [
         [

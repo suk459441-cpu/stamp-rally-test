@@ -132,7 +132,8 @@ final class StampRallyRecordRepository
         $loopCount = $this->normalizeLoopCount($record['value']['loop_count'] ?? 1);
         $endings = $this->parseCsvStrings($record['value']['collected_endings'] ?? '');
         $stamps = $this->parseCollectedStamps($record['value']['collected_stamps'] ?? '');
-        if (($loopCount > 1 || $endings !== []) && count($stamps) === 5 && $stampId === 1) {
+        $clearedAt = trim((string) ($record['value']['cleared_at'] ?? ''));
+        if ($clearedAt === '' && ($loopCount > 1 || $endings !== []) && count($stamps) === 5 && $stampId === 1) {
             $stamps = [];
         }
 
