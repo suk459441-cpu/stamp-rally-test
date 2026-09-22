@@ -202,7 +202,7 @@ async function loadRally({ search = '', savedState = null, loadApp = true, stubA
             };
             StampRallyApi.saveEnding = async (endingId) => {
                 globalThis.__apiCalls.push({ method: 'saveEnding', endingId });
-                return { endingId };
+                return globalThis.__endingResults?.[endingId] || { endingId };
             };
         `, context);
     }
@@ -741,13 +741,28 @@ test('selectChoice does not append duplicate choice when save fails', async () =
 });
 
 test('triggerEnding deduplicates endings, advances loop count, and saves END id', async () => {
-    const { app, apiCalls, elements } = await loadRally();
+    const { context, app, apiCalls, elements } = await loadRally();
+    app.state.stamps = [1, 2, 3, 4, 5];
+    context.__endingResults = {
+        'END-01': {
+            ok: true,
+            endingId: 'END-01',
+            record: {
+                value: {
+                    loop_count: '2',
+                    collected_endings: 'END-01',
+                    collected_stamps: ''
+                }
+            }
+        }
+    };
 
     await app.triggerEnding('AAA');
     await app.triggerEnding('AAA');
 
     assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-01']);
     assert.equal(app.state.loopCount, 2);
+    assert.deepEqual(Array.from(app.state.stamps), []);
     assert.deepEqual(
         JSON.parse(JSON.stringify(apiCalls.filter((call) => call.method === 'saveEnding'))),
         [

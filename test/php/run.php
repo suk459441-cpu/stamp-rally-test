@@ -507,6 +507,7 @@ $endingClient = new FakeExmentClient(
                         'LINE_ID' => 'U-ending-1',
                         'loop_count' => 1,
                         'collected_endings' => 'END-01',
+                        'collected_stamps' => '1,2,3,4,5',
                     ],
                 ],
             ],
@@ -519,6 +520,7 @@ $endingClient = new FakeExmentClient(
             'LINE_ID' => 'U-ending-1',
             'loop_count' => 2,
             'collected_endings' => 'END-01,END-05',
+            'collected_stamps' => '',
         ],
     ],
 );
@@ -544,10 +546,11 @@ assertSameValue([
             'value' => [
                 'collected_endings' => 'END-01,END-05',
                 'loop_count' => 2,
+                'collected_stamps' => '',
             ],
         ],
     ],
-], $endingClient->calls, 'Repository updates collected endings with PUT');
+], $endingClient->calls, 'Repository updates collected endings and resets stamps for the next loop with PUT');
 
 $trueEndingClient = new FakeExmentClient([
     [
@@ -569,6 +572,7 @@ $trueEndingResult = $trueEndingRepository->saveEndingByLineId('U-ending-2', 'END
 assertTrueValue($trueEndingResult['cleared'], 'Repository marks END-AI on loop 3 as cleared');
 assertTrueValue(isset($trueEndingClient->calls[1]['payload']['value']['cleared_at']), 'Repository stores cleared_at for true ending');
 assertSameValue(3, $trueEndingClient->calls[1]['payload']['value']['loop_count'], 'Repository keeps loop count capped at 3');
+assertFalseValue(array_key_exists('collected_stamps', $trueEndingClient->calls[1]['payload']['value']), 'Repository keeps final-loop stamps when true ending clears');
 
 $ineligibleClearClient = new FakeExmentClient([
     [
@@ -870,6 +874,7 @@ $endingRouteRepositoryClient = new FakeExmentClient(
                 'LINE_ID' => 'U-route-ending',
                 'loop_count' => 1,
                 'collected_endings' => '',
+                'collected_stamps' => '1,2,3,4,5',
             ],
         ]],
     ]],
@@ -880,6 +885,7 @@ $endingRouteRepositoryClient = new FakeExmentClient(
             'LINE_ID' => 'U-route-ending',
             'loop_count' => 2,
             'collected_endings' => 'END-01',
+            'collected_stamps' => '',
         ],
     ],
 );
@@ -905,6 +911,7 @@ assertSameValue([
             'LINE_ID' => 'U-route-ending',
             'loop_count' => 2,
             'collected_endings' => 'END-01',
+            'collected_stamps' => '',
         ],
     ],
 ], $successfulEndingPayload, 'Stamp rally ending route returns saved ending payload');
@@ -924,10 +931,11 @@ assertSameValue([
             'value' => [
                 'collected_endings' => 'END-01',
                 'loop_count' => 2,
+                'collected_stamps' => '',
             ],
         ],
     ],
-], $endingRouteRepositoryClient->calls, 'Stamp rally ending route writes endings using repository');
+], $endingRouteRepositoryClient->calls, 'Stamp rally ending route writes endings and resets stamps using repository');
 
 $invalidEndingRouteRepositoryClient = new FakeExmentClient();
 $invalidEndingRouteRepository = new StampRallyRecordRepository($invalidEndingRouteRepositoryClient, 'stamp_rally_records');
