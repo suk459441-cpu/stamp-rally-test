@@ -89,18 +89,52 @@ const StampRallyApi = {
         const result = await response.json();
 
         if (result && result.requiresLogin) {
-            throw new Error('Login is required to acquire stamp rally stamps.');
+            const error = new Error('Login is required to acquire stamp rally stamps.');
+            error.code = 'requires_login';
+            error.result = result;
+            error.status = response.status;
+            throw error;
         }
 
         if (!response.ok) {
-            throw new Error(result?.message || result?.error || 'Failed to acquire stamp.');
+            const error = new Error(result?.message || result?.error || 'Failed to acquire stamp.');
+            error.code = result?.error || 'stamp_acquisition_failed';
+            error.result = result;
+            error.status = response.status;
+            throw error;
         }
 
         return result;
     },
 
     async saveEnding(endingId) {
-        // Future: await fetch('/api/stamp-rally/ending', { method: 'POST', body: JSON.stringify({ endingId }) })
-        return { endingId };
+        const response = await fetch(this.toPublicPath('/api/stamp-rally/ending'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ endingId })
+        });
+        const result = await response.json();
+
+        if (result && result.requiresLogin) {
+            const error = new Error('Login is required to save stamp rally endings.');
+            error.code = 'requires_login';
+            error.result = result;
+            error.status = response.status;
+            throw error;
+        }
+
+        if (!response.ok) {
+            const error = new Error(result?.message || result?.error || 'Failed to save ending.');
+            error.code = result?.error || 'ending_save_failed';
+            error.result = result;
+            error.status = response.status;
+            throw error;
+        }
+
+        return result;
     }
 };

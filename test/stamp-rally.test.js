@@ -354,6 +354,25 @@ test('API initialize uses APP_BASE_PATH-style pathname for init and login URLs',
     assert.equal(result.loginUrl, '/rally/auth/line/start');
 });
 
+test('API path helper preserves absolute and already-prefixed paths', async () => {
+    const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+    const paths = vm.runInContext(`
+        window.__APP_BASE_PATH__ = '/festival';
+        [
+            StampRallyApi.toPublicPath('https://example.test/path'),
+            StampRallyApi.toPublicPath(''),
+            StampRallyApi.toPublicPath('/festival/api/stamp-rally/init')
+        ]
+    `, context);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(paths)), [
+        'https://example.test/path',
+        '/festival/',
+        '/festival/api/stamp-rally/init'
+    ]);
+});
+
 test('API saveChoice posts choices without sending userId', async () => {
     const { context } = await loadRally({ loadApp: false, stubApi: false });
 
@@ -444,12 +463,127 @@ test('API acquireStamp posts token without sending userId', async () => {
     assert.equal(JSON.stringify(context.__apiFetchCalls).includes('userId'), false);
 });
 
-test('API saveEnding returns only the requested payload', async () => {
+test('API acquireStamp exposes server error details', async () => {
     const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+    context.fetch = async () => ({
+        ok: false,
+        status: 409,
+        async json() {
+            return {
+                ok: false,
+                error: 'stamp_already_acquired',
+                stamp: 2,
+                stamps: [1, 2]
+            };
+        }
+    });
+
+    const error = await vm.runInContext(`
+        StampRallyApi.acquireStamp('token-2')
+            .then(() => null)
+            .catch((error) => ({
+                message: error.message,
+                code: error.code,
+                status: error.status,
+                result: error.result
+            }))
+    `, context);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(error)), {
+        message: 'stamp_already_acquired',
+        code: 'stamp_already_acquired',
+        status: 409,
+        result: {
+            ok: false,
+            error: 'stamp_already_acquired',
+            stamp: 2,
+            stamps: [1, 2]
+        }
+    });
+});
+
+test('API acquireStamp exposes login-required errors', async () => {
+    const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+    context.fetch = async () => ({
+        ok: false,
+        status: 401,
+        async json() {
+            return {
+                ok: false,
+                requiresLogin: true
+            };
+        }
+    });
+
+    const error = await vm.runInContext(`
+        StampRallyApi.acquireStamp('token-1')
+            .then(() => null)
+            .catch((error) => ({
+                message: error.message,
+                code: error.code,
+                status: error.status,
+                result: error.result
+            }))
+    `, context);
+
+    assert.deepEqual(JSON.parse(JSON.stringify(error)), {
+        message: 'Login is required to acquire stamp rally stamps.',
+        code: 'requires_login',
+        status: 401,
+        result: {
+            ok: false,
+            requiresLogin: true
+        }
+    });
+});
+
+test('API saveEnding posts endingId without sending userId', async () => {
+    const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+    context.__apiFetchCalls = [];
+    context.fetch = async (requestPath, options) => {
+        context.__apiFetchCalls.push({ requestPath, options });
+        return {
+            ok: true,
+            status: 200,
+            async json() {
+                return {
+                    ok: true,
+                    endingId: 'END-01',
+                    endings: ['END-01'],
+                    loopCount: 2,
+                    cleared: false
+                };
+            }
+        };
+    };
+
     const result = await vm.runInContext(`StampRallyApi.saveEnding('END-01')`, context);
 
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), { endingId: 'END-01' });
-    assert.equal(JSON.stringify(result).includes('userId'), false);
+    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+        ok: true,
+        endingId: 'END-01',
+        endings: ['END-01'],
+        loopCount: 2,
+        cleared: false
+    });
+    assert.deepEqual(JSON.parse(JSON.stringify(context.__apiFetchCalls)), [
+        {
+            requestPath: '/api/stamp-rally/ending',
+            options: {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ endingId: 'END-01' })
+            }
+        }
+    ]);
+    assert.equal(JSON.stringify(context.__apiFetchCalls).includes('userId'), false);
 });
 
 test('app mounts, restores saved state, and keeps image paths under img/', async () => {
@@ -531,6 +665,7 @@ test('app keeps locally restored progress when optional Exment fields are missin
 
     const app = context.__app;
     assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-01']);
+    assert.deepEqual(Array.from(app.state.stamps), [1, 2]);
     assert.deepEqual(Array.from(app.state.currentChoices), ['B', 'A']);
 });
 
@@ -611,7 +746,7 @@ test('triggerEnding deduplicates endings, advances loop count, and saves END id'
     await app.triggerEnding('AAA');
     await app.triggerEnding('AAA');
 
-    assert.deepEqual(Array.from(app.state.discoveredEndings), ['AAA']);
+    assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-01']);
     assert.equal(app.state.loopCount, 2);
     assert.deepEqual(
         JSON.parse(JSON.stringify(apiCalls.filter((call) => call.method === 'saveEnding'))),
@@ -621,6 +756,24 @@ test('triggerEnding deduplicates endings, advances loop count, and saves END id'
         ]
     );
     assert.equal(elements.get('chat-box').children.length, 2);
+});
+
+test('triggerEnding preserves local state when ending persistence fails', async () => {
+    const { context, app, elements } = await loadRally();
+    app.state.loopCount = 1;
+    app.state.discoveredEndings = [];
+
+    await vm.runInContext(`
+        StampRallyApi.saveEnding = async () => {
+            throw new Error('ending save failed');
+        };
+    `, context);
+
+    await assert.rejects(() => app.triggerEnding('AAA'), /ending save failed/);
+
+    assert.equal(app.state.loopCount, 1);
+    assert.deepEqual(Array.from(app.state.discoveredEndings), []);
+    assert.equal(elements.has('chat-box'), false);
 });
 
 test('processUrlParams ignores direct stamp parameters', async () => {
@@ -691,6 +844,42 @@ test('processUrlParams shows an error when token acquisition fails', async () =>
     assert.equal(elements.get('chat-controls').style.display, 'none');
 });
 
+test('processUrlParams syncs already acquired stamps without reopening the checkpoint event', async () => {
+    const { context, elements, storage } = await loadRally({ search: '', loadApp: false });
+
+    context.window.location.search = '?token=token-2';
+    context.window.history = {
+        replaceState(_state, _title, url) {
+            context.__replacedUrl = url;
+        }
+    };
+    await vm.runInContext(`
+        StampRallyApi.acquireStamp = async () => {
+            const error = new Error('stamp_already_acquired');
+            error.code = 'stamp_already_acquired';
+            error.status = 409;
+            error.result = {
+                ok: false,
+                error: 'stamp_already_acquired',
+                stamp: 2,
+                stamps: [1, 2]
+            };
+            throw error;
+        };
+    `, context);
+    runScript(context, 'app.js');
+    await context.window.StampRallyAppPromise;
+    await context.__mountedResult;
+
+    assert.deepEqual(Array.from(context.__app.state.stamps), [1, 2]);
+    assert.equal(context.__app.state.currentSpot, 0);
+    assert.equal(elements.has('story-location-tag'), false);
+    assert.match(elements.get('chat-box').innerHTML, /QR/);
+    assert.equal(elements.get('chat-controls').style.display, 'none');
+    assert.equal(context.__replacedUrl, '/index.html');
+    assert.deepEqual(JSON.parse(storage.get('mystery_game_save')).stamps, [1, 2]);
+});
+
 test('loadState falls back to the initial state for invalid localStorage JSON', async () => {
     const { app, storage } = await loadRally();
 
@@ -726,7 +915,7 @@ test('endingEntries and isEndingDiscovered expose ending collection state', asyn
             loopCount: 1,
             stamps: [],
             currentChoices: [],
-            discoveredEndings: ['AAA'],
+            discoveredEndings: ['END-01'],
             currentSpot: 0
         }
     });
@@ -764,6 +953,28 @@ test('advanceDialogue shows choices, ordinary next guide, first-loop ending, and
     app.currentDialogueList = [];
     await app.advanceDialogue();
     assert.equal(apiCalls.at(-1).endingId, 'END-AI');
+});
+
+test('advanceDialogue handles ending persistence failures without unhandled rejections', async () => {
+    const { context, app, elements } = await loadRally();
+
+    await vm.runInContext(`
+        StampRallyApi.saveEnding = async () => {
+            throw new Error('save unavailable');
+        };
+    `, context);
+
+    app.state.currentSpot = 5;
+    app.state.currentChoices = ['A', 'A', 'A'];
+    app.state.loopCount = 1;
+    app.currentDialogueList = [];
+
+    await assert.doesNotReject(() => app.advanceDialogue());
+    assert.equal(app.state.loopCount, 1);
+    assert.deepEqual(Array.from(app.state.discoveredEndings), []);
+    assert.equal(elements.get('chat-box').children.length, 1);
+    assert.equal(elements.get('next-guide-container').style.display, 'block');
+    assert.equal(elements.get('chat-controls').style.display, 'none');
 });
 
 test('advanceDialogue renders system and character messages', async () => {
@@ -804,7 +1015,7 @@ test('triggerEnding handles unknown endings without resetting higher loop counts
     await app.triggerEnding('UNKNOWN');
 
     assert.equal(app.state.loopCount, 3);
-    assert.deepEqual(Array.from(app.state.discoveredEndings), ['UNKNOWN']);
+    assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-EX']);
     assert.equal(apiCalls.at(-1).endingId, 'END-EX');
 });
 

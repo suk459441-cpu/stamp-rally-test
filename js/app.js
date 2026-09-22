@@ -70,8 +70,6 @@ return Vue.createApp({
                 this.state.stamps = this.parseCsv(value.collected_stamps)
                     .map((item) => parseInt(item, 10))
                     .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 5);
-            } else {
-                this.state.stamps = [];
             }
 
             const loopChoiceMap = {
@@ -94,6 +92,34 @@ return Vue.createApp({
                 .split(',')
                 .map((item) => item.trim())
                 .filter(Boolean);
+        },
+
+        syncServerStamps(stamps) {
+            if (!Array.isArray(stamps)) {
+                return;
+            }
+
+            this.state.stamps = stamps
+                .map((item) => parseInt(item, 10))
+                .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 5);
+            this.saveState();
+        },
+
+        removeTokenFromUrl() {
+            if (!window.history || typeof window.history.replaceState !== 'function') {
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('token')) {
+                return;
+            }
+
+            params.delete('token');
+            const query = params.toString();
+            const path = window.location.pathname || '/';
+            const hash = window.location.hash || '';
+            window.history.replaceState(null, '', `${path}${query ? `?${query}` : ''}${hash}`);
         },
 
         loadState() {
@@ -149,6 +175,20 @@ return Vue.createApp({
             try {
                 result = await StampRallyApi.acquireStamp(token);
             } catch (error) {
+                if (error?.code === 'stamp_already_acquired') {
+                    this.syncServerStamps(error.result?.stamps);
+                    this.removeTokenFromUrl();
+                    document.getElementById('chat-box').innerHTML = `
+                        <div class="system-msg">
+                            このQRは取得済みです。次のチェックポイントへ進んでください。
+                        </div>
+                    `;
+                    document.getElementById('chat-controls').style.display = 'none';
+                    document.getElementById('next-guide-container').style.display = 'block';
+                    return;
+                }
+
+                this.removeTokenFromUrl();
                 document.getElementById('chat-box').innerHTML = `
                     <div class="system-msg">
                         無効なQRコード、または読み取り順が正しくありません。次のチェックポイントを確認してください。
@@ -165,13 +205,11 @@ return Vue.createApp({
             }
 
             if (Array.isArray(result.stamps)) {
-                this.state.stamps = result.stamps
-                    .map((item) => parseInt(item, 10))
-                    .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 5);
-                this.saveState();
+                this.syncServerStamps(result.stamps);
             }
 
             if (this.state.stamps.includes(id)) {
+                this.removeTokenFromUrl();
                 document.getElementById('start-btn').style.display = 'none';
                 document.getElementById('next-dialogue-btn').style.display = 'block';
                 this.state.currentSpot = id;
@@ -215,7 +253,7 @@ return Vue.createApp({
             this.advanceDialogue();
         },
 
-        advanceDialogue() {
+        async advanceDialogue() {
             const chatBox = document.getElementById('chat-box');
 
             if (this.dialogueIndex < this.currentDialogueList.length) {
@@ -250,7 +288,11 @@ return Vue.createApp({
 
             if (this.state.loopCount >= 2) {
                 if (this.state.currentSpot === 5) {
-                    this.triggerEnding('AI_SELF_DESTRUCT');
+                    try {
+                        await this.triggerEnding('AI_SELF_DESTRUCT');
+                    } catch (error) {
+                        this.handleEndingSaveError();
+                    }
                 } else {
                     document.getElementById('next-guide-container').style.display = 'block';
                 }
@@ -261,7 +303,11 @@ return Vue.createApp({
                 this.currentChoiceData = RALLY_CHOICES_DATA[this.state.currentSpot];
             } else if (this.state.currentSpot === 5) {
                 const endingKey = this.state.currentChoices.join('');
-                this.triggerEnding(endingKey);
+                try {
+                    await this.triggerEnding(endingKey);
+                } catch (error) {
+                    this.handleEndingSaveError();
+                }
             } else {
                 document.getElementById('next-guide-container').style.display = 'block';
             }
@@ -287,17 +333,18 @@ return Vue.createApp({
 
         async triggerEnding(key) {
             const ending = RALLY_ENDING_MASTER[key] || { id: 'END-EX', name: '未知の結末', desc: '記録にない結末に到達した。' };
-
-            if (!this.state.discoveredEndings.includes(key)) {
-                this.state.discoveredEndings.push(key);
+            const updatedEndings = this.state.discoveredEndings.includes(ending.id)
+                ? [...this.state.discoveredEndings]
+                : [...this.state.discoveredEndings, ending.id];
+            const updatedLoopCount = this.state.loopCount === 1 ? 2 : this.state.loopCount;
+            const result = await StampRallyApi.saveEnding(ending.id);
+            if (result?.record) {
+                this.applyServerRecord(result.record);
+            } else {
+                this.state.discoveredEndings = updatedEndings;
+                this.state.loopCount = updatedLoopCount;
+                this.saveState();
             }
-
-            if (this.state.loopCount === 1) {
-                this.state.loopCount = 2;
-            }
-
-            this.saveState();
-            await StampRallyApi.saveEnding(ending.id);
 
             const chatBox = document.getElementById('chat-box');
             const endPanel = document.createElement('div');
@@ -309,6 +356,16 @@ return Vue.createApp({
                 <p style="font-size:0.75rem; color:var(--accent-green);">【2周目解放】システムプロトコルが更新されました。<br>スタンプ画面から次なる調査を開始してください。</p>
             `;
             chatBox.appendChild(endPanel);
+        },
+
+        handleEndingSaveError() {
+            const chatBox = document.getElementById('chat-box');
+            const errorPanel = document.createElement('div');
+            errorPanel.className = 'system-msg';
+            errorPanel.innerText = '結末の保存に失敗しました。通信状況を確認してからもう一度お試しください。';
+            chatBox.appendChild(errorPanel);
+            document.getElementById('chat-controls').style.display = 'none';
+            document.getElementById('next-guide-container').style.display = 'block';
         },
 
         getCharacter(senderId) {
@@ -329,7 +386,9 @@ return Vue.createApp({
         },
 
         isEndingDiscovered(key) {
-            return this.state.discoveredEndings.includes(key);
+            const ending = RALLY_ENDING_MASTER[key];
+            return this.state.discoveredEndings.includes(key)
+                || (ending ? this.state.discoveredEndings.includes(ending.id) : false);
         }
     }
 }).mount('#app-container');

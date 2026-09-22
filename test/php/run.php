@@ -497,6 +497,109 @@ try {
     assertSameValue('out_of_order_stamp', $exception->getMessage(), 'Repository reports out-of-order stamps');
 }
 
+$endingClient = new FakeExmentClient(
+    [
+        [
+            'data' => [
+                [
+                    'id' => 18,
+                    'value' => [
+                        'LINE_ID' => 'U-ending-1',
+                        'loop_count' => 1,
+                        'collected_endings' => 'END-01',
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [],
+    [
+        'id' => 18,
+        'value' => [
+            'LINE_ID' => 'U-ending-1',
+            'loop_count' => 2,
+            'collected_endings' => 'END-01,END-05',
+        ],
+    ],
+);
+$endingRepository = new StampRallyRecordRepository($endingClient, 'stamp_rally_records');
+$endingResult = $endingRepository->saveEndingByLineId('U-ending-1', 'END-05');
+assertSameValue('END-05', $endingResult['endingId'], 'Repository returns saved ending ID');
+assertSameValue(['END-01', 'END-05'], $endingResult['endings'], 'Repository appends new ending IDs');
+assertSameValue(2, $endingResult['loopCount'], 'Repository advances loop count for new endings');
+assertFalseValue($endingResult['cleared'], 'Repository does not clear before the true ending condition');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U-ending-1',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/18',
+        'payload' => [
+            'value' => [
+                'collected_endings' => 'END-01,END-05',
+                'loop_count' => 2,
+            ],
+        ],
+    ],
+], $endingClient->calls, 'Repository updates collected endings with PUT');
+
+$trueEndingClient = new FakeExmentClient([
+    [
+        'data' => [
+            [
+                'id' => 19,
+                'value' => [
+                    'LINE_ID' => 'U-ending-2',
+                    'loop_count' => 3,
+                    'collected_endings' => 'END-AI',
+                    'collected_stamps' => '1,2,3,4,5',
+                ],
+            ],
+        ],
+    ],
+]);
+$trueEndingRepository = new StampRallyRecordRepository($trueEndingClient, 'stamp_rally_records');
+$trueEndingResult = $trueEndingRepository->saveEndingByLineId('U-ending-2', 'END-AI');
+assertTrueValue($trueEndingResult['cleared'], 'Repository marks END-AI on loop 3 as cleared');
+assertTrueValue(isset($trueEndingClient->calls[1]['payload']['value']['cleared_at']), 'Repository stores cleared_at for true ending');
+assertSameValue(3, $trueEndingClient->calls[1]['payload']['value']['loop_count'], 'Repository keeps loop count capped at 3');
+
+$ineligibleClearClient = new FakeExmentClient([
+    [
+        'data' => [
+            [
+                'id' => 20,
+                'value' => [
+                    'LINE_ID' => 'U-ending-3',
+                    'loop_count' => 3,
+                    'collected_endings' => 'END-AI',
+                    'collected_stamps' => '1,2,3,4',
+                ],
+            ],
+        ],
+    ],
+]);
+$ineligibleClearRepository = new StampRallyRecordRepository($ineligibleClearClient, 'stamp_rally_records');
+$ineligibleClearResult = $ineligibleClearRepository->saveEndingByLineId('U-ending-3', 'END-AI');
+assertFalseValue($ineligibleClearResult['cleared'], 'Repository keeps END-AI uncleared until server-side stamp progression is complete');
+assertFalseValue(isset($ineligibleClearClient->calls[1]['payload']['value']['cleared_at']), 'Repository does not write cleared_at when clear progression is incomplete');
+
+$invalidEndingClient = new FakeExmentClient();
+$invalidEndingRepository = new StampRallyRecordRepository($invalidEndingClient, 'stamp_rally_records');
+try {
+    $invalidEndingRepository->saveEndingByLineId('U-ending-4', 'END-EX');
+    assertTrueValue(false, 'Repository rejects unknown ending IDs');
+} catch (DomainException $exception) {
+    assertSameValue('invalid_ending', $exception->getMessage(), 'Repository reports invalid ending IDs with invalid_ending');
+}
+assertSameValue([], $invalidEndingClient->calls, 'Repository does not query Exment when ending ID is invalid');
+
 $app = createRallyAppWithConfig(AppConfig::fromEnv());
 $request = (new ServerRequestFactory())->createServerRequest('GET', RouteNames::STAMP_RALLY_INIT);
 $response = $app->handle($request);
@@ -595,6 +698,40 @@ assertSameValue([
         ],
     ],
 ], $successfulStampPayload, 'Stamp rally stamp route returns acquired stamp payload');
+
+$duplicateStampRouteClient = new FakeExmentClient([
+    [
+        'data' => [[
+            'id' => 57,
+            'value' => [
+                'LINE_ID' => 'U-route-stamp',
+                'collected_stamps' => '1,2',
+            ],
+        ]],
+    ],
+]);
+$duplicateStampRouteRepository = new StampRallyRecordRepository($duplicateStampRouteClient, 'stamp_rally_records');
+$duplicateStampRouteApp = createRallyAppWithConfig($configuredChoiceConfig, $duplicateStampRouteRepository);
+$duplicateStampRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_STAMP)
+    ->withHeader('Origin', 'https://example.test')
+    ->withParsedBody(['token' => 'route-token-2']);
+$duplicateStampResponse = $duplicateStampRouteApp->handle($duplicateStampRequest);
+$duplicateStampPayload = json_decode((string) $duplicateStampResponse->getBody(), true);
+assertSameValue(409, $duplicateStampResponse->getStatusCode(), 'Stamp rally stamp route rejects already acquired stamps');
+assertSameValue([
+    'ok' => false,
+    'error' => 'stamp_already_acquired',
+    'stamp' => 2,
+    'stamps' => [1, 2],
+    'record' => [
+        'id' => 57,
+        'value' => [
+            'LINE_ID' => 'U-route-stamp',
+            'collected_stamps' => '1,2',
+        ],
+    ],
+], $duplicateStampPayload, 'Stamp rally stamp route returns existing stamps when duplicate stamp is rejected');
+assertSameValue(1, count($duplicateStampRouteClient->calls), 'Stamp rally stamp route does not update duplicate stamp records');
 
 $outOfOrderRouteClient = new FakeExmentClient([
     [
@@ -724,6 +861,90 @@ assertSameValue([
         ],
     ],
 ], $choiceRouteRepositoryClient->calls, 'Stamp rally choice route writes choices using repository');
+
+$endingRouteRepositoryClient = new FakeExmentClient(
+    [[
+        'data' => [[
+            'id' => 66,
+            'value' => [
+                'LINE_ID' => 'U-route-ending',
+                'loop_count' => 1,
+                'collected_endings' => '',
+            ],
+        ]],
+    ]],
+    [],
+    [
+        'id' => 66,
+        'value' => [
+            'LINE_ID' => 'U-route-ending',
+            'loop_count' => 2,
+            'collected_endings' => 'END-01',
+        ],
+    ],
+);
+$endingRouteRepository = new StampRallyRecordRepository($endingRouteRepositoryClient, 'stamp_rally_records');
+$endingRouteApp = createRallyAppWithConfig($configuredChoiceConfig, $endingRouteRepository);
+
+setLineUserIdForSession('U-route-ending');
+$successfulEndingRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_ENDING)
+    ->withHeader('Origin', 'https://example.test')
+    ->withParsedBody(['endingId' => 'END-01']);
+$successfulEndingResponse = $endingRouteApp->handle($successfulEndingRequest);
+$successfulEndingPayload = json_decode((string) $successfulEndingResponse->getBody(), true);
+assertSameValue(200, $successfulEndingResponse->getStatusCode(), 'Stamp rally ending route saves endings when request is valid');
+assertSameValue([
+    'ok' => true,
+    'endingId' => 'END-01',
+    'endings' => ['END-01'],
+    'loopCount' => 2,
+    'cleared' => false,
+    'record' => [
+        'id' => 66,
+        'value' => [
+            'LINE_ID' => 'U-route-ending',
+            'loop_count' => 2,
+            'collected_endings' => 'END-01',
+        ],
+    ],
+], $successfulEndingPayload, 'Stamp rally ending route returns saved ending payload');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U-route-ending',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/66',
+        'payload' => [
+            'value' => [
+                'collected_endings' => 'END-01',
+                'loop_count' => 2,
+            ],
+        ],
+    ],
+], $endingRouteRepositoryClient->calls, 'Stamp rally ending route writes endings using repository');
+
+$invalidEndingRouteRepositoryClient = new FakeExmentClient();
+$invalidEndingRouteRepository = new StampRallyRecordRepository($invalidEndingRouteRepositoryClient, 'stamp_rally_records');
+$invalidEndingRouteApp = createRallyAppWithConfig($configuredChoiceConfig, $invalidEndingRouteRepository);
+
+setLineUserIdForSession('U-route-ending');
+$invalidEndingRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_ENDING)
+    ->withHeader('Origin', 'https://example.test')
+    ->withParsedBody(['endingId' => 'END-EX']);
+$invalidEndingResponse = $invalidEndingRouteApp->handle($invalidEndingRequest);
+$invalidEndingPayload = json_decode((string) $invalidEndingResponse->getBody(), true);
+assertSameValue(400, $invalidEndingResponse->getStatusCode(), 'Stamp rally ending route rejects unknown ending IDs');
+assertSameValue([
+    'ok' => false,
+    'error' => 'invalid_ending',
+], $invalidEndingPayload, 'Stamp rally ending route reports invalid ending IDs');
+assertSameValue([], $invalidEndingRouteRepositoryClient->calls, 'Stamp rally ending route does not call Exment for unknown ending IDs');
 
 if ($failures > 0) {
     fwrite(STDERR, "{$failures} PHP test assertion(s) failed.\n");
