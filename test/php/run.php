@@ -523,6 +523,106 @@ assertTrueValue($alreadyAcquiredResult['alreadyAcquired'], 'Repository treats al
 assertSameValue([1, 2], $alreadyAcquiredResult['stamps'], 'Repository returns existing collected stamps');
 assertSameValue(1, count($alreadyAcquiredClient->calls), 'Repository does not update already collected stamps');
 
+$stuckCompletedLoopClient = new FakeExmentClient(
+    [
+        [
+            'data' => [
+                [
+                    'id' => 22,
+                    'value' => [
+                        'LINE_ID' => 'U-stamp-stuck',
+                        'loop_count' => 2,
+                        'collected_stamps' => '1,2,3,4,5',
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [],
+    [
+        'id' => 22,
+        'value' => [
+            'LINE_ID' => 'U-stamp-stuck',
+            'loop_count' => 2,
+            'collected_stamps' => '1',
+        ],
+    ],
+);
+$stuckCompletedLoopRepository = new StampRallyRecordRepository($stuckCompletedLoopClient, 'stamp_rally_records');
+$stuckCompletedLoopResult = $stuckCompletedLoopRepository->acquireStampByLineId('U-stamp-stuck', 1);
+assertFalseValue($stuckCompletedLoopResult['alreadyAcquired'], 'Repository restarts stuck completed loops from stamp 1');
+assertSameValue([1], $stuckCompletedLoopResult['stamps'], 'Repository returns restarted stamp progression');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U-stamp-stuck',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/22',
+        'payload' => [
+            'value' => [
+                'collected_stamps' => '1',
+            ],
+        ],
+    ],
+], $stuckCompletedLoopClient->calls, 'Repository rewrites stuck completed loop stamps from stamp 1');
+
+$stuckFirstLoopCompletedClient = new FakeExmentClient(
+    [
+        [
+            'data' => [
+                [
+                    'id' => 23,
+                    'value' => [
+                        'LINE_ID' => 'U-stamp-stuck-loop1',
+                        'loop_count' => 1,
+                        'collected_endings' => 'END-01',
+                        'collected_stamps' => '1,2,3,4,5',
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [],
+    [
+        'id' => 23,
+        'value' => [
+            'LINE_ID' => 'U-stamp-stuck-loop1',
+            'loop_count' => 1,
+            'collected_endings' => 'END-01',
+            'collected_stamps' => '1',
+        ],
+    ],
+);
+$stuckFirstLoopCompletedRepository = new StampRallyRecordRepository($stuckFirstLoopCompletedClient, 'stamp_rally_records');
+$stuckFirstLoopCompletedResult = $stuckFirstLoopCompletedRepository->acquireStampByLineId('U-stamp-stuck-loop1', 1);
+assertFalseValue($stuckFirstLoopCompletedResult['alreadyAcquired'], 'Repository restarts loop-1 records that already reached an ending');
+assertSameValue([1], $stuckFirstLoopCompletedResult['stamps'], 'Repository returns restarted loop-1 stamp progression');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U-stamp-stuck-loop1',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/23',
+        'payload' => [
+            'value' => [
+                'collected_stamps' => '1',
+            ],
+        ],
+    ],
+], $stuckFirstLoopCompletedClient->calls, 'Repository rewrites loop-1 records that already reached an ending');
+
 $outOfOrderClient = new FakeExmentClient([
     [
         'data' => [
@@ -567,7 +667,7 @@ $endingClient = new FakeExmentClient(
             'LINE_ID' => 'U-ending-1',
             'loop_count' => 2,
             'collected_endings' => 'END-01,END-05',
-            'collected_stamps' => '',
+            'collected_stamps' => null,
         ],
     ],
 );
@@ -593,11 +693,65 @@ assertSameValue([
             'value' => [
                 'collected_endings' => 'END-01,END-05',
                 'loop_count' => 2,
-                'collected_stamps' => '',
+                'collected_stamps' => null,
             ],
         ],
     ],
 ], $endingClient->calls, 'Repository updates collected endings and resets stamps for the next loop with PUT');
+
+$duplicateEndingCompletedLoopClient = new FakeExmentClient(
+    [
+        [
+            'data' => [
+                [
+                    'id' => 21,
+                    'value' => [
+                        'LINE_ID' => 'U-ending-duplicate',
+                        'loop_count' => 2,
+                        'collected_endings' => 'END-AI',
+                        'collected_stamps' => '1,2,3,4,5',
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [],
+    [
+        'id' => 21,
+        'value' => [
+            'LINE_ID' => 'U-ending-duplicate',
+            'loop_count' => 3,
+            'collected_endings' => 'END-AI',
+            'collected_stamps' => null,
+        ],
+    ],
+);
+$duplicateEndingCompletedLoopRepository = new StampRallyRecordRepository($duplicateEndingCompletedLoopClient, 'stamp_rally_records');
+$duplicateEndingCompletedLoopResult = $duplicateEndingCompletedLoopRepository->saveEndingByLineId('U-ending-duplicate', 'END-AI');
+assertSameValue(['END-AI'], $duplicateEndingCompletedLoopResult['endings'], 'Repository deduplicates already collected ending IDs');
+assertSameValue(3, $duplicateEndingCompletedLoopResult['loopCount'], 'Repository advances completed loops even when the ending ID already exists');
+assertFalseValue($duplicateEndingCompletedLoopResult['cleared'], 'Repository does not clear END-AI before loop 3');
+assertSameValue([
+    [
+        'method' => 'GET',
+        'path' => '/api/data/stamp_rally_records/query-column',
+        'query' => [
+            'q' => 'LINE_ID eq U-ending-duplicate',
+            'count' => 1,
+        ],
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/data/stamp_rally_records/21',
+        'payload' => [
+            'value' => [
+                'collected_endings' => 'END-AI',
+                'loop_count' => 3,
+                'collected_stamps' => null,
+            ],
+        ],
+    ],
+], $duplicateEndingCompletedLoopClient->calls, 'Repository resets stamps for duplicate endings when the current loop is complete');
 
 $trueEndingClient = new FakeExmentClient([
     [
@@ -983,7 +1137,7 @@ $endingRouteRepositoryClient = new FakeExmentClient(
             'LINE_ID' => 'U-route-ending',
             'loop_count' => 2,
             'collected_endings' => 'END-01',
-            'collected_stamps' => '',
+            'collected_stamps' => null,
         ],
     ],
 );
@@ -1009,7 +1163,7 @@ assertSameValue([
             'LINE_ID' => 'U-route-ending',
             'loop_count' => 2,
             'collected_endings' => 'END-01',
-            'collected_stamps' => '',
+            'collected_stamps' => null,
         ],
     ],
 ], $successfulEndingPayload, 'Stamp rally ending route returns saved ending payload');
@@ -1029,7 +1183,7 @@ assertSameValue([
             'value' => [
                 'collected_endings' => 'END-01',
                 'loop_count' => 2,
-                'collected_stamps' => '',
+                'collected_stamps' => null,
             ],
         ],
     ],

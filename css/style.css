@@ -439,6 +439,43 @@
             margin-bottom: 12px;
         }
 
+        .temporal-error-panel {
+            border-color: var(--warning-yellow);
+            background: rgba(32, 12, 12, 0.96);
+            box-shadow: 0 0 22px rgba(255, 209, 102, 0.25);
+        }
+
+        .temporal-error-panel .ending-display-title {
+            color: var(--warning-yellow);
+        }
+
+        .temporal-error-kicker {
+            font-size: 0.75rem;
+            color: var(--warning-yellow);
+            font-family: var(--font-mono);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .temporal-error-quote {
+            border: 1px solid rgba(255, 209, 102, 0.45);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 0.82rem;
+            line-height: 1.6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .temporal-error-speaker {
+            color: var(--warning-yellow);
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
 [v-cloak] {
     display: none;
 }
