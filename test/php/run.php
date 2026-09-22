@@ -206,11 +206,6 @@ $config = AppConfig::fromEnv([
     'EXMENT_CLIENT_ID' => 'exment-client',
     'EXMENT_CLIENT_SECRET' => 'exment-secret',
     'EXMENT_STAMP_RALLY_TABLE' => 'stamp_rally_records',
-    'STAMP_TOKEN_1' => 'token-1',
-    'STAMP_TOKEN_2' => 'token-2',
-    'STAMP_TOKEN_3' => 'token-3',
-    'STAMP_TOKEN_4' => 'token-4',
-    'STAMP_TOKEN_5' => 'token-5',
 ]);
 
 assertSameValue('local', $config->env, 'APP_ENV is loaded');
@@ -223,13 +218,6 @@ assertTrueValue($config->exment->isConfigured(), 'Exment config reports configur
 assertSameValue('https://exment.example.test', $config->exment->baseUrl, 'Exment base URL trims trailing slash');
 assertSameValue('exment-api-key', $config->exment->apiKey, 'Exment API key is loaded');
 assertSameValue('stamp_rally_records', $config->exment->stampRallyTable, 'Exment table name is loaded');
-assertSameValue([
-    1 => 'token-1',
-    2 => 'token-2',
-    3 => 'token-3',
-    4 => 'token-4',
-    5 => 'token-5',
-], $config->stampTokens, 'Stamp QR tokens are loaded');
 
 $missingApiKeyConfig = AppConfig::fromEnv([
     'EXMENT_BASE_URL' => 'https://exment.example.test',
@@ -249,7 +237,6 @@ assertSameValue('digital_stamp_rally', $defaultConfig->exment->stampRallyTable, 
 assertSameValue('/api/health', RouteNames::API_HEALTH, 'API health route is stable');
 assertSameValue('/api/stamp-rally/health', RouteNames::STAMP_RALLY_HEALTH, 'Stamp rally health route is stable');
 assertSameValue('/api/stamp-rally/init', RouteNames::STAMP_RALLY_INIT, 'Stamp rally init route is reserved');
-assertSameValue('/api/stamp-rally/stamp', RouteNames::STAMP_RALLY_STAMP, 'Stamp rally stamp route is reserved');
 assertSameValue('/api/stamp-rally/choice', RouteNames::STAMP_RALLY_CHOICE, 'Stamp rally choice route is reserved');
 assertSameValue('/api/stamp-rally/ending', RouteNames::STAMP_RALLY_ENDING, 'Stamp rally ending route is reserved');
 assertSameValue('/auth/line/start', RouteNames::LINE_LOGIN_START, 'LINE login start route is reserved');
@@ -407,96 +394,6 @@ assertSameValue([
     ],
 ], $choiceClient->calls, 'Repository updates Exment choices with PUT');
 
-$stampClient = new FakeExmentClient(
-    [
-        [
-            'data' => [
-                [
-                    'id' => 15,
-                    'value' => [
-                        'LINE_ID' => 'U-stamp-1',
-                        'loop_count' => 1,
-                        'collected_stamps' => '1,2',
-                    ],
-                ],
-            ],
-        ],
-    ],
-    [],
-    [
-        'id' => 15,
-        'value' => [
-            'LINE_ID' => 'U-stamp-1',
-            'loop_count' => 1,
-            'collected_stamps' => '1,2,3',
-        ],
-    ],
-);
-$stampRepository = new StampRallyRecordRepository($stampClient, 'stamp_rally_records');
-$stampResult = $stampRepository->acquireStampByLineId('U-stamp-1', 3);
-assertSameValue(3, $stampResult['stamp'], 'Repository returns acquired stamp ID');
-assertSameValue([1, 2, 3], $stampResult['stamps'], 'Repository returns collected stamps');
-assertFalseValue($stampResult['alreadyAcquired'], 'Repository reports newly acquired stamp');
-assertSameValue([
-    [
-        'method' => 'GET',
-        'path' => '/api/data/stamp_rally_records/query-column',
-        'query' => [
-            'q' => 'LINE_ID eq U-stamp-1',
-            'count' => 1,
-        ],
-    ],
-    [
-        'method' => 'PUT',
-        'path' => '/api/data/stamp_rally_records/15',
-        'payload' => [
-            'value' => [
-                'collected_stamps' => '1,2,3',
-            ],
-        ],
-    ],
-], $stampClient->calls, 'Repository updates collected stamps with PUT');
-
-$alreadyAcquiredClient = new FakeExmentClient([
-    [
-        'data' => [
-            [
-                'id' => 16,
-                'value' => [
-                    'LINE_ID' => 'U-stamp-2',
-                    'collected_stamps' => '1,2',
-                ],
-            ],
-        ],
-    ],
-]);
-$alreadyAcquiredRepository = new StampRallyRecordRepository($alreadyAcquiredClient, 'stamp_rally_records');
-$alreadyAcquiredResult = $alreadyAcquiredRepository->acquireStampByLineId('U-stamp-2', 2);
-assertTrueValue($alreadyAcquiredResult['alreadyAcquired'], 'Repository treats already collected stamps as success');
-assertSameValue([1, 2], $alreadyAcquiredResult['stamps'], 'Repository returns existing collected stamps');
-assertSameValue(1, count($alreadyAcquiredClient->calls), 'Repository does not update already collected stamps');
-
-$outOfOrderClient = new FakeExmentClient([
-    [
-        'data' => [
-            [
-                'id' => 17,
-                'value' => [
-                    'LINE_ID' => 'U-stamp-3',
-                    'collected_stamps' => '1',
-                ],
-            ],
-        ],
-    ],
-]);
-$outOfOrderRepository = new StampRallyRecordRepository($outOfOrderClient, 'stamp_rally_records');
-try {
-    $outOfOrderRepository->acquireStampByLineId('U-stamp-3', 3);
-    assertTrueValue(false, 'Repository rejects out-of-order stamps');
-} catch (DomainException $exception) {
-    assertSameValue('out_of_order_stamp', $exception->getMessage(), 'Repository reports out-of-order stamps');
-}
-
 $app = createRallyAppWithConfig(AppConfig::fromEnv());
 $request = (new ServerRequestFactory())->createServerRequest('GET', RouteNames::STAMP_RALLY_INIT);
 $response = $app->handle($request);
@@ -523,103 +420,7 @@ $configuredChoiceConfig = AppConfig::fromEnv([
     'EXMENT_CLIENT_ID' => 'exment-client',
     'EXMENT_CLIENT_SECRET' => 'exment-secret',
     'EXMENT_STAMP_RALLY_TABLE' => 'stamp_rally_records',
-    'STAMP_TOKEN_1' => 'route-token-1',
-    'STAMP_TOKEN_2' => 'route-token-2',
-    'STAMP_TOKEN_3' => 'route-token-3',
-    'STAMP_TOKEN_4' => 'route-token-4',
-    'STAMP_TOKEN_5' => 'route-token-5',
 ]);
-
-$stampRouteRepositoryClient = new FakeExmentClient(
-    [[
-        'data' => [[
-            'id' => 55,
-            'value' => [
-                'LINE_ID' => 'U-route-stamp',
-                'collected_stamps' => '1',
-            ],
-        ]],
-    ]],
-    [],
-    [
-        'id' => 55,
-        'value' => [
-            'LINE_ID' => 'U-route-stamp',
-            'collected_stamps' => '1,2',
-        ],
-    ],
-);
-$stampRouteRepository = new StampRallyRecordRepository($stampRouteRepositoryClient, 'stamp_rally_records');
-$stampRouteApp = createRallyAppWithConfig($configuredChoiceConfig, $stampRouteRepository);
-
-setLineUserIdForSession(null);
-$unauthorizedStampRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_STAMP)
-    ->withParsedBody(['token' => 'route-token-2']);
-$unauthorizedStampResponse = $stampRouteApp->handle($unauthorizedStampRequest);
-$unauthorizedStampPayload = json_decode((string) $unauthorizedStampResponse->getBody(), true);
-assertSameValue(401, $unauthorizedStampResponse->getStatusCode(), 'Stamp rally stamp route returns 401 when session user is missing');
-assertSameValue(['ok' => false, 'requiresLogin' => true], $unauthorizedStampPayload, 'Stamp rally stamp route returns login-required payload');
-
-setLineUserIdForSession('U-route-stamp');
-$csrfRejectedStampRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_STAMP)
-    ->withParsedBody(['token' => 'route-token-2']);
-$csrfRejectedStampResponse = $stampRouteApp->handle($csrfRejectedStampRequest);
-$csrfRejectedStampPayload = json_decode((string) $csrfRejectedStampResponse->getBody(), true);
-assertSameValue(403, $csrfRejectedStampResponse->getStatusCode(), 'Stamp rally stamp route rejects requests without same-origin headers');
-assertSameValue(['ok' => false, 'error' => 'invalid_origin'], $csrfRejectedStampPayload, 'Stamp rally stamp route reports invalid origin');
-
-$unknownTokenRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_STAMP)
-    ->withHeader('Origin', 'https://example.test')
-    ->withParsedBody(['token' => 'bad-token']);
-$unknownTokenResponse = $stampRouteApp->handle($unknownTokenRequest);
-$unknownTokenPayload = json_decode((string) $unknownTokenResponse->getBody(), true);
-assertSameValue(403, $unknownTokenResponse->getStatusCode(), 'Stamp rally stamp route rejects unknown tokens');
-assertSameValue(['ok' => false, 'error' => 'unknown_token'], $unknownTokenPayload, 'Stamp rally stamp route reports unknown token');
-
-$successfulStampRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_STAMP)
-    ->withHeader('Origin', 'https://example.test')
-    ->withParsedBody(['token' => 'route-token-2']);
-$successfulStampResponse = $stampRouteApp->handle($successfulStampRequest);
-$successfulStampPayload = json_decode((string) $successfulStampResponse->getBody(), true);
-assertSameValue(200, $successfulStampResponse->getStatusCode(), 'Stamp rally stamp route saves stamp when request is valid');
-assertSameValue([
-    'ok' => true,
-    'stamp' => 2,
-    'stamps' => [1, 2],
-    'alreadyAcquired' => false,
-    'record' => [
-        'id' => 55,
-        'value' => [
-            'LINE_ID' => 'U-route-stamp',
-            'collected_stamps' => '1,2',
-        ],
-    ],
-], $successfulStampPayload, 'Stamp rally stamp route returns acquired stamp payload');
-
-$outOfOrderRouteClient = new FakeExmentClient([
-    [
-        'data' => [[
-            'id' => 56,
-            'value' => [
-                'LINE_ID' => 'U-route-stamp',
-                'collected_stamps' => '1',
-            ],
-        ]],
-    ],
-]);
-$outOfOrderRouteRepository = new StampRallyRecordRepository($outOfOrderRouteClient, 'stamp_rally_records');
-$outOfOrderRouteApp = createRallyAppWithConfig($configuredChoiceConfig, $outOfOrderRouteRepository);
-$outOfOrderStampRequest = (new ServerRequestFactory())->createServerRequest('POST', RouteNames::STAMP_RALLY_STAMP)
-    ->withHeader('Origin', 'https://example.test')
-    ->withParsedBody(['token' => 'route-token-3']);
-$outOfOrderStampResponse = $outOfOrderRouteApp->handle($outOfOrderStampRequest);
-$outOfOrderStampPayload = json_decode((string) $outOfOrderStampResponse->getBody(), true);
-assertSameValue(409, $outOfOrderStampResponse->getStatusCode(), 'Stamp rally stamp route rejects out-of-order stamps');
-assertSameValue([
-    'ok' => false,
-    'error' => 'out_of_order_stamp',
-    'stamp' => 3,
-], $outOfOrderStampPayload, 'Stamp rally stamp route reports out-of-order stamp');
 
 $choiceRouteRepositoryClient = new FakeExmentClient(
     [[

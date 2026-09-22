@@ -13,8 +13,6 @@ final class AppConfig
         public readonly string $publicSiteUrl,
         public readonly LineConfig $line,
         public readonly ExmentConfig $exment,
-        /** @var array<int, string> */
-        public readonly array $stampTokens,
     ) {
     }
 
@@ -48,25 +46,7 @@ final class AppConfig
                 clientSecret: self::stringValue($env, 'EXMENT_CLIENT_SECRET', ''),
                 stampRallyTable: self::stringValue($env, 'EXMENT_STAMP_RALLY_TABLE', 'digital_stamp_rally'),
             ),
-            stampTokens: self::stampTokens($env),
         );
-    }
-
-    /**
-     * @param array<string, string|bool|int|null> $env
-     * @return array<int, string>
-     */
-    private static function stampTokens(array $env): array
-    {
-        $tokens = [];
-        for ($stampId = 1; $stampId <= 5; $stampId++) {
-            $token = self::stringValue($env, "STAMP_TOKEN_{$stampId}", '');
-            if ($token !== '') {
-                $tokens[$stampId] = $token;
-            }
-        }
-
-        return $tokens;
     }
 
     /**

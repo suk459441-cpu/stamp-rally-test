@@ -196,10 +196,6 @@ async function loadRally({ search = '', savedState = null, loadApp = true, stubA
                 globalThis.__apiCalls.push({ method: 'saveChoice', choices });
                 return { choices };
             };
-            StampRallyApi.acquireStamp = async (token) => {
-                globalThis.__apiCalls.push({ method: 'acquireStamp', token });
-                return globalThis.__stampResults?.[token] || { ok: true, stamp: 1, stamps: [1] };
-            };
             StampRallyApi.saveEnding = async (endingId) => {
                 globalThis.__apiCalls.push({ method: 'saveEnding', endingId });
                 return { endingId };
@@ -399,51 +395,6 @@ test('API saveChoice posts choices without sending userId', async () => {
     assert.equal(JSON.stringify(context.__apiFetchCalls).includes('userId'), false);
 });
 
-test('API acquireStamp posts token without sending userId', async () => {
-    const { context } = await loadRally({ loadApp: false, stubApi: false });
-
-    context.__apiFetchCalls = [];
-    context.fetch = async (requestPath, options) => {
-        context.__apiFetchCalls.push({ requestPath, options });
-        return {
-            ok: true,
-            status: 200,
-            async json() {
-                return {
-                    ok: true,
-                    stamp: 2,
-                    stamps: [1, 2],
-                    alreadyAcquired: false
-                };
-            }
-        };
-    };
-
-    const result = await vm.runInContext(`StampRallyApi.acquireStamp('token-2')`, context);
-
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
-        ok: true,
-        stamp: 2,
-        stamps: [1, 2],
-        alreadyAcquired: false
-    });
-    assert.deepEqual(JSON.parse(JSON.stringify(context.__apiFetchCalls)), [
-        {
-            requestPath: '/api/stamp-rally/stamp',
-            options: {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ token: 'token-2' })
-            }
-        }
-    ]);
-    assert.equal(JSON.stringify(context.__apiFetchCalls).includes('userId'), false);
-});
-
 test('API saveEnding returns only the requested payload', async () => {
     const { context } = await loadRally({ loadApp: false, stubApi: false });
     const result = await vm.runInContext(`StampRallyApi.saveEnding('END-01')`, context);
@@ -479,7 +430,6 @@ test('app applies Exment record values returned by initialization', async () => 
             value: {
                 loop_count: '2',
                 collected_endings: 'END-01, END-05',
-                collected_stamps: '1,2,3',
                 loop1_choices: 'A,A,A',
                 loop2_choices: 'B, A'
             }
@@ -493,7 +443,6 @@ test('app applies Exment record values returned by initialization', async () => 
     const app = context.__app;
 
     assert.equal(app.state.loopCount, 2);
-    assert.deepEqual(Array.from(app.state.stamps), [1, 2, 3]);
     assert.deepEqual(Array.from(app.state.discoveredEndings), ['END-01', 'END-05']);
     assert.deepEqual(Array.from(app.state.currentChoices), ['B', 'A']);
 
@@ -623,23 +572,17 @@ test('triggerEnding deduplicates endings, advances loop count, and saves END id'
     assert.equal(elements.get('chat-box').children.length, 2);
 });
 
-test('processUrlParams ignores direct stamp parameters', async () => {
-    const { app, apiCalls, elements } = await loadRally({ search: '?stamp=1' });
+test('processUrlParams acquires the expected next stamp', async () => {
+    const { app, elements } = await loadRally({ search: '?stamp=1' });
 
-    assert.deepEqual(Array.from(app.state.stamps), []);
-    assert.equal(app.state.currentSpot, 0);
-    assert.equal(elements.has('story-location-tag'), false);
-    assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), [{ method: 'initialize' }]);
+    assert.deepEqual(Array.from(app.state.stamps), [1]);
+    assert.equal(app.state.currentSpot, 1);
+    assert.equal(elements.get('start-btn').style.display, 'none');
+    assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
 });
 
-test('processUrlParams acquires stamps from server-validated tokens and opens each checkpoint event', async () => {
-    const { context, app, apiCalls, elements } = await loadRally({ search: '?token=token-1' });
-    context.__stampResults = {
-        'token-2': { ok: true, stamp: 2, stamps: [1, 2] },
-        'token-3': { ok: true, stamp: 3, stamps: [1, 2, 3] },
-        'token-4': { ok: true, stamp: 4, stamps: [1, 2, 3, 4] },
-        'token-5': { ok: true, stamp: 5, stamps: [1, 2, 3, 4, 5] }
-    };
+test('processUrlParams acquires stamps sequentially and opens each checkpoint event', async () => {
+    const { context, app, elements } = await loadRally({ search: '?stamp=1' });
 
     assert.deepEqual(Array.from(app.state.stamps), [1]);
     assert.equal(app.state.currentSpot, 1);
@@ -648,8 +591,8 @@ test('processUrlParams acquires stamps from server-validated tokens and opens ea
     assert.equal(elements.get('chat-controls').style.display, 'block');
 
     for (const stampId of [2, 3, 4, 5]) {
-        context.window.location.search = `?token=token-${stampId}`;
-        await app.processUrlParams();
+        context.window.location.search = `?stamp=${stampId}`;
+        app.processUrlParams();
 
         assert.deepEqual(Array.from(app.state.stamps), Array.from({ length: stampId }, (_, index) => index + 1));
         assert.equal(app.state.currentSpot, stampId);
@@ -658,36 +601,14 @@ test('processUrlParams acquires stamps from server-validated tokens and opens ea
         assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
         assert.equal(elements.get('chat-controls').style.display, 'block');
     }
-
-    assert.deepEqual(
-        JSON.parse(JSON.stringify(apiCalls.filter((call) => call.method === 'acquireStamp'))),
-        [
-            { method: 'acquireStamp', token: 'token-1' },
-            { method: 'acquireStamp', token: 'token-2' },
-            { method: 'acquireStamp', token: 'token-3' },
-            { method: 'acquireStamp', token: 'token-4' },
-            { method: 'acquireStamp', token: 'token-5' }
-        ]
-    );
 });
 
-test('processUrlParams shows an error when token acquisition fails', async () => {
-    const { context, app, elements } = await loadRally({ search: '', loadApp: false });
+test('processUrlParams rejects out-of-order stamps', async () => {
+    const { app, elements } = await loadRally({ search: '?stamp=3' });
 
-    await vm.runInContext(`
-        StampRallyApi.acquireStamp = async () => {
-            throw new Error('out_of_order_stamp');
-        };
-    `, context);
-    runScript(context, 'app.js');
-    await context.window.StampRallyAppPromise;
-    await context.__mountedResult;
-    context.window.location.search = '?token=bad-token';
-    await context.__app.processUrlParams();
-
-    assert.deepEqual(Array.from(context.__app.state.stamps), []);
-    assert.equal(context.__app.state.currentSpot, 0);
-    assert.match(elements.get('chat-box').innerHTML, /QR/);
+    assert.deepEqual(Array.from(app.state.stamps), []);
+    assert.equal(app.state.currentSpot, 0);
+    assert.match(elements.get('chat-box').innerHTML, /0?1/);
     assert.equal(elements.get('chat-controls').style.display, 'none');
 });
 
@@ -702,18 +623,16 @@ test('loadState falls back to the initial state for invalid localStorage JSON', 
     assert.deepEqual(Array.from(app.state.stamps), []);
 });
 
-test('startInvestigation waits for a QR token before opening the first spot', async () => {
+test('startInvestigation acquires the first stamp, then reopens the first spot', async () => {
     const { app, elements } = await loadRally();
 
     app.startInvestigation();
 
-    assert.deepEqual(Array.from(app.state.stamps), []);
-    assert.equal(app.state.currentSpot, 0);
+    assert.deepEqual(Array.from(app.state.stamps), [1]);
+    assert.equal(app.state.currentSpot, 1);
     assert.equal(elements.get('start-btn').style.display, 'none');
     assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
-    assert.match(elements.get('chat-box').innerHTML, /QR/);
 
-    app.state.stamps = [1];
     app.startInvestigation();
 
     assert.deepEqual(Array.from(app.state.stamps), [1]);
