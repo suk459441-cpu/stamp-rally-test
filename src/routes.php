@@ -120,21 +120,41 @@ return static function (App $app): void {
         return $choices;
     };
 
-    $app->get(RouteNames::API_HEALTH, static function (Request $request, Response $response): Response {
+    $sanitizeToken = static function (mixed $value): ?string {
+        if (!is_string($value) && !is_numeric($value)) {
+            return null;
+        }
+
+        $token = trim((string) $value);
+
+        return $token === '' ? null : $token;
+    };
+
+    $stampIdFromToken = static function (string $token, array $stampTokens): ?int {
+        foreach ($stampTokens as $stampId => $configuredToken) {
+            if (is_string($configuredToken) && hash_equals($configuredToken, $token)) {
+                return (int) $stampId;
+            }
+        }
+
+        return null;
+    };
+
+    $app->get(RouteNames::API_HEALTH, function (Request $request, Response $response): Response {
         return JsonResponse::write($response, [
             'ok' => true,
             'service' => 'stamp-rally-api',
         ]);
     });
 
-    $app->get(RouteNames::STAMP_RALLY_HEALTH, static function (Request $request, Response $response): Response {
+    $app->get(RouteNames::STAMP_RALLY_HEALTH, function (Request $request, Response $response): Response {
         return JsonResponse::write($response, [
             'ok' => true,
             'feature' => 'stamp-rally',
         ]);
     });
 
-    $app->get(RouteNames::STAMP_RALLY_INIT, static function (Request $request, Response $response) use ($app, $toPublicPath, $writePrivateJson): Response {
+    $app->get(RouteNames::STAMP_RALLY_INIT, function (Request $request, Response $response) use ($app, $toPublicPath, $writePrivateJson, $resolveRepository): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
         $userId = (new LineUserIdResolver())->resolve($request);
 
@@ -156,7 +176,7 @@ return static function (App $app): void {
         }
 
         try {
-            $result = $repository($config)->findOrCreateByLineId($userId);
+            $result = $resolveRepository($config)->findOrCreateByLineId($userId);
         } catch (\Throwable $exception) {
             return $writePrivateJson($response, [
                 'ok' => false,
@@ -172,7 +192,81 @@ return static function (App $app): void {
         ]);
     });
 
-    $app->post(RouteNames::STAMP_RALLY_CHOICE, static function (Request $request, Response $response) use ($app, $writePrivateJson, $resolveRepository, $sanitizeChoices, $isAllowedSameOrigin): Response {
+    $app->post(RouteNames::STAMP_RALLY_STAMP, function (Request $request, Response $response) use ($app, $writePrivateJson, $resolveRepository, $isAllowedSameOrigin, $sanitizeToken, $stampIdFromToken): Response {
+        $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
+        $userId = (new LineUserIdResolver())->resolve($request);
+
+        if ($userId === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'requiresLogin' => true,
+            ], 401);
+        }
+
+        if (!$isAllowedSameOrigin($request, $config)) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'invalid_origin',
+            ], 403);
+        }
+
+        if (count($config->stampTokens) < 5) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'stamp_tokens_not_configured',
+            ], 503);
+        }
+
+        $body = $request->getParsedBody();
+        $token = is_array($body) ? $sanitizeToken($body['token'] ?? null) : null;
+        if ($token === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'invalid_token',
+            ], 400);
+        }
+
+        $stampId = $stampIdFromToken($token, $config->stampTokens);
+        if ($stampId === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'unknown_token',
+            ], 403);
+        }
+
+        if (!$config->exment->isConfigured()) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_not_configured',
+            ], 503);
+        }
+
+        try {
+            $result = $resolveRepository($config)->acquireStampByLineId($userId, $stampId);
+        } catch (\DomainException $exception) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => $exception->getMessage(),
+                'stamp' => $stampId,
+            ], $exception->getMessage() === 'out_of_order_stamp' ? 409 : 400);
+        } catch (\Throwable $exception) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_request_failed',
+                'message' => $config->debug ? $exception->getMessage() : 'Failed to acquire stamp.',
+            ], 502);
+        }
+
+        return $writePrivateJson($response, [
+            'ok' => true,
+            'stamp' => $result['stamp'],
+            'stamps' => $result['stamps'],
+            'alreadyAcquired' => $result['alreadyAcquired'],
+            'record' => $result['record'],
+        ]);
+    });
+
+    $app->post(RouteNames::STAMP_RALLY_CHOICE, function (Request $request, Response $response) use ($app, $writePrivateJson, $resolveRepository, $sanitizeChoices, $isAllowedSameOrigin): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
         $userId = (new LineUserIdResolver())->resolve($request);
 
@@ -224,7 +318,7 @@ return static function (App $app): void {
         ]);
     });
 
-    $app->get(RouteNames::LINE_LOGIN_START, static function (Request $request, Response $response) use ($app): Response {
+    $app->get(RouteNames::LINE_LOGIN_START, function (Request $request, Response $response) use ($app): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
 
         if (!$config->line->isConfigured()) {
@@ -249,7 +343,7 @@ return static function (App $app): void {
             ->withStatus(302);
     });
 
-    $app->get(RouteNames::LINE_LOGIN_CALLBACK, static function (Request $request, Response $response) use ($app, $toPublicPath): Response {
+    $app->get(RouteNames::LINE_LOGIN_CALLBACK, function (Request $request, Response $response) use ($app, $toPublicPath): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
 
         if (!$config->line->isConfigured()) {
