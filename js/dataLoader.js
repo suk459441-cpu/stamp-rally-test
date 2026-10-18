@@ -4,7 +4,8 @@ const StampRallyDataLoader = {
         CHARACTERS: 'characters.json',
         DIALOGUES: 'dialogues.json',
         DIALOGUES_LOOP2: 'dialoguesLoop2.json',
-        CHOICES_DATA: 'choices.json'
+        CHOICES_DATA: 'choices.json',
+        STORY_GRAPH: 'storyGraph.json'
     },
 
     resolvePath(basePath, fileName) {

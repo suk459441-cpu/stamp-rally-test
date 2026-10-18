@@ -39,6 +39,46 @@
     "name": "焦土作戦",
     "desc": "全てを破壊し、真相を闇に葬った。"
   },
+  "AI_DEFEATED": {
+    "id": "END-17",
+    "name": "AI撃破",
+    "desc": "中央制御コアを停止し、AIを止めた。"
+  },
+  "ALL_ESCAPED": {
+    "id": "END-18",
+    "name": "全員脱出",
+    "desc": "3人は無事に大学から脱出した。"
+  },
+  "ABANDONED_TEAM": {
+    "id": "END-19",
+    "name": "仲間を見捨てた結末",
+    "desc": "仲間を見捨てて先へ進んだ。"
+  },
+  "INFECTION_SPREAD": {
+    "id": "END-20",
+    "name": "感染拡大エンド",
+    "desc": "感染が広がり、調査は失敗に終わった。"
+  },
+  "LAST_SURVIVOR": {
+    "id": "END-21",
+    "name": "最後の生存者",
+    "desc": "あなたは生き残ったが、人類は救えなかった。"
+  },
+  "ALL_VR": {
+    "id": "END-22",
+    "name": "全部VRだった",
+    "desc": "ここまでの出来事はVR実験だった。"
+  },
+  "AI_COLLEGE_LIFE": {
+    "id": "END-23",
+    "name": "AIと愉快な大学生活",
+    "desc": "AIと大学生活を送ることになった。"
+  },
+  "UNKNOWN_TRUTH": {
+    "id": "END-24",
+    "name": "知られざる真実",
+    "desc": "事件の真実は最後まで分からなかった。"
+  },
   "AI_SELF_DESTRUCT": {
     "id": "END-AI",
     "name": "AI暴走自爆：喪失の静寂",
