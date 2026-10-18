@@ -1,0 +1,255 @@
+{
+  "start": "1",
+  "nodes": {
+    "1": {
+      "dialogueKey": "1",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A:意見を聞く",
+          "next": "2"
+        },
+        {
+          "value": "B",
+          "label": "B:意見を聞かない",
+          "next": "3"
+        }
+      ]
+    },
+    "2": {
+      "dialogueKey": "2",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：AIの指示に従う",
+          "next": "4"
+        },
+        {
+          "value": "B",
+          "label": "B：AIの指示を疑う",
+          "next": "5"
+        }
+      ]
+    },
+    "3": {
+      "dialogueKey": "2",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：AIの指示に従う",
+          "next": "6"
+        },
+        {
+          "value": "B",
+          "label": "B：AIの指示を疑う",
+          "next": "7"
+        }
+      ]
+    },
+    "4": {
+      "dialogueKey": "3",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：パソコンを起動する",
+          "next": "8"
+        },
+        {
+          "value": "B",
+          "label": "B：パソコンを起動しない",
+          "next": "9"
+        }
+      ]
+    },
+    "5": {
+      "dialogueKey": "3",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：ブンジを助ける",
+          "next": "18a"
+        },
+        {
+          "value": "B",
+          "label": "B：ブンジを見捨てる",
+          "next": "10"
+        }
+      ]
+    },
+    "6": {
+      "dialogueKey": "3",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：二人を見捨てる",
+          "next": "11"
+        },
+        {
+          "value": "B",
+          "label": "B：二人を助ける",
+          "next": "12"
+        }
+      ]
+    },
+    "7": {
+      "dialogueKey": "3",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：パソコンを起動する",
+          "next": "13"
+        },
+        {
+          "value": "B",
+          "label": "B：パソコンを起動しない",
+          "next": "14"
+        }
+      ]
+    },
+    "8": {
+      "dialogueKey": "4",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：AIを停止する",
+          "next": "15"
+        },
+        {
+          "value": "B",
+          "label": "B：AIを停止しない",
+          "next": "16"
+        }
+      ]
+    },
+    "9": {
+      "dialogueKey": "4",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "AIを倒す",
+          "next": "17"
+        }
+      ]
+    },
+    "10": {
+      "dialogueKey": "4",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A：キリコを助ける",
+          "next": "20"
+        },
+        {
+          "value": "B",
+          "label": "B：キリコを見捨てる",
+          "next": "19"
+        }
+      ]
+    },
+    "11": {
+      "dialogueKey": "4",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "一人でコールドスリープをする",
+          "next": "21"
+        }
+      ]
+    },
+    "12": {
+      "dialogueKey": "4",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "A:パソコンを破壊する",
+          "next": "22"
+        },
+        {
+          "value": "B",
+          "label": "B:パソコンを破壊しない",
+          "next": "23"
+        }
+      ]
+    },
+    "13": {
+      "dialogueKey": "4",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "人類は滅亡する",
+          "next": "24"
+        }
+      ]
+    },
+    "14": {
+      "dialogueKey": "4",
+      "question": "選択してください",
+      "options": [
+        {
+          "value": "A",
+          "label": "人類は滅亡した",
+          "next": "24"
+        }
+      ]
+    },
+    "15": {
+      "dialogueKey": "5",
+      "endingKey": "AI_SELF_DESTRUCT"
+    },
+    "16": {
+      "dialogueKey": "5",
+      "endingKey": "AI_SELF_DESTRUCT"
+    },
+    "17": {
+      "dialogueKey": "5",
+      "endingKey": "AI_DEFEATED"
+    },
+    "18": {
+      "dialogueKey": "5",
+      "endingKey": "ALL_ESCAPED"
+    },
+    "19": {
+      "dialogueKey": "5",
+      "endingKey": "ABANDONED_TEAM"
+    },
+    "20": {
+      "dialogueKey": "5",
+      "endingKey": "INFECTION_SPREAD"
+    },
+    "21": {
+      "dialogueKey": "5",
+      "endingKey": "LAST_SURVIVOR"
+    },
+    "22": {
+      "dialogueKey": "5",
+      "endingKey": "ALL_VR"
+    },
+    "23": {
+      "dialogueKey": "5",
+      "endingKey": "AI_COLLEGE_LIFE"
+    },
+    "24": {
+      "dialogueKey": "5",
+      "endingKey": "UNKNOWN_TRUTH"
+    },
+    "18a": {
+      "dialogueKey": "5",
+      "question": "選択してください",
+      "options": [],
+      "next": "18"
+    }
+  }
+}

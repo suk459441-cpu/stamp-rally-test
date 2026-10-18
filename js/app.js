@@ -5,13 +5,15 @@ const RALLY_CHARACTERS = RALLY_DATA.CHARACTERS;
 const RALLY_DIALOGUES = RALLY_DATA.DIALOGUES;
 const RALLY_DIALOGUES_LOOP2 = RALLY_DATA.DIALOGUES_LOOP2;
 const RALLY_CHOICES_DATA = RALLY_DATA.CHOICES_DATA;
+const RALLY_STORY_GRAPH = RALLY_DATA.STORY_GRAPH;
 
 const INITIAL_STATE = {
     loopCount: 1,
     stamps: [],
     currentChoices: [],
     discoveredEndings: [],
-    currentSpot: 0
+    currentSpot: 0,
+    currentNodeId: null
 };
 
 return Vue.createApp({
@@ -45,6 +47,16 @@ return Vue.createApp({
 
     methods: {
         async initializeRally() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('demo') === '1') {
+                this.loadState();
+                this.state.stamps = this.state.stamps.includes(1)
+                    ? this.state.stamps
+                    : [1, ...this.state.stamps];
+                this.saveState();
+                return;
+            }
+
             const initResult = await StampRallyApi.initialize();
             this.loadState();
             this.applyServerRecord(initResult?.record);
@@ -163,7 +175,7 @@ return Vue.createApp({
                 document.getElementById('next-guide-container').style.display = 'block';
             } else {
                 this.state.currentSpot = 1;
-                this.loadStorySpot(1);
+                this.loadStoryNode(RALLY_STORY_GRAPH.start);
             }
         },
 
@@ -275,6 +287,27 @@ return Vue.createApp({
             this.advanceDialogue();
         },
 
+        loadStoryNode(nodeId) {
+            const node = RALLY_STORY_GRAPH.nodes[String(nodeId)];
+            if (!node) {
+                this.showTemporalErrorEnding();
+                return;
+            }
+
+            this.state.currentNodeId = String(nodeId);
+            this.currentDialogueList = this.state.loopCount >= 2
+                ? RALLY_DIALOGUES_LOOP2[node.dialogueKey] || []
+                : RALLY_DIALOGUES[node.dialogueKey] || [];
+            this.dialogueIndex = 0;
+            this.currentChoiceData = null;
+            document.getElementById('story-location-tag').innerText = `STORY NODE ${nodeId}`;
+            document.getElementById('chat-box').innerHTML = '';
+            document.getElementById('next-guide-container').style.display = 'none';
+            document.getElementById('chat-controls').style.display = 'block';
+            this.saveState();
+            this.advanceDialogue();
+        },
+
         async advanceDialogue() {
             const chatBox = document.getElementById('chat-box');
 
@@ -308,6 +341,26 @@ return Vue.createApp({
 
             document.getElementById('chat-controls').style.display = 'none';
 
+            const storyNode = RALLY_STORY_GRAPH.nodes[String(this.state.currentNodeId)];
+            if (storyNode) {
+                if (storyNode.options) {
+                    this.currentChoiceData = storyNode;
+                    return;
+                }
+                if (storyNode.endingKey) {
+                    try {
+                        await this.triggerEnding(storyNode.endingKey);
+                    } catch (error) {
+                        this.handleEndingSaveError();
+                    }
+                    return;
+                }
+                if (storyNode.next) {
+                    this.loadStoryNode(storyNode.next);
+                    return;
+                }
+            }
+
             if (this.state.loopCount >= 2) {
                 if (this.state.currentSpot === 5) {
                     try {
@@ -340,14 +393,22 @@ return Vue.createApp({
                 return;
             }
 
-            const nextChoices = [...this.state.currentChoices, val];
+            const option = typeof val === 'string' ? { value: val } : val;
+            const nextChoices = [...this.state.currentChoices, option.value];
+            const isDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
             this.isChoiceSaveInFlight = true;
             try {
-                await StampRallyApi.saveChoice(nextChoices);
+                if (!isDemoMode) {
+                    await StampRallyApi.saveChoice(nextChoices);
+                }
                 this.state.currentChoices = nextChoices;
                 this.saveState();
                 this.currentChoiceData = null;
-                document.getElementById('next-guide-container').style.display = 'block';
+                if (typeof val !== 'string' && option.next) {
+                    this.loadStoryNode(option.next);
+                } else {
+                    document.getElementById('next-guide-container').style.display = 'block';
+                }
             } finally {
                 this.isChoiceSaveInFlight = false;
             }

@@ -50,7 +50,7 @@
                         class="btn"
                         v-for="opt in currentChoiceData.options"
                         :key="opt.value"
-                        @click="selectChoice(opt.value)"
+                        @click="selectChoice(opt)"
                     >{{ opt.label }}</button>
                 </div>
             </div>

@@ -603,6 +603,27 @@ test('app mounts, restores saved state, and keeps image paths under img/', async
     assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), [{ method: 'initialize' }]);
 });
 
+test('demo mode skips LINE initialization and unlocks the first story stamp', async () => {
+    const { app, apiCalls } = await loadRally({ search: '?demo=1' });
+
+    assert.deepEqual(Array.from(app.state.stamps), [1]);
+    assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), []);
+});
+
+test('demo mode advances to the next story node without the LINE API', async () => {
+    const { app, apiCalls } = await loadRally({ search: '?demo=1' });
+
+    app.startInvestigation();
+    while (app.dialogueIndex < app.currentDialogueList.length) {
+        await app.advanceDialogue();
+    }
+    await app.advanceDialogue();
+    await app.selectChoice(app.currentChoiceData.options[0]);
+
+    assert.equal(app.state.currentNodeId, '2');
+    assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), []);
+});
+
 test('app applies Exment record values returned by initialization', async () => {
     const { context, storage } = await loadRally({ loadApp: false });
 
@@ -981,6 +1002,65 @@ test('startInvestigation waits for a QR token before opening the first spot', as
 
     assert.deepEqual(Array.from(app.state.stamps), [1]);
     assert.equal(app.state.currentSpot, 1);
+});
+
+test('story nodes split quoted dialogue into character bubbles', async () => {
+    const { app, elements } = await loadRally({
+        savedState: {
+            loopCount: 1,
+            stamps: [1],
+            currentChoices: [],
+            discoveredEndings: [],
+            currentSpot: 0,
+            currentNodeId: null
+        }
+    });
+
+    app.startInvestigation();
+    const chatBox = elements.get('chat-box');
+    while (app.dialogueIndex < app.currentDialogueList.length) {
+        await app.advanceDialogue();
+    }
+    await app.advanceDialogue();
+
+    assert.equal(app.state.currentNodeId, '1');
+    assert.ok(chatBox.children.some((child) => child.className.includes('chat-bubble')));
+    assert.equal(app.currentChoiceData.options[0].next, '2');
+});
+
+test('story graph reaches every node without dead or invalid transitions', () => {
+    const graph = JSON.parse(fs.readFileSync(path.join(ROOT, 'json', 'storyGraph.json'), 'utf8'));
+    const dialogues = JSON.parse(fs.readFileSync(path.join(ROOT, 'json', 'dialogues.json'), 'utf8'));
+    const endings = JSON.parse(fs.readFileSync(path.join(ROOT, 'json', 'endingMaster.json'), 'utf8'));
+    const reachable = new Set();
+    const queue = [graph.start];
+
+    while (queue.length > 0) {
+        const nodeId = queue.shift();
+        if (reachable.has(nodeId)) continue;
+        reachable.add(nodeId);
+
+        const node = graph.nodes[nodeId];
+        assert.ok(node, `missing node: ${nodeId}`);
+        assert.ok(dialogues[node.dialogueKey]?.length, `missing dialogue: ${nodeId}`);
+
+        for (const option of node.options || []) {
+            assert.ok(option.next, `empty transition: ${nodeId}-${option.value}`);
+            assert.ok(graph.nodes[option.next], `invalid transition: ${nodeId}-${option.value}`);
+            queue.push(option.next);
+        }
+
+        if (node.next) {
+            assert.ok(graph.nodes[node.next], `invalid next: ${nodeId}`);
+            queue.push(node.next);
+        }
+
+        if (node.endingKey) {
+            assert.ok(endings[node.endingKey], `missing ending: ${node.endingKey}`);
+        }
+    }
+
+    assert.equal(reachable.size, Object.keys(graph.nodes).length);
 });
 
 test('endingEntries and isEndingDiscovered expose ending collection state', async () => {
