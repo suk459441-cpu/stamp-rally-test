@@ -603,15 +603,69 @@ test('app mounts, restores saved state, and keeps image paths under img/', async
     assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), [{ method: 'initialize' }]);
 });
 
-test('demo mode skips LINE initialization and unlocks the first story stamp', async () => {
+test('demo mode skips LINE initialization without auto-acquiring a stamp', async () => {
     const { app, apiCalls } = await loadRally({ search: '?demo=1' });
 
-    assert.deepEqual(Array.from(app.state.stamps), [1]);
+    assert.deepEqual(Array.from(app.state.stamps), []);
     assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), []);
 });
 
+test('demo mode acquires the first QR stamp locally', async () => {
+    const { app, apiCalls } = await loadRally({ search: '?demo=1&token=dev-stamp-token-1' });
+
+    assert.deepEqual(Array.from(app.state.stamps), [1]);
+    assert.equal(app.state.currentSpot, 1);
+    assert.equal(app.state.currentNodeId, '1');
+    assert.equal(apiCalls.some((call) => call.method === 'acquireStamp'), false);
+});
+
+test('demo mode acquires a QR stamp locally without the stamp API', async () => {
+    const { app, apiCalls } = await loadRally({
+        search: '?demo=1&token=dev-stamp-token-2',
+        savedState: { loopCount: 1, stamps: [1], currentChoices: [], discoveredEndings: [], currentSpot: 1 }
+    });
+
+    assert.deepEqual(Array.from(app.state.stamps), [1, 2]);
+    assert.equal(app.state.currentSpot, 2);
+    assert.equal(app.state.currentNodeId, '2');
+    assert.equal(apiCalls.some((call) => call.method === 'acquireStamp'), false);
+});
+
+test('demo mode does not enter an ending when stamp five has no pending branch', async () => {
+    const { app, elements } = await loadRally({
+        search: '?demo=1&token=dev-stamp-token-5',
+        savedState: { loopCount: 1, stamps: [1, 2, 3, 4], currentChoices: [], discoveredEndings: [], currentSpot: 4 }
+    });
+
+    assert.equal(app.state.currentNodeId, null);
+    assert.equal(elements.get('chat-box').children.some((child) => child.className.includes('ending-display-panel')), false);
+    assert.match(elements.get('chat-box').children[0].innerText, /チェックポイント3/);
+});
+
+test('investigation resumes from the latest acquired stamp instead of node 1', async () => {
+    const { app } = await loadRally({
+        search: '?demo=1',
+        savedState: { loopCount: 1, stamps: [1, 2], currentChoices: [], discoveredEndings: [], currentSpot: 2 }
+    });
+
+    app.startInvestigation();
+
+    assert.equal(app.state.currentNodeId, '2');
+});
+
+test('demo mode rejects QR stamps acquired out of order', async () => {
+    const { app, elements, apiCalls } = await loadRally({
+        search: '?demo=1&token=dev-stamp-token-3',
+        savedState: { loopCount: 1, stamps: [1], currentChoices: [], discoveredEndings: [], currentSpot: 1 }
+    });
+
+    assert.deepEqual(Array.from(app.state.stamps), [1]);
+    assert.match(elements.get('chat-box').innerHTML, /out_of_order_stamp/);
+    assert.equal(apiCalls.some((call) => call.method === 'acquireStamp'), false);
+});
+
 test('demo mode advances to the next story node without the LINE API', async () => {
-    const { app, apiCalls } = await loadRally({ search: '?demo=1' });
+    const { context, app, apiCalls } = await loadRally({ search: '?demo=1&token=dev-stamp-token-1' });
 
     app.startInvestigation();
     while (app.dialogueIndex < app.currentDialogueList.length) {
@@ -620,8 +674,48 @@ test('demo mode advances to the next story node without the LINE API', async () 
     await app.advanceDialogue();
     await app.selectChoice(app.currentChoiceData.options[0]);
 
+    assert.equal(app.state.currentNodeId, '1');
+    assert.equal(app.state.pendingNodeId, '2');
+
+    context.window.location.search = '?demo=1&token=dev-stamp-token-2';
+    await app.processUrlParams();
+
     assert.equal(app.state.currentNodeId, '2');
     assert.deepEqual(JSON.parse(JSON.stringify(apiCalls)), []);
+});
+
+test('demo mode displays an ending without the ending API', async () => {
+    const { app, apiCalls, elements } = await loadRally({ search: '?demo=1' });
+
+    await app.triggerEnding('AI_SELF_DESTRUCT');
+
+    assert.equal(apiCalls.some((call) => call.method === 'saveEnding'), false);
+    assert.match(elements.get('chat-box').children[0].className, /ending-display-panel/);
+});
+
+test('demo mode advances loops and resets stamps after a completed round', async () => {
+    const { app } = await loadRally({
+        search: '?demo=1',
+        savedState: { loopCount: 1, stamps: [1, 2, 3, 4, 5], currentChoices: [], discoveredEndings: [], currentSpot: 5 }
+    });
+
+    await app.triggerEnding('AI_SELF_DESTRUCT');
+
+    assert.equal(app.state.loopCount, 2);
+    assert.deepEqual(Array.from(app.state.stamps), []);
+});
+
+test('demo mode keeps loop three and terminal stamps after the final self-destruct ending', async () => {
+    const { app } = await loadRally({
+        search: '?demo=1',
+        savedState: { loopCount: 3, stamps: [1, 2, 3, 4, 5], currentChoices: [], discoveredEndings: [], currentSpot: 5 }
+    });
+
+    await app.triggerEnding('AI_SELF_DESTRUCT');
+
+    assert.equal(app.state.loopCount, 3);
+    assert.deepEqual(Array.from(app.state.stamps), [1, 2, 3, 4, 5]);
+    assert.equal(typeof app.state.clearedAt, 'string');
 });
 
 test('app applies Exment record values returned by initialization', async () => {
@@ -890,7 +984,7 @@ test('processUrlParams acquires stamps from server-validated tokens and opens ea
 
     assert.deepEqual(Array.from(app.state.stamps), [1]);
     assert.equal(app.state.currentSpot, 1);
-    assert.equal(elements.get('story-location-tag').innerText, 'CHECKPOINT 01 LOGS');
+    assert.equal(elements.get('story-location-tag').innerText, 'START');
     assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
     assert.equal(elements.get('chat-controls').style.display, 'block');
 
@@ -900,10 +994,16 @@ test('processUrlParams acquires stamps from server-validated tokens and opens ea
 
         assert.deepEqual(Array.from(app.state.stamps), Array.from({ length: stampId }, (_, index) => index + 1));
         assert.equal(app.state.currentSpot, stampId);
-        assert.equal(elements.get('story-location-tag').innerText, `CHECKPOINT 0${stampId} LOGS`);
+        const labels = { 1: 'START', 2: 'CHECKPOINT 01', 3: 'CHECKPOINT 02', 4: 'CHECKPOINT 03', 5: 'CHECKPOINT 03' };
+        assert.equal(elements.get('story-location-tag').innerText, labels[stampId]);
         assert.equal(elements.get('start-btn').style.display, 'none');
-        assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
-        assert.equal(elements.get('chat-controls').style.display, 'block');
+        if (stampId === 5) {
+            assert.equal(elements.get('next-dialogue-btn').style.display, 'none');
+            assert.equal(elements.get('chat-controls').style.display, 'none');
+        } else {
+            assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
+            assert.equal(elements.get('chat-controls').style.display, 'block');
+        }
     }
 
     assert.deepEqual(
@@ -968,7 +1068,7 @@ test('processUrlParams syncs already acquired stamps and reopens the checkpoint 
 
     assert.deepEqual(Array.from(context.__app.state.stamps), [1, 2]);
     assert.equal(context.__app.state.currentSpot, 2);
-    assert.equal(elements.get('story-location-tag').innerText, 'CHECKPOINT 02 LOGS');
+    assert.equal(elements.get('story-location-tag').innerText, 'CHECKPOINT 01');
     assert.equal(elements.get('start-btn').style.display, 'none');
     assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
     assert.equal(context.__replacedUrl, '/index.html');
@@ -1061,6 +1161,49 @@ test('story graph reaches every node without dead or invalid transitions', () =>
     }
 
     assert.equal(reachable.size, Object.keys(graph.nodes).length);
+});
+
+test('story node 18a skips its empty option list and continues to node 18', async () => {
+    const { app } = await loadRally({ search: '?demo=1' });
+
+    app.loadStoryNode('18a');
+    while (app.dialogueIndex < app.currentDialogueList.length) {
+        await app.advanceDialogue();
+    }
+    await app.advanceDialogue();
+
+    assert.equal(app.state.currentNodeId, '18');
+});
+
+test('story endings require all five stamps', async () => {
+    const { app, elements } = await loadRally({
+        search: '?demo=1',
+        savedState: { loopCount: 1, stamps: [1], currentChoices: [], discoveredEndings: [], currentSpot: 1 }
+    });
+
+    app.loadStoryNode('15');
+    while (app.dialogueIndex < app.currentDialogueList.length) {
+        await app.advanceDialogue();
+    }
+    await app.advanceDialogue();
+
+    assert.equal(elements.get('chat-box').children.some((child) => child.className.includes('ending-display-panel')), false);
+    assert.match(elements.get('chat-box').children.at(-1).innerText, /未取得: 2, 3, 4, 5/);
+});
+
+test('branch nodes do not switch to the unrelated loop-two logic-collapse dialogue', async () => {
+    const { app, elements } = await loadRally({
+        search: '?demo=1',
+        savedState: { loopCount: 2, stamps: [1, 2, 3, 4, 5], currentChoices: [], discoveredEndings: [], currentSpot: 5 }
+    });
+
+    app.loadStoryNode('15');
+    while (app.dialogueIndex < app.currentDialogueList.length) {
+        await app.advanceDialogue();
+    }
+
+    const renderedText = elements.get('chat-box').children.map((child) => child.innerText).join('\n');
+    assert.equal(renderedText.includes('論理崩壊'), false);
 });
 
 test('endingEntries and isEndingDiscovered expose ending collection state', async () => {

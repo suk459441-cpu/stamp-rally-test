@@ -318,6 +318,58 @@
             line-height: 1.4;
         }
 
+        .narrative-msg {
+            position: relative;
+            overflow: hidden;
+            color: rgba(183, 226, 195, 0.92);
+            background: linear-gradient(90deg, rgba(5, 23, 14, 0.96), rgba(3, 10, 7, 0.8));
+            border: 1px solid rgba(74, 246, 133, 0.18);
+            border-left: 3px solid var(--accent-green);
+            padding: 11px 13px 11px 28px;
+            margin: 10px 0;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.75;
+            white-space: pre-line;
+            text-align: left;
+            box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45), 0 0 8px rgba(74, 246, 133, 0.06);
+            animation: narrativeStream 1.2s steps(32, end) both;
+        }
+
+        .narrative-msg::before {
+            content: '>_';
+            position: absolute;
+            top: 11px;
+            left: 10px;
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .narrative-msg::after {
+            content: '|';
+            display: inline-block;
+            margin-left: 3px;
+            color: var(--accent-green);
+            animation: terminalCursor 0.75s steps(1, end) infinite;
+        }
+
+        @keyframes narrativeStream {
+            from {
+                clip-path: inset(0 100% 0 0);
+                opacity: 0.25;
+            }
+            to {
+                clip-path: inset(0 0 0 0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes terminalCursor {
+            50% {
+                opacity: 0;
+            }
+        }
+
         .next-guide-msg {
             text-align: center;
             font-weight: bold;

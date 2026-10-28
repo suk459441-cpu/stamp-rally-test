@@ -18,6 +18,14 @@ final class StampRallyRecordRepository
         'END-06',
         'END-07',
         'END-08',
+        'END-17',
+        'END-18',
+        'END-19',
+        'END-20',
+        'END-21',
+        'END-22',
+        'END-23',
+        'END-24',
         'END-AI',
     ];
 

@@ -66,10 +66,7 @@ function nodeId(rawId) {
     return /^18[^0-9]/.test(rawId.trim()) ? '18a' : rawId.trim();
 }
 
-function senderForQuote(source, start, end) {
-    const contextStart = Math.max(0, start - 60);
-    const contextEnd = Math.min(source.length, end + 60);
-    const context = source.slice(contextStart, contextEnd);
+function senderForQuote(source, start, end, quoteText) {
     const candidates = [
         ['キリコ', 'kiriko'],
         ['ブンジ', 'bunji'],
@@ -78,21 +75,42 @@ function senderForQuote(source, start, end) {
         ['あなた', 'player'],
         ['博士', 'doctor']
     ];
-    let selected = null;
+    const lineStart = source.lastIndexOf('\n', start - 1) + 1;
+    const currentLine = source.slice(lineStart, start);
+    const previousLineEnd = lineStart - 1;
+    const previousLineStart = Math.max(0, source.lastIndexOf('\n', previousLineEnd - 1) + 1);
+    const previousLine = source.slice(previousLineStart, previousLineEnd).trim();
+    const contexts = [currentLine, previousLine];
 
-    for (const [name, senderId] of candidates) {
-        const before = context.lastIndexOf(name, start - contextStart);
-        const afterOffset = end - contextStart;
-        const after = context.indexOf(name, afterOffset);
-        const distanceBefore = before === -1 ? Infinity : start - (contextStart + before);
-        const distanceAfter = after === -1 ? Infinity : contextStart + after - end;
-        const distance = Math.min(distanceBefore, distanceAfter);
-        if (selected === null || distance < selected.distance) {
-            selected = { senderId, distance };
-        }
+    const text = quoteText.slice(1, -1).trim();
+    const contentHints = [
+        [/私を信じて/, 'kiriko'],
+        [/管理AI……|管理AI…/, 'kiriko'],
+        [/まだ動いてるの|おかしい。どうして/, 'bunji'],
+        [/まちや、ラボ|まって、ラボ/, 'kiriko'],
+        [/そ、そうだよ|そ、そうですよ/, 'bunji'],
+        [/調査員の皆様へ|私は、この大学の管理AI|この大学で発生した|治療薬の製造方法|私は、あなた方を待って|私を助けてください/, 'guideAi'],
+        [/その端末を起動してください|博士とこの端末|心配する必要はありません|この端末を起動してください/, 'guideAi'],
+        [/……何を？|これも罠ではないの|僕も同意見/, 'player']
+    ];
+    for (const [pattern, senderId] of contentHints) {
+        if (pattern.test(text)) return senderId;
     }
 
-    return selected && selected.distance !== Infinity ? selected.senderId : 'system';
+    for (const context of contexts) {
+        let selected = null;
+        let selectedIndex = -1;
+        for (const [name, senderId] of candidates) {
+            const index = context.lastIndexOf(name);
+            if (index > selectedIndex) {
+                selected = senderId;
+                selectedIndex = index;
+            }
+        }
+        if (selected) return selected;
+    }
+
+    return null;
 }
 
 function toMessages(text) {
@@ -102,16 +120,22 @@ function toMessages(text) {
     let match;
     while ((match = pattern.exec(text)) !== null) {
         const narrative = text.slice(cursor, match.index).trim();
-        if (narrative) messages.push({ senderId: 'system', text: narrative });
-        messages.push({
-            senderId: senderForQuote(text, match.index, pattern.lastIndex),
-            text: match[0].slice(1, -1).trim()
-        });
+        if (narrative) messages.push({ type: 'narrative', text: narrative });
+        const senderId = senderForQuote(text, match.index, pattern.lastIndex, match[0]);
+        if (senderId) {
+            messages.push({
+                type: 'dialogue',
+                senderId,
+                text: match[0].slice(1, -1).trim()
+            });
+        } else {
+            messages.push({ type: 'narrative', text: match[0] });
+        }
         cursor = pattern.lastIndex;
     }
     const remaining = text.slice(cursor).trim();
-    if (remaining) messages.push({ senderId: 'system', text: remaining });
-    return messages.length ? messages : [{ senderId: 'system', text }];
+    if (remaining) messages.push({ type: 'narrative', text: remaining });
+    return messages.length ? messages : [{ type: 'narrative', text }];
 }
 
 function label(value) {
@@ -126,12 +150,33 @@ function dialogueKey(id) {
     return '5';
 }
 
+function checkpointFor(id) {
+    if (id === '1') return 'start';
+    if (['2', '3'].includes(id)) return 'checkpoint1';
+    if (['4', '5', '6', '7'].includes(id)) return 'checkpoint2';
+    if (['8', '9', '10', '11', '12', '13', '14'].includes(id)) return 'checkpoint3';
+    return 'goal';
+}
+
+function stampGateFor(id) {
+    if (id === '1') return 1;
+    if (['2', '3'].includes(id)) return 2;
+    if (['4', '5', '6', '7'].includes(id)) return 3;
+    if (['8', '9', '10', '11', '12', '13', '14'].includes(id)) return 4;
+    return 5;
+}
+
 const graph = { start: '1', nodes: {} };
 const source = fs.readFileSync(path.resolve(sourcePath), 'utf8').replace(/^\uFEFF/, '');
 for (const row of parseCsv(source)) {
     const id = nodeId(row[0] || '');
     if (!id || !row[1]) continue;
-    const node = { dialogueKey: dialogueKey(id) };
+    const node = {
+        checkpoint: checkpointFor(id),
+        dialogueKey: dialogueKey(id),
+        messages: toMessages(row[1].trim()),
+        stampGate: stampGateFor(id),
+    };
     if (endings[id]) node.endingKey = endings[id];
     const options = [row[11], row[13]].filter((value) => value && value.trim());
     const next = transitions[id] || {};

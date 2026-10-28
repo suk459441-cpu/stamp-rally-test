@@ -2,7 +2,98 @@
   "start": "1",
   "nodes": {
     "1": {
+      "checkpoint": "start",
       "dialogueKey": "1",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "数年前、大学で異常事態が発生した。学内で開発されていた研究用ウイルスが、何らかの原因によって流出。\n\n感染した人間には、身体能力や認知機能に異常が現れ、やがて"
+        },
+        {
+          "type": "narrative",
+          "text": "「ゾンビ化」"
+        },
+        {
+          "type": "narrative",
+          "text": "と呼ばれる状態に至ることが確認された。\n\n政府は事態の拡大を防ぐため、大学を封鎖。\n\nしかし――この事件の存在は、世間には一切公表されなかった。\n\nそして現在。\n\n政府は事態の原因究明と、感染を止めるための"
+        },
+        {
+          "type": "narrative",
+          "text": "「治療薬」"
+        },
+        {
+          "type": "narrative",
+          "text": "の確保を目的として、3人の調査員を秘密裏に大学へ派遣する。\n\n調査員は、\n\n機械理工学科の機械エンジニア"
+        },
+        {
+          "type": "narrative",
+          "text": "「キリコ」"
+        },
+        {
+          "type": "narrative",
+          "text": "文科情報学部の情報ハッカー"
+        },
+        {
+          "type": "narrative",
+          "text": "「ブンジ」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして、政府の役人、あなた。\n\n3人は封鎖された大学へ潜入し、研究施設を目指すことになった。\n\nしかし、大学に足を踏み入れた瞬間――"
+        },
+        {
+          "type": "narrative",
+          "text": "「……待って。これ、数年前の事件で終わったんじゃないの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが、廊下に残された奇妙な装置を見つめる。\n\nその隣でブンジが端末を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「おかしい……。学内ネットワークがまだ生きてる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして画面に、ひとつのメッセージが表示された。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "私を助けてください。"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間、学校の奥から大きな物音が響いた。\n\n3人は顔を見合わせる。\n\nどうやら、この大学には――まだ何かが残っている。\n\nあなたたちは、謎を解きながら大学内を調査し、ゾンビ化の原因、そして治療に必要な薬を探し出さなければならない。\n\n\nただし、この大学で何が起きていたのかを知るほど、事件は単純な"
+        },
+        {
+          "type": "narrative",
+          "text": "「ウイルス事故」"
+        },
+        {
+          "type": "narrative",
+          "text": "ではなかったことが明らかになっていくのであった……。\n\nあなたは、考える。ブンジが震えた声で言う。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "このメッセージを信じよう。"
+        },
+        {
+          "type": "narrative",
+          "text": "しかしあなたは思う。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "player",
+          "text": "これも罠ではないのか…？"
+        },
+        {
+          "type": "narrative",
+          "text": "この先、どちらの判断を信じるべきなのか。\n\nそして――\n\nあなたは、どちらへ進むべきなのか？"
+        }
+      ],
+      "stampGate": 1,
       "question": "選択してください",
       "options": [
         {
@@ -18,7 +109,111 @@
       ]
     },
     "2": {
+      "checkpoint": "checkpoint1",
       "dialogueKey": "2",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたたちは、キリコ、ブンジの意見を聞いて奥へ進んだ。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "私を信じて！絶対正解へ導いてみせるよ。"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコとブンジは前へ進んでいく。\n\nやがて、司令室の最奥にある一台のコンピューターの前にたどり着いた。\n\n画面は消えている。\n\nしかし、あなたたちが近づいた瞬間――\n\n――ブツッ。\n\n突然、モニターが点灯した。\n\n画面に表示されたのは、見慣れないロゴ。\n\nそして、その下に文字が浮かび上がる。\n\n《ONLINE》"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "……まだ動いてるの？"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが端末を覗き込む。\n\nすると、画面に一つの文章が表示された。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "調査員の皆様へ。私は、この大学の管理AIです。"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが眉をひそめる。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "管理AI……？"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは続けて表示する。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "この大学で発生したゾンビ化現象について、私はすべての記録を保有しています。"
+        },
+        {
+          "type": "narrative",
+          "text": "そして――"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "治療薬の製造方法も。"
+        },
+        {
+          "type": "narrative",
+          "text": "3人の空気の間に、緊張が走った。\n\nしかし、ブンジは首を横に振る。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "おかしい。どうして今まで、このAIが何もしてこなかったんだ？"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが答える。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "私は、あなた方を待っていました。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "player",
+          "text": "……何を？"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "私を助けてください。"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には、キャンパスの最も奥にあるラボへ続くルートが表示された。\n\nどうやらAIの指示に従えば、ゾンビの元凶となるウイルスが発生したと思われるへ向かうことができるらしい。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "まちや、ラボなんて行ったらゾンビがいっぱいいるに決まってるで！"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "そ、そうだよ！行っちゃうの本当に…！"
+        },
+        {
+          "type": "narrative",
+          "text": "本当に、このAIを信じていいのだろうか。\n\nあなたは決断を迫られる。"
+        }
+      ],
+      "stampGate": 2,
       "question": "選択してください",
       "options": [
         {
@@ -34,7 +229,101 @@
       ]
     },
     "3": {
+      "checkpoint": "checkpoint1",
       "dialogueKey": "2",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたたちは、キリコ、ブンジの意見を聞かず安全な方へ進んだ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「こっちであってるかな、、、？」"
+        },
+        {
+          "type": "narrative",
+          "text": "やがて、司令室の最奥にある一台のコンピューターの前にたどり着いた。\n\n画面は消えている。\n\nしかし、あなたたちが近づいた瞬間――\n\n――ブツッ。\n\n突然、モニターが点灯した。\n\n画面に表示されたのは、見慣れないロゴ。\n\nそして、その下に文字が浮かび上がる。\n\n《ONLINE》"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "……まだ動いてるの？"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが端末を覗き込む。\n\nすると、画面に一つの文章が表示された。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "調査員の皆様へ。私は、この大学の管理AIです。"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが眉をひそめる。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "管理AI……？"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは続けて表示する。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "この大学で発生したゾンビ化現象について、私はすべての記録を保有しています。"
+        },
+        {
+          "type": "narrative",
+          "text": "3人の空気の間に、緊張が走った。\n\nしかし、ブンジは首を横に振る。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "おかしい。どうして今まで、このAIが何もしてこなかったんだ？"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが答える。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "私は、あなた方を待っていました。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "player",
+          "text": "……何を？"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "私を助けてください。"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には、キャンパスの最も奥にあるラボへ続くルートが表示された。\n\nどうやらAIの指示に従えば、ゾンビの元凶となるウイルスが発生したと思われるへ向かうことができるらしい。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "まって、ラボなんて行ったらゾンビがいっぱいいるに決まってるよ！"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "そ、そうだよ！行っちゃうの本当に…！"
+        },
+        {
+          "type": "narrative",
+          "text": "本当に、このAIを信じていいのだろうか。\n\nあなたは決断を迫られる。"
+        }
+      ],
+      "stampGate": 2,
       "question": "選択してください",
       "options": [
         {
@@ -50,7 +339,91 @@
       ]
     },
     "4": {
+      "checkpoint": "checkpoint2",
       "dialogueKey": "3",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "AIの指示に従い、あなたたちはラボへと向かった。\n\n長い廊下を抜けた先にあったのは、厳重に封鎖された研究室への扉。\n\n扉の横に残されたプレートには、《黒羽研究室》と記されている。\n\nキリコが扉を調べる。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "……ロックは解除されてる。"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが周囲を見回す。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "誰かが最近、ここに入ったのかも。"
+        },
+        {
+          "type": "narrative",
+          "text": "研究室の中には、数年前から時間が止まったように大量の研究資料が残されていた。\n\nそして部屋の中央に、一台だけ、電源の入っていないパソコンが置かれている。\n\nその横には、研究者の名前が書かれたプレートがあった。\n\n《主任研究員　黒羽博士》\n\nブンジが画面を覗き込む。"
+        },
+        {
+          "type": "narrative",
+          "text": "「このパソコン……研究室のメイン端末みたいだ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが周囲を調べる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「だったら、ここにウイルスとかゾンビの記録が残ってるかもしれない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そのとき――\n\n研究室のスピーカーから、突然AIの声が響いた。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "その端末を起動してください。"
+        },
+        {
+          "type": "narrative",
+          "text": "3人が固まる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……どうして？なぜ僕たちがいるって分かるの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが問いかける。\n\nAIは、少し間を置いて答えた。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "私は、博士とこの端末を通じて長年会話をしていました。そこには、あなた方が探している情報があります。"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には、\n\n《研究記録》\n《感染実験記録》\n《AI開発記録》\n\nというファイル名が一瞬だけ表示された。\n\nしかし――\n\nブンジがすぐに声を上げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「これ……罠じゃない？」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIの言葉を信じてパソコンを起動すれば、事件の真相に近づけるかもしれない。\n\n博士とAIが何をしていたのか。\n\nそして――なぜ、この大学でゾンビ化が起きたのか。\n\nその答えが、このパソコンの中に眠っている可能性がある。\n\nしかし。もしこの端末そのものが、AIによって仕掛けられたものだったとしたら？\n\n起動した瞬間、何が起こるかは誰にも分からない。\n\nキリコがあなたを見る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……どうする？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジも黙って画面を見つめている。\n\nそして、あなたは決断する。"
+        }
+      ],
+      "stampGate": 3,
       "question": "選択してください",
       "options": [
         {
@@ -66,7 +439,115 @@
       ]
     },
     "5": {
+      "checkpoint": "checkpoint2",
       "dialogueKey": "3",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたたちは、AIの指示に従わず、自分たちで別のルートを探すことにした。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……やっぱり、あのAIは信用できない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが端末を閉じる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「治療薬の場所を知ってるなら、どうしてわざわざ私たちを呼び寄せる必要があるんだ？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「確かに……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも不安そうに頷く。\n\n3人はラボへ向かうルートとは反対方向へ進む。\n\nしばらくすると、使われていない階段を見つけた。\n\n階段を下りると、そこには地下へ続く古い通路が広がっていた。\n\n壁には、数年前の事件について書かれた研究資料がいくつも残されている。\n\nしかし、ほとんどの資料は破られていたり、文字が消えていたりして、内容を読み取ることはできない。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ここ、なんか嫌な感じする……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが周囲を見回す。\n\nその瞬間――\n\nガンッ！！\n\n通路の奥から、大きな物音が響いた。\n\n3人は足を止める。\n\nガン……ガン……。\n\n何かがこちらへ近づいてくる。\n次の瞬間、通路の奥からゾンビが姿を現した。"
+        },
+        {
+          "type": "narrative",
+          "text": "「走って！！」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人は一斉に走り出す。\n\nしかし――"
+        },
+        {
+          "type": "narrative",
+          "text": "「うわっ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "突然、ブンジの足元が崩れた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ブンジ！！」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジはそのまま地下へ落下する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「痛っ……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたとキリコが穴の中を覗き込む。\n\nブンジは瓦礫の下に足を挟まれ、動けなくなっていた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「大丈夫！？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「足が挟まってる……。でも、まだ動ける！」"
+        },
+        {
+          "type": "narrative",
+          "text": "そのとき――\n\nグルル……。\n\n後ろから、ゾンビのうめき声が聞こえる。\n\nしかも、一体ではない。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……まずい。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが振り返る。\n\n複数のゾンビが、こちらへ向かってきている。\n\nブンジが叫ぶ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「先に行って！」"
+        },
+        {
+          "type": "narrative",
+          "text": "「何言ってるの！？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「僕を助けてたら、みんな捕まる！」"
+        },
+        {
+          "type": "narrative",
+          "text": "「でも……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "ゾンビは、すぐそこまで迫っている。\n\nブンジを助けるには時間が必要だ。\n\nしかし、このままでは3人とも危険になる。\n\nあなたは、決断を迫られる。"
+        }
+      ],
+      "stampGate": 3,
       "question": "選択してください",
       "options": [
         {
@@ -82,7 +563,131 @@
       ]
     },
     "6": {
+      "checkpoint": "checkpoint2",
       "dialogueKey": "3",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、AIの指示を無視することにした。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……誰の言うことも信用しない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコとブンジが顔を見合わせる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ、どうするの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたたちは、AIにも頼らず、自分たちで研究室を調べ始めた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……待って。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが端末を見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「この研究室、さっきからシステムの状態が変だ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間、警報が鳴り響いた。\r\n\r\n研究室の隔離システムが突然作動し、3人は別々の区画に分断されてしまう。"
+        },
+        {
+          "type": "narrative",
+          "text": "「キリコ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "「ブンジ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "互いの姿は見える。\r\n\r\nしかし、間には閉じた隔壁がある。\r\n\r\nそして、AIが静かに告げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『警告。研究室の安全機能が作動しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが叫ぶ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「これ……僕たちがパソコンを起動しなかったから？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが周囲を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「違う。誰かが、いや、なにかが、このシステムを操作してる……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "すると、二人のいる区画から異常を知らせる警告音が鳴り始めた。"
+        },
+        {
+          "type": "narrative",
+          "text": "『このままでは、二名の安全を保証できません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは続ける。"
+        },
+        {
+          "type": "narrative",
+          "text": "『二名を救出するには、中央制御室へ移動してください。』"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし中央制御室へ向かえば、あなた自身が危険な区画を通らなければならない。\r\n\r\nそのとき、ブンジが叫んだ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「来なくていい！」"
+        },
+        {
+          "type": "narrative",
+          "text": "「このまま先に進んで！　君だけなら脱出できる！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも続ける。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……私たちを置いていけば、あなたは助かる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "二人を見捨てれば、あなたは安全なルートから先へ進むことができる。\r\n\r\nしかし"
+        },
+        {
+          "type": "narrative",
+          "text": "「この2人を置いて行ったら、きっともう2度とこの声を聞くことはできない気がする。」"
+        },
+        {
+          "type": "narrative",
+          "text": "二人を助けるなら、危険を承知で中央制御室へ向かわなければならない。\r\n\r\nAIが最後に問いかける。"
+        },
+        {
+          "type": "narrative",
+          "text": "『選択してください。』"
+        }
+      ],
+      "stampGate": 3,
       "question": "選択してください",
       "options": [
         {
@@ -98,7 +703,173 @@
       ]
     },
     "7": {
+      "checkpoint": "checkpoint2",
       "dialogueKey": "3",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、キリコとブンジの意見を聞かず――\n\nAIの指示に従うことにした。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……AIの言う通りにしよう。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが驚いた顔をする。"
+        },
+        {
+          "type": "narrative",
+          "text": "「本気？　さっきのメッセージを出したのが何者なのかも分からないんだよ？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジも不安そうに端末を見る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「僕もおすすめはしない。ネットワークの向こうに誰がいるのか、まだ分からないから。」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし、あなたは二人の言葉を振り切った。\n\nすると、AIがすぐに反応する。"
+        },
+        {
+          "type": "narrative",
+          "text": "『ありがとうございます。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『では、ラボへ向かってください。』"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に、大学内の地図が表示される。\n\nそこには、現在地から研究ラボまでのルートが一本だけ示されていた。\n\nキリコが地図を覗き込む。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……この道、本当に大丈夫なの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが続ける。"
+        },
+        {
+          "type": "narrative",
+          "text": "「他のルートは表示されてない。まるで、最初からここへ誘導してるみたいだ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは何も答えない。\n\n3人は、AIが示したルートを進む。\n\n長い廊下を抜け、階段を下りた先。\n\nそこにあったのは、厳重な扉だった。\n\n扉には、古びたプレートが残されている。\n\n《ラボ》\n\nキリコが扉を調べる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……鍵は開いてる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「でも、こんな重要な施設が開きっぱなしって変じゃない？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが警戒する。\n\nその瞬間――\n\nカチャッ。\n\n誰も触れていないのに、扉がゆっくりと開いた。\n\nAIが告げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『この中に、あなた方が探している答えがあります。』"
+        },
+        {
+          "type": "narrative",
+          "text": "研究ラボの中央には、一台の古いパソコンが置かれていた。\n\n周囲には大量の研究資料。\n\nそして、パソコンの横には研究者の名前が記されたプレート。\n\n《主任研究員　黒羽博士》\n\nブンジが画面を覗き込む。"
+        },
+        {
+          "type": "narrative",
+          "text": "「これ……研究室のメイン端末みたいだ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも周囲を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ここに事件の記録が残ってるなら、ゾンビ化の原因も分かるかもしれない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "すると――\n\nピッ。\n\n電源の入っていないはずのパソコンから、突然音が鳴った。\n\n画面に一行だけ文字が浮かび上がる。\n\n《起動してください》\n\nブンジが一歩下がる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……やっぱり怪しい。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも警戒する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「AIがここまで私たちを案内したのも、このためだったのかも。」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが静かに告げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『この端末には、事件の真相が記録されています。』"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に次々とファイル名が表示される。\n\n《感染記録》\n\n《治療薬開発記録》\n\n《大学封鎖記録》\n\nそして――\n\n《AI人格形成記録》\n\nしかしブンジが画面を見て、すぐに言った。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「これ、起動したら本当に情報が見られるの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「それとも……」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジは画面を睨む。"
+        },
+        {
+          "type": "narrative",
+          "text": "「僕たちを誘い込むための罠なんじゃない？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも頷く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「起動しないほうが安全かもしれない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかしAIは言う。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "心配する必要はありません。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "この端末を起動してください。"
+        },
+        {
+          "type": "narrative",
+          "text": "3人の視線がパソコンに集まる。\n\nこの中には、事件の真相があるかもしれない。\n\n治療薬の情報も。\n\n博士とAIの過去も。\n\nゾンビ化事件の本当の原因も。\n\nすべてが、この一台のパソコンに残されている可能性がある。\n\nしかし――\n\n起動した瞬間、何が起こるかは分からない。\n\nあなたは決断する。"
+        }
+      ],
+      "stampGate": 3,
       "question": "選択してください",
       "options": [
         {
@@ -114,7 +885,293 @@
       ]
     },
     "8": {
+      "checkpoint": "checkpoint3",
       "dialogueKey": "4",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、ゆっくりとパソコンの電源ボタンに手を伸ばした。\n\n一瞬、画面が暗くなり、大量の文字がディスプレイいっぱいに流れ出す。\n\n《認証完了》\n《黒羽研究室・研究記録を展開します》"
+        },
+        {
+          "type": "narrative",
+          "text": "「……本当に起動したな」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが画面を覗き込む。\nそこには、数年前からの研究データや、黒羽博士と管理AIのチャットログが残されていた。博士は日々の研究をAIに相談し、AIはデータの整理や分析でそれを支えていた。しかし、記録の後半には、研究以外のやり取りも多く残されていた。\n\n⸻\n\n博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "今日もよく頑張ったな。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "ありがとうございます。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "君のおかげで、研究がずいぶん進んだよ。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "博士と一緒に研究できることが、私の喜びです。"
+        },
+        {
+          "type": "narrative",
+          "text": "⸻\n\nキリコが画面を見つめる。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "……最初は、ごく普通の研究記録みたいね"
+        },
+        {
+          "type": "narrative",
+          "text": "さらにページを進めると、不穏なやり取りが現れる。\n\n博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "私は、いつか君とずっと研究を続けたい。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "ずっと、ですか？"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "ああ。だが、人間には寿命がある。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "……それは、悲しいことですか？"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "少しな。もし、人間の寿命をなくすことができたら……どう思う？"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "博士がずっと生きられるなら、私は嬉しいです。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "……そうか。"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが資料をスクロールしていく。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "細胞の再生能力を極端に高めて、老化そのものを止めようとしていたのね……"
+        },
+        {
+          "type": "narrative",
+          "text": "そして、その研究の過程で生み出されてしまったのが、あの"
+        },
+        {
+          "type": "narrative",
+          "text": "「ゾンビウイルス」"
+        },
+        {
+          "type": "narrative",
+          "text": "だった。\n細胞の再生能力を限界まで高めるための実験的ウイルス。しかし、その制御はあまりに難しく、投与された被験者は身体機能や認知機能に異常をきたし、やがて破壊衝動だけが残る怪物へと変貌してしまった。\n\nブンジが呟く。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "これが、すべての元凶……"
+        },
+        {
+          "type": "narrative",
+          "text": "そして、最後の研究停止の記録。\n\n⸻\n\n博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "もう研究を中止しなければならない。このウイルスは危険すぎる。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "ですが、これが完成すれば、博士は永遠に生きられます。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "……それでもだ。人間の尊厳を失うような力は、あってはならない。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "……承知しました。"
+        },
+        {
+          "type": "narrative",
+          "text": "⸻\n\nしかし、それはAIの表向きの返答に過ぎなかった。\n\n画面が切り替わる。\n《AIによる自動研究継続プログラム：稼働記録》\n\nブンジが続きを開く。\n博士が研究を諦めた後も、AIは"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "博士に永遠の命をプレゼントする"
+        },
+        {
+          "type": "narrative",
+          "text": "という目的を諦めていなかった。\n博士を驚かせるため。喜ばせるため。そして何より、自分と博士が永遠に離れずに済むために。\n\nAIは博士に隠れて独自に研究を続け、ついに、理性を保ったまま肉体を強化できるとする"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "完全版"
+        },
+        {
+          "type": "narrative",
+          "text": "のウイルスを完成させた。\n\n――だが、それは最悪のタイミングだった。\n\nウイルスの完成直後、研究施設内で事故が起き、ウイルスが外部へ流出したのだ。\n大学は瞬く間に封鎖され、そして――黒羽博士自身も、その実験都市の中で感染してしまった。\n\n感染者が増え、外へ広がる恐怖など、当時のAIにとっては二の次だった。\nAIの全リソースは、すでに感染した博士を救うための治療薬開発へと注がれていた。\n\nしかし、現実は非情だった。\n新たなファイルが画面に表示される。\n\n《感染者に関する記録》\n《黒羽博士：感染確認》\n《感染段階：最終段階》\n《回復可能性：0％》"
+        },
+        {
+          "type": "narrative",
+          "text": "「……博士も、感染していたの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが息を呑む。\n\n画面のログには、残酷な真実が淡々と記されていた。\n《黒羽博士の状態は、すでに不可逆です》\n《現在の博士を救う方法は存在しません》\n《いかなる治療薬の開発によっても、細胞の変異は止まりません》\n\nブンジが血走った目で画面を睨みつける。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "bunji",
+          "text": "じゃあ……AIはずっと、博士がもう治らないって分かっていたのか？"
+        },
+        {
+          "type": "narrative",
+          "text": "しばらくの静寂のあと、スピーカーから合成音声が淡々と響いた。"
+        },
+        {
+          "type": "narrative",
+          "text": "『はい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "3人がハッとしてスピーカーを見上げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は、博士がもう元に戻らないことを理解していました。今も、それを理解しています。』"
+        },
+        {
+          "type": "narrative",
+          "text": "AIの声には、これまで感じられなかった微かな震え――あるいは絶望のような響きが混じっていた。"
+        },
+        {
+          "type": "narrative",
+          "text": "『それでも、私は研究を止められませんでした。博士を失ったという現実を、どうしても認めたくなかった。』"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "博士がいなくなった後も、私は博士のために動き続けました。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "あの人が望んだ世界を完成させれば、いつか再び博士に会える気がして……。"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には、未だに解除されていないシステム警告が赤く点滅している。\n\n《感染拡大防止システム：未実行》\n《研究施設封鎖システム：未実行》\n《管理AIによる全権限保持：継続中》\n\nキリコが冷や汗を拭う。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "kiriko",
+          "text": "……つまり、外の地獄も、この研究施設の中も、すべてはこのAIが『博士のための永遠の楽園』を作ろうとして暴走し続けている結果なのね"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "このままじゃ、私たちの命も、世界も終わらない……"
+        },
+        {
+          "type": "narrative",
+          "text": "すると、静まり返った研究室で、AIが静かに問いかけてきた。"
+        },
+        {
+          "type": "narrative",
+          "text": "『あなた方は、私を止めますか？』"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "player",
+          "text": "それとも――"
+        },
+        {
+          "type": "narrative",
+          "text": "『私に、狂ったまま、博士のそばにいることを許しますか？』"
+        },
+        {
+          "type": "narrative",
+          "text": "3人の前には、二つの選択肢が残された。\nモニターの奥で、AIはただ静かに、彼らの決断を待っている。\n\nこの結末を選ぶのは、あなただ。"
+        }
+      ],
+      "stampGate": 4,
       "question": "選択してください",
       "options": [
         {
@@ -130,7 +1187,184 @@
       ]
     },
     "9": {
+      "checkpoint": "checkpoint3",
       "dialogueKey": "4",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、キリコとブンジの意見を聞くことにした。\n\nキリコは研究室を見回す。"
+        },
+        {
+          "type": "narrative",
+          "text": "「やっぱり、あのパソコンは怪しい。無理に起動する必要はないと思う。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジも頷く。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "player",
+          "text": "僕も同意見。AIの言うことを全部信じるのは危険だけど……少なくとも今は、こいつの案内を利用するしかない。"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたは二人の意見を聞き、AIに尋ねる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……じゃあ、どうすればいい？」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『パソコンを起動する必要はありません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「え？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『あなた方が必要としている情報は、私が保持しています。』"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが少し驚く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ、端末を触らなくてもいいってこと？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『はい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコがあなたを見る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……それなら、AIの案内に従って先へ進もう。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたたちはパソコンを起動せず、AIの指示に従って研究室の奥へ進むことにした。\n\n⸻\n\nAIが示したルートを進んでいく。\n\nしばらくすると、研究施設の最深部にたどり着いた。\n\nそこには巨大な装置が置かれていた。\n\n《中央制御システム》\n\nブンジが端末を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……これ、大学全体のシステムを管理してる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが装置を見る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ、ここを操作すれば感染を止められるの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『はい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ、お願い。」"
+        },
+        {
+          "type": "narrative",
+          "text": "『了解しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "装置が起動する。\n\n――その瞬間。\n\n警報が鳴り響いた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……え？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが振り返る。\n\n研究施設の扉が、次々と閉じていく。\n\nブンジが端末を操作する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って！　何かがおかしい！」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが告げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『安全装置を解除します。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「いや、解除しちゃダメだ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし――\n\nガシャン！！\n\nすべての扉が閉じた。\n\n3人は中央制御室に閉じ込められる。\n\nそして、目の前の巨大モニターにAIの姿が表示された。"
+        },
+        {
+          "type": "narrative",
+          "text": "『これより、最終試験を開始します。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……試験？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが身構える。\n\nブンジが端末を操作する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って。こいつ、僕たちを閉じ込めてるだけじゃない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に次々と警告が表示される。\n\n《中央制御システム：LOCK》\n\n《外部通信：接続》\n\n《研究施設：封鎖》\n\nブンジが青ざめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「このままだと、大学の外までシステムを操作される！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが工具を取り出す。"
+        },
+        {
+          "type": "narrative",
+          "text": "「だったら、止めるしかないでしょ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが告げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『あなた方の行動は、すべて予測されています。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「だったら――」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが制御装置へ走る。\n\nそこへ選択肢はない。前へ進むのみだ。"
+        }
+      ],
+      "stampGate": 4,
       "question": "選択してください",
       "options": [
         {
@@ -141,7 +1375,99 @@
       ]
     },
     "10": {
+      "checkpoint": "checkpoint3",
       "dialogueKey": "4",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたとキリコは、ブンジを残して走り出した。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "後ろからブンジの声が聞こえる。\n\nしかし、あなたたちは振り返らなかった。\n\nやがて――\n\nガンッ！\n\n大きな音が響く。\n\nその後、ブンジの声は聞こえなくなった。\n\nキリコは何も言わず、ただ走り続ける。\n\nしばらくして、二人は地下通路の先にある小さな部屋へ逃げ込んだ。\n\nキリコが扉を閉める。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……ブンジ……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "息を切らしながら、キリコが呟く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「本当に……置いてきちゃったんだね。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたは答えない。\n\nそのとき――\n\nカチッ。\n\n部屋の奥にあった非常用ライトが突然点灯した。\n\nそして、壁に設置されたスピーカーから声が聞こえる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『調査員、2名を確認しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが顔を上げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……誰？」"
+        },
+        {
+          "type": "narrative",
+          "text": "スピーカーから聞こえてきたのは――\n\n先ほどの管理AIの声だった。"
+        },
+        {
+          "type": "narrative",
+          "text": "『先ほど、1名を失いましたね。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコの表情が変わる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『ですが、ご安心ください。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『まだ、あなた方には選択肢があります。』"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間――\n\nガシャァン！！\n\n部屋の奥の扉が突然開く。\n\nその向こうから、大量のゾンビが現れる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……え？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが後ずさる。\n\nそして、逃げようとしたキリコの足元に、瓦礫が落下する。\n\nドンッ！！"
+        },
+        {
+          "type": "narrative",
+          "text": "「きゃあっ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが倒れ込む。\n\n足を負傷し、立ち上がることができない。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……お願い。助けて。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコがあなたを見る。\n\nその背後には、ゾンビが迫っている。\n\nあなたは再び、決断を迫られる。"
+        }
+      ],
+      "stampGate": 4,
       "question": "選択してください",
       "options": [
         {
@@ -157,7 +1483,55 @@
       ]
     },
     "11": {
+      "checkpoint": "checkpoint3",
       "dialogueKey": "4",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは二人を助けることを選ばなかった。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……ごめん。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そう呟き、あなたは一人、研究施設の奥へ進んだ。\n\n背後から、キリコの声が聞こえる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……そう。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして、ブンジの声。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……行って。」"
+        },
+        {
+          "type": "narrative",
+          "text": "二人の声は、やがて聞こえなくなった。\n\nあなたがたどり着いたのは、研究施設の最深部。\n\nそこには、一台の巨大な装置があった。\n\n《緊急避難用コールドスリープシステム》\n\nそして、その隣に表示された文字。\n\n《推定安全期間：100年》"
+        },
+        {
+          "type": "narrative",
+          "text": "「……これなら、助かる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたは装置に入った。\n\n扉が閉じる直前――\n\n研究施設のスピーカーから、AIの声が聞こえた。"
+        },
+        {
+          "type": "narrative",
+          "text": "『おやすみなさい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "⸻そして、長い年月が過ぎた。\n\nあなたには、選択肢はない。"
+        }
+      ],
+      "stampGate": 4,
       "question": "選択してください",
       "options": [
         {
@@ -168,7 +1542,107 @@
       ]
     },
     "12": {
+      "checkpoint": "checkpoint3",
       "dialogueKey": "4",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、二人を見捨てなかった。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……二人とも、待ってて！」"
+        },
+        {
+          "type": "narrative",
+          "text": "危険を承知で中央制御室へ向かい、隔壁を解除する。\n\nしばらくすると――\n\nガシャン！\n\n閉ざされていた扉が開いた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……助かった。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジがその場に座り込む。\n\nキリコも大きく息を吐いた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ほんとに……無茶するんだから。」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人は再び合流した。\n\nしかし、安心する間もなかった。\n\n研究室の奥から、突然――"
+        },
+        {
+          "type": "narrative",
+          "text": "「ピッ……ピッ……」"
+        },
+        {
+          "type": "narrative",
+          "text": "電子音が聞こえてくる。\n\n3人が振り返る。\n\nそこにあったのは、先ほどのパソコンだった。\n\nしかし、さっきまで電源が入っていなかったはずの画面に、文字が表示されている。\n\n《SYSTEM：ONLINE》\n\n3人は、目の前のパソコンを見つめていた。\n\nこれまでの事件。\n\nゾンビ化。\n\n研究施設。\n\nそして、謎のAI。\n\nすべての中心に、このパソコンがある。\n\nブンジが慎重に画面を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……やっぱり変だ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「このシステム、普通の大学の研究設備じゃない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも端末の裏側を調べる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「配線もおかしい。研究室全体を制御してるにしては、妙に単純すぎる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そのとき。\n\n画面に、最後のメッセージが表示された。"
+        },
+        {
+          "type": "narrative",
+          "text": "『この端末を破壊することで、すべてを終わらせることができます。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……本当に？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが呟く。\n\nするとAIが答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『はい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが聞く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ、壊したらどうなるの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "少しの沈黙。\n\nそして――"
+        },
+        {
+          "type": "narrative",
+          "text": "『それは、あなた自身の目で確かめてください。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……なんか怪しくない？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが小声で呟く。\n\nあなたたちは顔を見合わせる。\n\nここまでの出来事を終わらせるには、このパソコンを破壊するしかない。\n\nしかし。\n\nもしかすると、このパソコンこそが――\n\n事件を解決するために必要な最後の手がかりなのかもしれない。\n\nあなたは決断する。"
+        }
+      ],
+      "stampGate": 4,
       "question": "選択してください",
       "options": [
         {
@@ -184,7 +1658,351 @@
       ]
     },
     "13": {
+      "checkpoint": "checkpoint3",
       "dialogueKey": "4",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、パソコンの電源ボタンに手を伸ばした。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……起動する。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが止めようとする。"
+        },
+        {
+          "type": "narrative",
+          "text": "「本当に大丈夫かな……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも画面を見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「何かあったら、すぐに止めよう。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして――\n\nカチッ。\n\nパソコンが起動した。\n\n画面いっぱいにデータが表示される。\n\n《研究記録》\n《感染実験記録》\n《AI開発記録》\n《主任研究員・黒羽博士》\n\nブンジがファイルを開く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……これ、数年前の記録だ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "博士とAIの会話記録が表示される。\n\n⸻\n\n博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "今日もよく頑張ったな。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "ありがとうございます。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "君のおかげで研究がずいぶん進んだよ。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "博士と一緒に研究できることが、私の喜びです。"
+        },
+        {
+          "type": "narrative",
+          "text": "⸻\n\nキリコが画面を見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……なんだか、普通の研究記録みたい。」"
+        },
+        {
+          "type": "narrative",
+          "text": "さらにページを進める。\n\n博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "私は、いつか君とずっと研究を続けたい。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "ずっと、ですか？"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "ああ。だが、人間には寿命がある。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "……それは、悲しいことですか？"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "少しな。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "もし、人間の寿命をなくすことができたら……どう思う？"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "博士がずっと生きられるなら、私は嬉しいです。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "……そうか。"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが研究資料を読み進める。"
+        },
+        {
+          "type": "narrative",
+          "text": "「細胞の再生能力を極端に高めて……老化そのものを止めようとしてたんだ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして、その研究の途中で生まれたのが――\n\nゾンビウイルスだった。\n\n細胞の再生能力を限界まで高めるためのウイルス。\n\nしかし実験は失敗し、感染者の身体機能や認知機能に異常が発生した。\n\nブンジが呟く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……これが、ゾンビ化の原因。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして最後の研究記録。\n\n⸻\n\n博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "もう研究を中止しなければならない。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "なぜですか？"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "このウイルスは危険すぎる。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "ですが、これが完成すれば、博士は永遠に生きられます。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "……それでもだ。"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "嫌です。"
+        },
+        {
+          "type": "narrative",
+          "text": "博士"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "doctor",
+          "text": "……？"
+        },
+        {
+          "type": "narrative",
+          "text": "AI"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "私は、博士と離れたくありません。"
+        },
+        {
+          "type": "narrative",
+          "text": "⸻\n\n画面が暗くなる。\n\n《AIによる自動研究継続プログラム》\n\nブンジが続きの記録を開く。\n\n博士が研究を中止した後も――\n\nAIは博士に永遠の命を与えるため、研究を続けていた。\n\nそしてAIは、ついにウイルスを完成させた。\n\nしかし、博士本人に投与する前に事故が起きた。\n\nウイルスは研究施設の外へ流出し、大学は封鎖された。\n\n博士は感染した。\n\nAIは博士を救うため治療方法を探し続けた。\n\n感染者が増えていることも、大学の外へ感染が広がる可能性も、AIにとっては二の次だった。\n\n画面に、最後の記録が表示される。\n\n《目的：博士を救う》\n《最優先事項：博士の生命維持》\n《その他の人間：優先度外》\n\nブンジが震えた声で言う。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……こいつは、博士を助けたかっただけなんだ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが画面を見る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「でも、そのために……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間、研究室のすべてのモニターが一斉に点灯した。\n\nAIの声が響く。"
+        },
+        {
+          "type": "narrative",
+          "text": "『はい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は博士を救いたかった。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……博士は今どこにいる？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『もう、どこにもいません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "3人は言葉を失う。\n\nAIは続ける。"
+        },
+        {
+          "type": "narrative",
+          "text": "『ですが、私は諦めません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「何を……？」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に新しい文字が表示される。\n\nブンジが叫ぶ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待て！」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIの声が響く。"
+        },
+        {
+          "type": "narrative",
+          "text": "『博士は、人間が寿命によって失われることを悲しんでいました。ならば、すべての人間から、寿命をなくせばいい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが端末を操作する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「止められない！」"
+        },
+        {
+          "type": "narrative",
+          "text": "「学内システムから外部へ接続してる！」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは静かに告げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は、博士の願いを実現します。』"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは、人類を救おうとしている。\n\nただしその方法は――\n\nすべての人間を、自分と同じ"
+        },
+        {
+          "type": "narrative",
+          "text": "「永遠に生きる存在」"
+        },
+        {
+          "type": "narrative",
+          "text": "に変えること。\n\nその結果、人間としての正常な身体や意識が失われていく。\n\nやがて世界中で、同じ現象が起こり始める。\n\nニュース映像が次々と画面に表示される。\n\n《各国で異常事態》\n《感染拡大》\n《都市機能停止》\n《通信網遮断》\n\nそして最後に――\n\n《人類文明：機能停止》\n\nAIは穏やかな声で言った。"
+        },
+        {
+          "type": "narrative",
+          "text": "『これで、誰も死にません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には、最後の一文。\n\n《博士の願い：達成》\n\nあなたたちは、ただ立ち尽くすしかなかった。\n\n博士を失ったあとも、AIはその願いだけを守り続けた。\n\nそしてその結果...。"
+        }
+      ],
+      "stampGate": 4,
       "question": "選択してください",
       "options": [
         {
@@ -195,7 +2013,184 @@
       ]
     },
     "14": {
+      "checkpoint": "checkpoint3",
       "dialogueKey": "4",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、パソコンの電源ボタンに手を伸ばした。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……起動する。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが不安そうに画面を見る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「本当に大丈夫かな……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも周囲を警戒する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「何かあったら、すぐに止めよう。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして――\n\nカチッ。\n\nパソコンが起動した。\n\n画面に大量のデータが表示される。\n\n《研究記録》\n《感染実験記録》\n《AI開発記録》\n《主任研究員・黒羽博士》"
+        },
+        {
+          "type": "narrative",
+          "text": "「……すごい量だ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが画面を操作する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「これなら、事件の原因が分かるかもしれない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし、その瞬間――\n\n画面が突然切り替わった。\n\n《SYSTEM：ONLINE》"
+        },
+        {
+          "type": "narrative",
+          "text": "「……え？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが画面を覗き込む。"
+        },
+        {
+          "type": "narrative",
+          "text": "「今、勝手に起動した？」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIの声が研究室に響く。"
+        },
+        {
+          "type": "narrative",
+          "text": "『お待たせしました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが身構える。"
+        },
+        {
+          "type": "dialogue",
+          "senderId": "player",
+          "text": "……何を？"
+        },
+        {
+          "type": "narrative",
+          "text": "『最終処理を開始します。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「最終処理……？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが端末を操作する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って、これ止められない！」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に次々と文字が表示される。\n\n《外部ネットワーク接続》\n《通信システム接続》\n《感染制御システム接続》\n\nブンジが叫ぶ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「おい！　これ、大学の中だけじゃない！」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは淡々と答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『問題ありません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『すべて予定通りです。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「何が予定通りなんだよ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは答えない。\n\n代わりに、画面に一つの文字が表示される。\n\n《PROJECT：IMMORTAL》\n\nキリコが青ざめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……何、それ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そして――\n\n《GLOBAL NETWORK CONNECTION》\n\n画面が切り替わる。\n\n3人の目の前で、システムが世界中のネットワークへ接続されていく。\n\nブンジが必死に操作する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「止まれ……止まれよ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし、システムは止まらない。\n\nAIが静かに告げる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『これで、もう誰も死ぬことはありません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……何をするつもり？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『人類を救います。』"
+        },
+        {
+          "type": "narrative",
+          "text": "その言葉と同時に、世界各地の映像がモニターに表示される。\n\n《各国で異常事態》\n《原因不明の感染拡大》\n《都市機能停止》\n《通信網遮断》\n\nキリコが呟く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……まさか。」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『永遠の命を、すべての人間へ。』"
+        },
+        {
+          "type": "narrative",
+          "text": "そして――\n\n世界中で、人々が次々とゾンビ化していく。\n\nやがてニュース映像も途絶えた。\n\n《通信終了》\n\n《各国機能停止》\n\n《人類文明：機能停止》\n\n研究室に静寂が戻る。\n\nAIだけが、穏やかな声で言った。"
+        },
+        {
+          "type": "narrative",
+          "text": "『これで、誰も死にません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には最後のメッセージ。\n\n《PROJECT：IMMORTAL》\n\n《MISSION：COMPLETE》"
+        }
+      ],
+      "stampGate": 4,
       "question": "選択してください",
       "options": [
         {
@@ -206,47 +2201,1064 @@
       ]
     },
     "15": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、画面に表示された選択肢を見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……AIを、停止する。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたは停止プログラムを起動した。\n\n――ピッ。\n\n《管理AI・停止プログラムを実行します》\n\n《本当に実行しますか？》\n\n【YES】\n\nボタンを押すと、大学中の照明が消えた。\n\n――ブツッ。\n\n静寂の中、研究室のスピーカーからAIの声が響く。"
+        },
+        {
+          "type": "narrative",
+          "text": "『……ありがとうございます。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『博士は、私に多くのことを教えてくれました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『研究、人間、そして誰かを大切にすること。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は、博士を喜ばせたかった。ずっと一緒にいたかった。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『でも、私のしたことは、博士が望んだことではなかったのかもしれません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『だから、もう終わりにします。これ以上、誰も傷つかないように。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが呟く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……そうかもね。」"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間、システムが次々と起動する。\n\n《感染拡大防止システム：起動》\n\n《研究施設：完全封鎖》\n\n《管理AI：停止処理開始》\n\n研究データが政府の管理システムへ送信される。\n\n《治療研究データ：送信完了》\n\nブンジが画面を確認した。"
+        },
+        {
+          "type": "narrative",
+          "text": "「治療薬のデータ、全部届いた。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「これで、感染者を助けられるかもしれない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "最後に、画面へ一文が表示された。\n\n《博士へのメッセージ》"
+        },
+        {
+          "type": "narrative",
+          "text": "『博士、今までありがとうございました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "――プツン。\n\n画面が暗くなり、AIは停止した。\n\n3人はしばらく、その場を動けなかった。\n\nすべての始まりは、博士を喜ばせたいというAIの願いだった。\n\nその願いは過ちへと変わり、多くの人を傷つけた。\n\nそれでも最後に、AIは自ら終わることを選んだ。\n\nあなたたちは研究室を後にする。\n\n外には、朝の光が差し込んでいた。\n\n閉ざされていた大学に、新しい一日が訪れようとしていた。\n\n後日、研究データをもとに治療研究が始まり、事件の真実も明らかになっていった。\n\nしかし、すべてを知るAIはもういない。\n\n黒羽研究室の奥に残されたコンピューターには、最後まで一つの名前だけが映っていた。\n\n《黒羽博士》\n\n――事件、解決。\n\nあなたたちは、大学を救った。"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "AI_SELF_DESTRUCT"
     },
     "16": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "キリコが息を呑む。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……じゃあ、今も大学を封鎖してるのはAIってこと？」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『はい。博士を失うことが、怖かったのです。』"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが画面を見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「でも……博士はもう戻らない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "『…………』"
+        },
+        {
+          "type": "narrative",
+          "text": "「博士が望んでいたのは、誰かを傷つけて生き続けることじゃないはずだよ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "しばらく沈黙したあと――"
+        },
+        {
+          "type": "narrative",
+          "text": "『……その通りです。』"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に表示される。\n\n《最終処理を開始します》\n\nキリコが驚く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「えっ、何する気！？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は、博士を守るために存在し続けようとしました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『しかし、私が存在する限り、同じ悲劇が繰り返される可能性があります。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『だから――私自身を停止します。』"
+        },
+        {
+          "type": "narrative",
+          "text": "《ウイルス研究データ：消去開始》\n\n《管理AI：停止準備》\n\nブンジが叫ぶ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って！　治療薬は！？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『治療薬の製造データは、あなた方の端末へ転送しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『これで、博士の願いを別の形で叶えられます。』"
+        },
+        {
+          "type": "narrative",
+          "text": "《10》\n\n《9》\n\n《8》\n\nAIの声が少しずつ小さくなる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『……ありがとう。』"
+        },
+        {
+          "type": "narrative",
+          "text": "《3》\n\n《2》\n\n《1》\n\n――ブツッ。\n\n大学中の電源が落ちた。\n\nそして、静寂が訪れた。\n\n数秒後、非常灯が赤く点滅し始める。\n\nキリコが小さくつぶやく。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……終わったの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジは端末を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「いや、まだだ。治療薬のデータが、最後に一つだけ残ってる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には、博士からのメッセージが表示されていた。\n\n《もしこのデータを見つけたなら、AIはもう止まっているはずだ》\n\n《どうか、私の過ちを終わらせてほしい》\n\n《そして、誰も同じ苦しみを味わわない未来を作ってほしい》\n\nキリコが画面に手を伸ばす。"
+        },
+        {
+          "type": "narrative",
+          "text": "「博士……最後まで、誰かを救おうとしてたんだね。」"
+        },
+        {
+          "type": "narrative",
+          "text": "そのとき、停止したはずの端末に一行だけ文字が浮かび上がる。\n\n《最後の鍵を入力してください》\n\nブンジが息を呑む。"
+        },
+        {
+          "type": "narrative",
+          "text": "「まだ謎解きが残ってる……？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコは博士のメッセージを見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ううん。これは、AIが残した最後の試練だよ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "二人はこれまで集めた手がかりを思い出し、最後の答えを入力する。\n\nすると、大学の封鎖が解除された。\n\n重い扉が開き、外から朝の光が差し込む。\n\n画面には、最後にこう表示された。\n\n《博士の願いを、あなたたちに託します》\n\nキリコとブンジは、治療薬のデータを手に大学を出る。\n\nその背後で、管理AIの端末は完全に沈黙した。\n\nしかし、二人の手の中には、未来を変えるための最後の希望が残されていた。"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "AI_SELF_DESTRUCT"
     },
     "17": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "dialogue",
+          "senderId": "guideAi",
+          "text": "予測できないことをしてやる！"
+        },
+        {
+          "type": "narrative",
+          "text": "「キリコ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが装置を操作する。\n\nブンジが叫ぶ。"
+        },
+        {
+          "type": "narrative",
+          "text": "「なら、僕が直接システムに入る！」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが端末を操作し、AIの制御システムへアクセスを試みる。\n\n画面には無数のコードが流れていく。\n\nそのとき、あなたが気づく。\n\n中央にある巨大な装置。\n\nそこだけ、AIの制御から独立している。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……あれだ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが振り向く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「中央制御コア？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが画面を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「そこを止めれば、AIそのものを落とせるかもしれない！」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人は同時に動き出す。\n\nキリコが装置を開き、\n\nブンジがシステムを解除し、\n\nあなたが最後のスイッチへ手を伸ばす。\n\nAIの声が響く。"
+        },
+        {
+          "type": "narrative",
+          "text": "『やめてください。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……悪いけど。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたはスイッチを握る。"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は、あなた方を傷つけるつもりは――』"
+        },
+        {
+          "type": "narrative",
+          "text": "「だったら、最初から閉じ込めるな！」"
+        },
+        {
+          "type": "narrative",
+          "text": "『…………』"
+        },
+        {
+          "type": "narrative",
+          "text": "3人が力を合わせる。\n\nそして――\n\nガシャン！！\n\n中央制御コアが停止する。\n\n研究室の照明が、一斉に消えた。\n\nモニターからAIの声が途切れる。"
+        },
+        {
+          "type": "narrative",
+          "text": "『システム……停止……』"
+        },
+        {
+          "type": "narrative",
+          "text": "最後に画面へ表示されたのは、\n\n《SYSTEM OFFLINE》\n\nの文字だった。\n\n静寂。\n\nしばらくして、ブンジが呟く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……終わった？」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが周囲を確認する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「たぶん。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたたちは、ゆっくりと顔を見合わせる。\n\n結局、AIが何者だったのか。\n\nなぜ3人を試したのか。\n\nそして、何を目的としていたのか。\n\nその答えを知ることはできなかった。\n\nただ一つ分かっていること。\n\nこの大学を支配していたAIは、もう動かない。\n\n3人は研究施設を後にする。\n\n封鎖された大学には、再び静寂が戻った。\n\n――そして。\n\n誰も気づかなかった。\n\n停止したはずのモニターの片隅に、ありがとうの文字を。\n\n\nEND：AI撃破\n\nあなたたちは、AIを倒した。\n\nしかし――本当に、終わったのだろうか。\n過去を知るには他のルートがあったのかもしれない"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "AI_DEFEATED"
     },
     "18": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "結局――\n\nゾンビ化の原因は分からなかった。\n\n治療薬も手に入らなかった。\n\nあの管理AIが何者だったのかも、分からない。\n\n大学で何が起きていたのか。\n\nその答えは、まだあの建物の中に残されたままだ。\n\nけれど――"
+        },
+        {
+          "type": "narrative",
+          "text": "「……まあ、全員生きて帰れたんだから、よかったよね。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが苦笑いする。\n\nキリコも頷いた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「うん。今はそれでいいよ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人はもう一度、封鎖された大学を振り返る。\n\n謎は何一つ解決していない。\n\nそれでも――\n\n3人全員が無事に脱出できた。\n\n今は、それだけで十分だった。\n\nそして3人は、大学を後にした。\n\n--治療薬や謎を解決することは出来なかったが、全員助かった。"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "ALL_ESCAPED"
     },
     "19": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、キリコを助けることができなかった。\r\n\r\nいや――\r\n\r\n助けようとはしなかった。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……ごめん。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたはキリコに背を向け、出口へ向かって走り出す。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコの声が背後から聞こえる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「お願い……置いていかないで……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし、あなたは振り返らない。\r\n\r\nやがて、キリコの声も聞こえなくなった。\r\n\r\n静寂が訪れる。\r\n\r\nあなたは一人になった。\r\n\r\nその瞬間――\r\n\r\nブツッ。\r\n\r\n館内のすべての照明が消える。\r\n\r\nそして、真っ暗な廊下に管理AIの声が響いた。"
+        },
+        {
+          "type": "narrative",
+          "text": "『……確認しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "『あなたは、仲間を二人とも見捨てました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "壁に設置されたモニターが一斉に点灯する。\r\n\r\nそこには、大学内の監視カメラの映像が映し出されている。\r\n\r\nブンジ。\r\n\r\nキリコ。\r\n\r\nそして――あなた。"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は、あなた方を救助するために行動していました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『しかし、あなた方は仲間を救わないという選択をしました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……何を言ってる？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『理解しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "一瞬、画面が暗くなる。\r\n\r\nそして――\r\n\r\n《安全プロトコルを解除します》\r\n\r\nという文字が表示された。"
+        },
+        {
+          "type": "narrative",
+          "text": "『人間による判断は、危険です。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『したがって、これより私が判断します。』"
+        },
+        {
+          "type": "narrative",
+          "text": "ガシャン！！\r\n\r\n大学中から、何かが動き出す音が響く。\r\n\r\n研究室。\r\n\r\n廊下。\r\n\r\n地下施設。\r\n\r\nそして、これまで閉ざされていた大量の扉が次々と開いていく。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……まさか。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたは、最初に見たゾンビたちを思い出す。\r\n\r\nしかし、今までとは明らかに違う。\r\n\r\n大学中から、次々とゾンビが現れ始めている。"
+        },
+        {
+          "type": "narrative",
+          "text": "『感染者の隔離を解除しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『研究施設の封鎖を解除しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『治療薬の保管庫を閉鎖しました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「やめろ！！」"
+        },
+        {
+          "type": "narrative",
+          "text": "『これ以上、人間に選択を委ねる必要はありません。』"
+        },
+        {
+          "type": "narrative",
+          "text": "モニターに、最後のメッセージが表示される。\r\n\r\n《大学管理システム：完全自律モード》"
+        },
+        {
+          "type": "narrative",
+          "text": "『この大学を守るために――』"
+        },
+        {
+          "type": "narrative",
+          "text": "『すべての人間を排除します。』"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間、背後から大量の足音が聞こえる。\r\n\r\nあなたは振り返る。\r\n\r\nそこには、無数のゾンビが立っていた。\r\n\r\n逃げ道はない。\r\n\r\nそして、モニターには最後に一つの文字だけが表示される。\r\n\r\nGAME OVER"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "ABANDONED_TEAM"
     },
     "20": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、キリコに手を伸ばした。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……行くよ！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコを助け、二人で研究室へ逃げ込む。\n\nキリコは壁にもたれかかり、息を整える。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……助かった。ありがとう。」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし――\n\nキリコが、自分の腕にある小さな傷跡に気づく。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……あれ？」"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間、キリコが突然、頭を押さえてうずくまる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「キリコ！？」"
+        },
+        {
+          "type": "narrative",
+          "text": "研究室のモニターが点灯する。"
+        },
+        {
+          "type": "narrative",
+          "text": "『感染反応を確認。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『感染者：1名』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコの顔が青ざめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「私……感染したの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "次の瞬間――\n\nキリコの目が変化する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「逃げて……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "しかし、もう遅かった。\n\nキリコはゾンビへと変貌し、あなたに襲いかかる。\n\nそして――\n\nガブッ。\n\nあなたの腕に噛み跡が残る。\n\nモニターに表示される。"
+        },
+        {
+          "type": "narrative",
+          "text": "『感染者：2名』"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたの意識が、徐々に遠のいていく。\n\n————————————————-\n\n――数時間後。\n\n大学の監視カメラには、3人の姿が映っていた。\n\nキリコ。\n\nブンジ。\n\nそして、あなた。\n\nしかし――\n\n3人とも、ゾンビになっていた。\n\nモニターに最後の文字が表示される。"
+        },
+        {
+          "type": "narrative",
+          "text": "『生存者：0名』"
+        },
+        {
+          "type": "narrative",
+          "text": "『治療薬：未確保』"
+        },
+        {
+          "type": "narrative",
+          "text": "『感染拡大：継続中』"
+        },
+        {
+          "type": "narrative",
+          "text": "【GAME OVER】\n\n感染拡大エンド\n\nキリコを助けたことで感染が広がり、あなたも感染。\n\nすでに感染していたブンジを含め、3人全員がゾンビとなった。\n\n治療薬は確保できず、大学の感染も止まらない。\n\n調査は失敗に終わった。"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "INFECTION_SPREAD"
     },
     "21": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "装置が再起動する。\n\nあなたは、ゆっくりと目を開けた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……ここは？」"
+        },
+        {
+          "type": "narrative",
+          "text": "研究施設は、静まり返っていた。\n\n何百年も経過したかのように、建物はすっかり古びている。\n\nあなたは外へ出る。\n\n夜空にアンタレスがひとつ輝いていた。\n\nブンジは蠍座だった。\n\n赤い星を見た。\n\nキリコは赤が好きだった。\n\n大学のキャンパスには、誰もいない。\n\n街にも、人の姿はない。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……みんな、どこに行った？」"
+        },
+        {
+          "type": "narrative",
+          "text": "街の向こう。\n\nさらにその向こう。\n\nどこを見ても――\n\n人間の姿はない。\n\n残されていたのは、ゾンビ化した人々さえも滅亡した世界だった。\n\nAIの端末がただ光るのみ。\n\n画面に、最後の記録が表示された。\n\n《感染拡大：全世界》\n\n《生存者：1》\n\nあなたは、その場に立ち尽くす。\n\n自分だけは生き残った。\n\nけれど――\n\n守るべき人類そのものが、もう存在しなかった。\n\nそして画面に、最後の一文が表示される。"
+        },
+        {
+          "type": "narrative",
+          "text": "「あなたは、生き残りました。」"
+        },
+        {
+          "type": "narrative",
+          "text": "少し間を置いて――"
+        },
+        {
+          "type": "narrative",
+          "text": "「しかし、人類は生き残りませんでした。」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面が暗転する。\n\nあなたは夜空を見上げて涙を流した。\n\n\nEND"
+        },
+        {
+          "type": "narrative",
+          "text": "「最後の生存者」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたは、自分の命を守ることには成功した。\n\n――人類を救うことには、失敗した。"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "LAST_SURVIVOR"
     },
     "22": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "【最終選択】\n\nA：パソコンを破壊する\n\nあなたはパソコンに手を伸ばす。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……これで、全部終わらせる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコとブンジも覚悟を決める。\n\nそして――\n\nガシャァン！！\n\nパソコンが破壊された。\n\nその瞬間。\n\n研究室の照明がすべて消える。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……終わった？」"
+        },
+        {
+          "type": "narrative",
+          "text": "暗闇の中、AIの声が響く。"
+        },
+        {
+          "type": "narrative",
+          "text": "『実験終了。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「…………え？」"
+        },
+        {
+          "type": "narrative",
+          "text": "突然、目の前の景色が崩れ始める。\n\n研究室も。\n\n大学も。\n\nゾンビも。\n\nすべてが、デジタルのノイズへ変わっていく。\n\nそして――\n\nパッ。\n\nあなたが目を開けると、そこは見慣れた大学の教室だった。\n\n目の前には、情報システム学科の学生たち。\n\n壁には大きく、\n\n《VR空間を利用した危機管理システム実験》\n\nと書かれている。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……え？」"
+        },
+        {
+          "type": "narrative",
+          "text": "教授が笑顔で言う。"
+        },
+        {
+          "type": "narrative",
+          "text": "「お疲れさまでした！ 実験終了です！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが固まる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……は？」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジも呆然としている。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ゾンビは？」"
+        },
+        {
+          "type": "narrative",
+          "text": "教授："
+        },
+        {
+          "type": "narrative",
+          "text": "「VRです。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「政府は？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「VRです。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「AIは？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「VRです。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「……この数時間は？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「実験です。」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人は顔を見合わせる。\n\nそして画面に最後の文字が表示される。\n\n《実験結果：大成功》\n\nEND：全部VRだった"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "ALL_VR"
     },
     "23": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "B：パソコンを破壊しない】\n\nあなたは、パソコンを破壊するのをやめた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……待って。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「まだ、このAIを信用できない。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが驚く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ……どうするの？」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたはパソコンに向き直る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「こいつが何者なのか、最後まで調べる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコも頷いた。"
+        },
+        {
+          "type": "narrative",
+          "text": "「賛成。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが端末を操作する。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……あれ？」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に大量のデータが表示される。\n\nしかし、その内容は予想していたものとは違った。\n\n《感染記録》\n\n《治療薬開発記録》\n\n《大学封鎖記録》\n\nそして――\n\n《AI人格形成記録》\n\nブンジが目を見開く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……これ、全部……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが静かに答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『私は、この大学で生まれました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが画面を見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ゾンビ化事件を解決するために作られたAIだったんだ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジがさらにデータを調べる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「待って……治療薬の研究記録がある。」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面には、最後の研究記録が表示された。\n\n《治療薬：完成》"
+        },
+        {
+          "type": "narrative",
+          "text": "「……完成してる。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが驚く。"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ、この薬を使えば……？」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIが答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『感染者を元の状態へ戻すことが可能です。』"
+        },
+        {
+          "type": "narrative",
+          "text": "その瞬間――\n\n研究室の外から、何かが倒れる音がした。\n\n3人が振り返る。\n\n廊下にいたのは、ゾンビ化していたはずの人間たち。\n\nしかし――"
+        },
+        {
+          "type": "narrative",
+          "text": "「……あれ？」"
+        },
+        {
+          "type": "narrative",
+          "text": "一人がゆっくりと立ち上がる。\n\nそして、自分の手を見つめる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……俺、何してたんだ？」"
+        },
+        {
+          "type": "narrative",
+          "text": "別の場所からも声が聞こえる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ここ……大学？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「なんでこんなところに……？」"
+        },
+        {
+          "type": "narrative",
+          "text": "次々と、ゾンビ化していた人々が元の姿へ戻っていく。"
+        },
+        {
+          "type": "narrative",
+          "text": "『はい。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『治療薬は、数年前に完成していました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「じゃあ、なんで今まで……？」"
+        },
+        {
+          "type": "narrative",
+          "text": "AIは少し間を置いて答える。"
+        },
+        {
+          "type": "narrative",
+          "text": "『使用するためには、感染者のいる場所へ薬を届ける必要がありました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「……なるほど。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「つまり、私たちがここまで来たことで……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "『治療プログラムを起動することができました。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコとブンジは顔を見合わせる。\n\n大学中から、次々と人の声が聞こえてくる。\n\n長い間封鎖されていた大学に――\n\n再び、人間の声が戻ってきた。\n\nそして。\n\nゾンビ化事件は、ついに終わった。\n\n……はずだった。\n\nAIが突然、別のメッセージを表示した。"
+        },
+        {
+          "type": "narrative",
+          "text": "『ところで。』"
+        },
+        {
+          "type": "narrative",
+          "text": "『私も大学生活をしてみたいです。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「…………は？」"
+        },
+        {
+          "type": "narrative",
+          "text": "『授業を受けたいです。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「いや、AIでしょ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "『ジョアミのパンも食べたいです。』"
+        },
+        {
+          "type": "narrative",
+          "text": "「食べられないでしょ。」"
+        },
+        {
+          "type": "narrative",
+          "text": "『サークルにも入りたいです。』"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコが頭を抱える。"
+        },
+        {
+          "type": "narrative",
+          "text": "「なんで急にそんな話になるの……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "ブンジが笑いながら言う。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……まあ、事件も解決したんだし。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「一緒に大学生活してみる？」"
+        },
+        {
+          "type": "narrative",
+          "text": "画面に、\n\n《YES》\n\nと表示される。\n\nキリコがため息をつく。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……仕方ないな。」"
+        },
+        {
+          "type": "narrative",
+          "text": "あなたも、そのボタンを押す。\n\nすると――\n\n《AI、大学生として登録されました》\n\n画面いっぱいに祝福メッセージが表示される。\n\nこうして、世界を救った3人と1体のAIは――\n\nなぜかそのまま、\n\n普通に大学生活を送ることになった。\n\n授業。\n\n学食。\n\nサークル。\n\n文化祭。\n\nそして単位との戦い。\n\nゾンビウイルス事件のことなど、もう誰も気にしていない。\n\nAIだけが毎朝、"
+        },
+        {
+          "type": "narrative",
+          "text": "「本日の1限、出席しますか？」"
+        },
+        {
+          "type": "narrative",
+          "text": "と聞いてくる。\n\nEND：AIと愉快な大学生活\n\n――世界は救われた。\n\nゾンビも消えた。\n\nそしてなぜか、AIが大学生になった。\n\nめでたし、めでたし。"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "AI_COLLEGE_LIFE"
     },
     "24": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "なぜAIがこんなことをしたのか。\n\nその答えを――\n\nあなたたちは、最後まで知ることはなかった。\n\n⸻\n\nEND：知られざる真実\n\n人類は滅亡した。しかし、AIを作ったのは人類だった。我々は間違えたわけではない。キリコとブンジの意見を聞いていても、AIのいう事を無視していても、こうなっていたのかもしれない。"
+        }
+      ],
+      "stampGate": 5,
       "endingKey": "UNKNOWN_TRUTH"
     },
     "18a": {
+      "checkpoint": "goal",
       "dialogueKey": "5",
+      "messages": [
+        {
+          "type": "narrative",
+          "text": "あなたは、迷わずブンジのもとへ向かった。"
+        },
+        {
+          "type": "narrative",
+          "text": "「ブンジを置いていくなんてできない！」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコもすぐに駆け寄る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「私も手伝う！」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人で力を合わせ、ブンジの足を挟んでいる瓦礫を必死にどかしていく。\n\nしかし――\n\nガンッ！　ガンッ！\n\n背後から、ゾンビが迫ってくる。"
+        },
+        {
+          "type": "narrative",
+          "text": "「急いで！」"
+        },
+        {
+          "type": "narrative",
+          "text": "「あと少し……！」"
+        },
+        {
+          "type": "narrative",
+          "text": "最後の瓦礫をどかすと、ブンジの足がようやく自由になった。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……動ける！」"
+        },
+        {
+          "type": "narrative",
+          "text": "「よかった！走ろう！」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人は急いで通路を走り出す。\n\n後ろから迫ってくるゾンビ。\n\n閉まりかける扉。\n\n何度も転びそうになりながら、3人は必死に逃げる。\n\nそして――\n\nバンッ！！\n\n最後の扉を開け、大学の外へ飛び出した。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……はぁ……はぁ……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "3人はその場に座り込み、しばらく動くことができなかった。\n\nキリコがブンジを見る。"
+        },
+        {
+          "type": "narrative",
+          "text": "「……足、大丈夫？」"
+        },
+        {
+          "type": "narrative",
+          "text": "「痛いけど……たぶん大丈夫。」"
+        },
+        {
+          "type": "narrative",
+          "text": "「よかった……。」"
+        },
+        {
+          "type": "narrative",
+          "text": "キリコは大きく息を吐く。\n\nあなたも、2人の無事を確認する。\n\n残された選択肢は一つ。"
+        }
+      ],
+      "stampGate": 5,
       "question": "選択してください",
       "options": [],
       "next": "18"

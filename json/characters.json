@@ -24,5 +24,10 @@
     "name": "プレイヤー",
     "avatar": "👤",
     "type": "player"
+  },
+  "doctor": {
+    "name": "黒羽博士",
+    "avatar": "🧑‍🔬",
+    "type": "character"
   }
 }
