@@ -13,7 +13,8 @@ const INITIAL_STATE = {
     currentChoices: [],
     discoveredEndings: [],
     currentSpot: 0,
-    currentNodeId: null
+    currentNodeId: null,
+    pendingNodeId: null
 };
 
 return Vue.createApp({
@@ -50,10 +51,8 @@ return Vue.createApp({
             const params = new URLSearchParams(window.location.search);
             if (params.get('demo') === '1') {
                 this.loadState();
-                this.state.stamps = this.state.stamps.includes(1)
-                    ? this.state.stamps
-                    : [1, ...this.state.stamps];
                 this.saveState();
+                await this.processUrlParams();
                 return;
             }
 
@@ -174,8 +173,9 @@ return Vue.createApp({
                 document.getElementById('chat-controls').style.display = 'none';
                 document.getElementById('next-guide-container').style.display = 'block';
             } else {
-                this.state.currentSpot = 1;
-                this.loadStoryNode(RALLY_STORY_GRAPH.start);
+                const spotId = this.state.currentSpot || Math.max(...this.state.stamps);
+                this.state.currentSpot = spotId;
+                this.loadStorySpot(spotId);
             }
         },
 
@@ -188,7 +188,9 @@ return Vue.createApp({
 
             let result = null;
             try {
-                result = await StampRallyApi.acquireStamp(token);
+                result = this.isDemoMode()
+                    ? this.acquireDemoStamp(token)
+                    : await StampRallyApi.acquireStamp(token);
             } catch (error) {
                 if (error?.code === 'stamp_already_acquired') {
                     this.syncServerStamps(error.result?.stamps);
@@ -198,7 +200,7 @@ return Vue.createApp({
                         document.getElementById('start-btn').style.display = 'none';
                         document.getElementById('next-dialogue-btn').style.display = 'block';
                         this.state.currentSpot = acquiredId;
-                        this.loadStorySpot(acquiredId);
+                        this.openStampStory(acquiredId);
                         return;
                     }
 
@@ -247,8 +249,55 @@ return Vue.createApp({
                 document.getElementById('start-btn').style.display = 'none';
                 document.getElementById('next-dialogue-btn').style.display = 'block';
                 this.state.currentSpot = id;
-                this.loadStorySpot(id);
+                this.openStampStory(id);
             }
+        },
+
+        isDemoMode() {
+            return new URLSearchParams(window.location.search).get('demo') === '1';
+        },
+
+        acquireDemoStamp(token) {
+            const match = /^dev-stamp-token-([1-5])$/.exec(token);
+            const stampId = match ? parseInt(match[1], 10) : Number.NaN;
+
+            if (Number.isNaN(stampId)) {
+                const error = new Error('unknown_token');
+                error.code = 'unknown_token';
+                error.result = { error: 'unknown_token' };
+                throw error;
+            }
+
+            if (this.state.stamps.includes(stampId)) {
+                const error = new Error('stamp_already_acquired');
+                error.code = 'stamp_already_acquired';
+                error.result = {
+                    error: 'stamp_already_acquired',
+                    stamp: stampId,
+                    stamps: [...this.state.stamps]
+                };
+                throw error;
+            }
+
+            const expectedStampId = this.state.stamps.length + 1;
+            if (stampId !== expectedStampId) {
+                const error = new Error('out_of_order_stamp');
+                error.code = 'out_of_order_stamp';
+                error.result = {
+                    error: 'out_of_order_stamp',
+                    stamp: stampId,
+                    stamps: [...this.state.stamps]
+                };
+                throw error;
+            }
+
+            this.state.stamps = [...this.state.stamps, stampId];
+            this.saveState();
+            return {
+                ok: true,
+                stamp: stampId,
+                stamps: [...this.state.stamps]
+            };
         },
 
         triggerScanEffect() {
@@ -267,24 +316,33 @@ return Vue.createApp({
                 this.saveState();
             }
             this.state.currentSpot = id;
-            this.loadStorySpot(id);
+            this.openStampStory(id);
+        },
+
+        openStampStory(stampId) {
+            const entryNodes = { 1: '1', 2: '2', 3: '4', 4: '8', 5: null };
+            const nodeId = this.state.pendingNodeId || entryNodes[stampId];
+            this.state.pendingNodeId = null;
+            if (nodeId) {
+                this.loadStoryNode(nodeId);
+                return;
+            }
+
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            const message = document.createElement('div');
+            message.className = 'system-msg';
+            message.innerText = '先にチェックポイント3の選択肢を選んでください。';
+            chatBox.appendChild(message);
+            document.getElementById('next-dialogue-btn').style.display = 'none';
+            document.getElementById('chat-controls').style.display = 'none';
+            document.getElementById('next-guide-container').style.display = 'block';
+            this.saveState();
         },
 
         loadStorySpot(spotId) {
-            document.getElementById('story-location-tag').innerText = `CHECKPOINT 0${spotId} LOGS`;
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML = '';
-            this.dialogueIndex = 0;
-            this.currentChoiceData = null;
-
-            this.currentDialogueList = this.state.loopCount >= 2
-                ? RALLY_DIALOGUES_LOOP2[spotId] || []
-                : RALLY_DIALOGUES[spotId] || [];
-
-            document.getElementById('next-guide-container').style.display = 'none';
-            document.getElementById('chat-controls').style.display = 'block';
-
-            this.advanceDialogue();
+            this.state.currentSpot = spotId;
+            this.openStampStory(spotId);
         },
 
         loadStoryNode(nodeId) {
@@ -295,12 +353,17 @@ return Vue.createApp({
             }
 
             this.state.currentNodeId = String(nodeId);
-            this.currentDialogueList = this.state.loopCount >= 2
-                ? RALLY_DIALOGUES_LOOP2[node.dialogueKey] || []
-                : RALLY_DIALOGUES[node.dialogueKey] || [];
+            this.currentDialogueList = node.messages || RALLY_DIALOGUES[node.dialogueKey] || [];
             this.dialogueIndex = 0;
             this.currentChoiceData = null;
-            document.getElementById('story-location-tag').innerText = `STORY NODE ${nodeId}`;
+            const checkpointLabels = {
+                start: 'START',
+                checkpoint1: 'CHECKPOINT 01',
+                checkpoint2: 'CHECKPOINT 02',
+                checkpoint3: 'CHECKPOINT 03',
+                goal: 'GOAL'
+            };
+            document.getElementById('story-location-tag').innerText = checkpointLabels[node.checkpoint] || 'STORY LOG';
             document.getElementById('chat-box').innerHTML = '';
             document.getElementById('next-guide-container').style.display = 'none';
             document.getElementById('chat-controls').style.display = 'block';
@@ -313,6 +376,15 @@ return Vue.createApp({
 
             if (this.dialogueIndex < this.currentDialogueList.length) {
                 const msg = this.currentDialogueList[this.dialogueIndex];
+                if (msg.type === 'narrative') {
+                    const narrative = document.createElement('div');
+                    narrative.className = 'narrative-msg';
+                    narrative.innerText = msg.text;
+                    chatBox.appendChild(narrative);
+                    this.dialogueIndex++;
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    return;
+                }
                 const sender = this.getCharacter(msg.senderId);
 
                 if (sender.type === 'system') {
@@ -343,11 +415,15 @@ return Vue.createApp({
 
             const storyNode = RALLY_STORY_GRAPH.nodes[String(this.state.currentNodeId)];
             if (storyNode) {
-                if (storyNode.options) {
+                if (Array.isArray(storyNode.options) && storyNode.options.length > 0) {
                     this.currentChoiceData = storyNode;
                     return;
                 }
                 if (storyNode.endingKey) {
+                    if (!this.hasAllStamps()) {
+                        this.showStampRequirement();
+                        return;
+                    }
                     try {
                         await this.triggerEnding(storyNode.endingKey);
                     } catch (error) {
@@ -388,6 +464,23 @@ return Vue.createApp({
             }
         },
 
+        hasAllStamps() {
+            return [1, 2, 3, 4, 5].every((stampId) => this.state.stamps.includes(stampId));
+        },
+
+        showStampRequirement() {
+            const missingStamps = [1, 2, 3, 4, 5]
+                .filter((stampId) => !this.state.stamps.includes(stampId))
+                .join(', ');
+            const chatBox = document.getElementById('chat-box');
+            const message = document.createElement('div');
+            message.className = 'system-msg';
+            message.innerText = `全チェックポイントのスタンプが必要です。未取得: ${missingStamps}`;
+            chatBox.appendChild(message);
+            document.getElementById('chat-controls').style.display = 'none';
+            document.getElementById('next-guide-container').style.display = 'block';
+        },
+
         async selectChoice(val) {
             if (this.isChoiceSaveInFlight) {
                 return;
@@ -405,13 +498,31 @@ return Vue.createApp({
                 this.saveState();
                 this.currentChoiceData = null;
                 if (typeof val !== 'string' && option.next) {
-                    this.loadStoryNode(option.next);
+                    const nextNode = RALLY_STORY_GRAPH.nodes[String(option.next)];
+                    const requiredStamp = nextNode?.stampGate || this.state.stamps.length;
+                    if (requiredStamp > this.state.stamps.length) {
+                        this.state.pendingNodeId = String(option.next);
+                        this.saveState();
+                        this.showNextStampRequirement(requiredStamp);
+                    } else {
+                        this.loadStoryNode(option.next);
+                    }
                 } else {
                     document.getElementById('next-guide-container').style.display = 'block';
                 }
             } finally {
                 this.isChoiceSaveInFlight = false;
             }
+        },
+
+        showNextStampRequirement(stampId) {
+            const chatBox = document.getElementById('chat-box');
+            const message = document.createElement('div');
+            message.className = 'system-msg';
+            message.innerText = `次の区間へ進むには、スタンプ${stampId}を取得してください。`;
+            chatBox.appendChild(message);
+            document.getElementById('chat-controls').style.display = 'none';
+            document.getElementById('next-guide-container').style.display = 'block';
         },
 
         async triggerEnding(key) {
@@ -424,13 +535,30 @@ return Vue.createApp({
             const updatedEndings = this.state.discoveredEndings.includes(ending.id)
                 ? [...this.state.discoveredEndings]
                 : [...this.state.discoveredEndings, ending.id];
-            const updatedLoopCount = this.state.loopCount === 1 ? 2 : this.state.loopCount;
-            const result = await StampRallyApi.saveEnding(ending.id);
+            const completedCurrentLoop = this.hasAllStamps();
+            const updatedLoopCount = completedCurrentLoop
+                ? Math.min(this.state.loopCount + 1, 3)
+                : (this.state.loopCount === 1 ? 2 : this.state.loopCount);
+            const cleared = completedCurrentLoop
+                && this.state.loopCount >= 3
+                && key === 'AI_SELF_DESTRUCT';
+            const isDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+            const result = isDemoMode ? null : await StampRallyApi.saveEnding(ending.id);
             if (result?.record) {
                 this.applyServerRecord(result.record);
             } else {
                 this.state.discoveredEndings = updatedEndings;
                 this.state.loopCount = updatedLoopCount;
+                if (isDemoMode && completedCurrentLoop) {
+                    if (cleared) {
+                        this.state.clearedAt = new Date().toISOString();
+                    } else {
+                        this.state.stamps = [];
+                    }
+                    this.state.currentSpot = 0;
+                    this.state.currentNodeId = null;
+                    this.state.pendingNodeId = null;
+                }
                 this.saveState();
             }
 
@@ -441,7 +569,7 @@ return Vue.createApp({
                 <div style="font-size:0.75rem; color:var(--warning-yellow); font-family:var(--font-mono); font-weight:bold;">--- MISSION COMPLETE ---</div>
                 <div class="ending-display-title">${ending.id}: ${ending.name}</div>
                 <div class="ending-display-desc">${ending.desc}</div>
-                <p style="font-size:0.75rem; color:var(--accent-green);">【2周目解放】システムプロトコルが更新されました。<br>スタンプ画面から次なる調査を開始してください。</p>
+                <p style="font-size:0.75rem; color:var(--accent-green);">${cleared ? '調査ログを初期化しました。' : `【${updatedLoopCount}周目解放】システムプロトコルが更新されました。`}<br>スタンプ画面から次なる調査を開始してください。</p>
             `;
             chatBox.appendChild(endPanel);
         },
