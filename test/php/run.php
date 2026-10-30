@@ -218,7 +218,16 @@ assertTrueValue($config->debug, 'APP_DEBUG true string becomes true');
 assertSameValue('/rally', $config->basePath, 'APP_BASE_PATH is loaded');
 assertSameValue('https://example.test', $config->publicSiteUrl, 'Public site URL is loaded');
 assertTrueValue($config->line->isConfigured(), 'LINE config reports configured');
-assertSameValue('https://example.test/auth/line/callback', $config->line->redirectUri, 'LINE redirect URI is derived from site URL');
+assertSameValue('https://example.test/rally/auth/line/callback', $config->line->redirectUri, 'LINE redirect URI includes the application base path');
+$pathSiteConfig = AppConfig::fromEnv([
+    'APP_BASE_PATH' => '/2026_stamprally',
+    'NUXT_PUBLIC_SITE_URL' => 'https://cloverfes.com/2026_stamprally',
+]);
+assertSameValue(
+    'https://cloverfes.com/2026_stamprally/auth/line/callback',
+    $pathSiteConfig->line->redirectUri,
+    'LINE redirect URI does not duplicate a base path already present in the site URL',
+);
 assertTrueValue($config->exment->isConfigured(), 'Exment config reports configured');
 assertSameValue('https://exment.example.test', $config->exment->baseUrl, 'Exment base URL trims trailing slash');
 assertSameValue('exment-api-key', $config->exment->apiKey, 'Exment API key is loaded');

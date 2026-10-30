@@ -29,12 +29,20 @@ final class AppConfig
         }
 
         $siteUrl = rtrim(self::stringValue($env, 'NUXT_PUBLIC_SITE_URL', ''), '/');
-        $lineRedirectUri = $siteUrl === '' ? '' : "{$siteUrl}/auth/line/callback";
+        $basePath = self::stringValue($env, 'APP_BASE_PATH', '');
+        $sitePath = (string) (parse_url($siteUrl, PHP_URL_PATH) ?? '');
+        $normalizedBasePath = '/' . trim($basePath, '/');
+        $siteIncludesBasePath = $basePath !== ''
+            && rtrim($sitePath, '/') === rtrim($normalizedBasePath, '/');
+        $lineCallbackPath = $siteIncludesBasePath
+            ? '/auth/line/callback'
+            : "{$normalizedBasePath}/auth/line/callback";
+        $lineRedirectUri = $siteUrl === '' ? '' : "{$siteUrl}{$lineCallbackPath}";
 
         return new self(
             env: self::stringValue($env, 'APP_ENV', 'production'),
             debug: self::boolValue($env, 'APP_DEBUG', false),
-            basePath: self::stringValue($env, 'APP_BASE_PATH', ''),
+            basePath: $basePath,
             publicSiteUrl: $siteUrl,
             line: new LineConfig(
                 channelId: self::stringValue($env, 'NUXT_CHANNEL_ID', ''),

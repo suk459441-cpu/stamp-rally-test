@@ -26,6 +26,25 @@ return static function (App $app): void {
         return $normalizedBasePath . $normalizedPath;
     };
 
+    $toAbsolutePublicUrl = static function (string $siteUrl, string $path, string $basePath) use ($toPublicPath): string {
+        $siteUrl = rtrim($siteUrl, '/');
+        if ($siteUrl === '') {
+            return $toPublicPath($path, $basePath);
+        }
+
+        $sitePath = (string) (parse_url($siteUrl, PHP_URL_PATH) ?? '');
+        $normalizedBasePath = '/' . trim($basePath, '/');
+        $publicPath = $toPublicPath($path, $basePath);
+        if ($basePath !== '' && rtrim($sitePath, '/') === rtrim($normalizedBasePath, '/')) {
+            $publicPath = substr($publicPath, strlen(rtrim($normalizedBasePath, '/')));
+            if ($publicPath === '') {
+                $publicPath = '/';
+            }
+        }
+
+        return $siteUrl . '/' . ltrim($publicPath, '/');
+    };
+
     $writePrivateJson = static function (Response $response, array $payload, int $status = 200): Response {
         return JsonResponse::write($response, $payload, $status)
             ->withHeader('Cache-Control', 'private, no-store');
@@ -167,7 +186,7 @@ return static function (App $app): void {
         ]);
     });
 
-    $app->get(RouteNames::STAMP_RALLY_INIT, function (Request $request, Response $response) use ($app, $toPublicPath, $writePrivateJson, $resolveRepository): Response {
+    $app->get(RouteNames::STAMP_RALLY_INIT, function (Request $request, Response $response) use ($app, $toPublicPath, $toAbsolutePublicUrl, $writePrivateJson, $resolveRepository): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
         $userId = (new LineUserIdResolver())->resolve($request);
 
@@ -177,7 +196,7 @@ return static function (App $app): void {
             return $writePrivateJson($response, [
                 'ok' => false,
                 'requiresLogin' => true,
-                'loginUrl' => $config->publicSiteUrl === '' ? $loginPath : $config->publicSiteUrl . $loginPath,
+                'loginUrl' => $toAbsolutePublicUrl($config->publicSiteUrl, RouteNames::LINE_LOGIN_START, $config->basePath),
             ], 401);
         }
 
