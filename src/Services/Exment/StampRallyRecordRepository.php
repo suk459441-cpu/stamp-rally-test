@@ -76,6 +76,32 @@ final class StampRallyRecordRepository
     /**
      * @return array<string, mixed>
      */
+    public function resetByLineId(string $lineId): array
+    {
+        $result = $this->findOrCreateByLineId($lineId);
+        $record = $result['record'];
+        $recordId = $record['id'] ?? null;
+
+        if (!is_int($recordId) && !is_string($recordId)) {
+            throw new \RuntimeException('Exment record ID is missing.');
+        }
+
+        return $this->client->put($this->dataPath('/' . rawurlencode((string) $recordId)), [
+            'value' => [
+                'loop_count' => 1,
+                'collected_stamps' => null,
+                'loop1_choices' => null,
+                'loop2_choices' => null,
+                'loop3_choices' => null,
+                'collected_endings' => null,
+                'cleared_at' => null,
+            ],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function createByLineId(string $lineId): array
     {
         return $this->client->post($this->dataPath(), [

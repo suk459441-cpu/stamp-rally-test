@@ -53,6 +53,35 @@ const StampRallyApi = {
         return result;
     },
 
+    async reset() {
+        const response = await fetch(this.toPublicPath('/api/stamp-rally/reset'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json'
+            }
+        });
+        const result = await response.json();
+
+        if (result && result.requiresLogin) {
+            const error = new Error('Login is required to reset stamp rally progress.');
+            error.code = 'requires_login';
+            error.result = result;
+            error.status = response.status;
+            throw error;
+        }
+
+        if (!response.ok) {
+            const error = new Error(result?.message || result?.error || 'Failed to reset stamp rally progress.');
+            error.code = result?.error || 'reset_failed';
+            error.result = result;
+            error.status = response.status;
+            throw error;
+        }
+
+        return result;
+    },
+
     async saveChoice(choices) {
         const response = await fetch(this.toPublicPath('/api/stamp-rally/choice'), {
             method: 'POST',

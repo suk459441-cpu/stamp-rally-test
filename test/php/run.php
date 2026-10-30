@@ -325,6 +325,52 @@ assertSameValue([
     ],
 ], $existingClient->calls, 'Repository searches Exment by LINE_ID');
 
+$resetClient = new FakeExmentClient(
+    [[
+        'data' => [[
+            'id' => 13,
+            'value' => [
+                'LINE_ID' => 'U-reset',
+                'loop_count' => 3,
+                'collected_stamps' => '1,2,3,4,5',
+                'collected_endings' => 'END-01',
+            ],
+        ]],
+    ]],
+    [],
+    [
+        'id' => 13,
+        'value' => [
+            'LINE_ID' => 'U-reset',
+            'loop_count' => 1,
+            'collected_stamps' => null,
+            'loop1_choices' => null,
+            'loop2_choices' => null,
+            'loop3_choices' => null,
+            'collected_endings' => null,
+            'cleared_at' => null,
+        ],
+    ],
+);
+$resetRepository = new StampRallyRecordRepository($resetClient, 'stamp_rally_records');
+$resetResult = $resetRepository->resetByLineId('U-reset');
+assertSameValue(1, $resetResult['value']['loop_count'], 'Repository resets loop count');
+assertSameValue([
+    'method' => 'PUT',
+    'path' => '/api/data/stamp_rally_records/13',
+    'payload' => [
+        'value' => [
+            'loop_count' => 1,
+            'collected_stamps' => null,
+            'loop1_choices' => null,
+            'loop2_choices' => null,
+            'loop3_choices' => null,
+            'collected_endings' => null,
+            'cleared_at' => null,
+        ],
+    ],
+], $resetClient->calls[1], 'Repository clears all persisted progress fields');
+
 $creatingClient = new FakeExmentClient(
     [['data' => []]],
     [

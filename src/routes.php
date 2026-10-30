@@ -205,6 +205,47 @@ return static function (App $app): void {
         ]);
     });
 
+    $app->post(RouteNames::STAMP_RALLY_RESET, function (Request $request, Response $response) use ($app, $writePrivateJson, $resolveRepository, $isAllowedSameOrigin): Response {
+        $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
+        $userId = (new LineUserIdResolver())->resolve($request);
+
+        if ($userId === null) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'requiresLogin' => true,
+            ], 401);
+        }
+
+        if (!$isAllowedSameOrigin($request, $config)) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'invalid_origin',
+            ], 403);
+        }
+
+        if (!$config->exment->isConfigured()) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_not_configured',
+            ], 503);
+        }
+
+        try {
+            $record = $resolveRepository($config)->resetByLineId($userId);
+        } catch (\Throwable $exception) {
+            return $writePrivateJson($response, [
+                'ok' => false,
+                'error' => 'exment_request_failed',
+                'message' => $config->debug ? $exception->getMessage() : 'Failed to reset stamp rally record.',
+            ], 502);
+        }
+
+        return $writePrivateJson($response, [
+            'ok' => true,
+            'record' => $record,
+        ]);
+    });
+
     $app->post(RouteNames::STAMP_RALLY_STAMP, function (Request $request, Response $response) use ($app, $writePrivateJson, $resolveRepository, $isAllowedSameOrigin, $sanitizeToken, $stampIdFromToken): Response {
         $config = $app->getContainer()?->get('config') ?? \App\Config\AppConfig::fromEnv();
         $userId = (new LineUserIdResolver())->resolve($request);
