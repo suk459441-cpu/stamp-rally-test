@@ -67,7 +67,7 @@ final class AppConfig
     private static function stampTokens(array $env): array
     {
         $tokens = [];
-        for ($stampId = 1; $stampId <= 5; $stampId++) {
+        for ($stampId = 1; $stampId <= 4; $stampId++) {
             $token = self::stringValue($env, "STAMP_TOKEN_{$stampId}", '');
             if ($token !== '') {
                 $tokens[$stampId] = $token;

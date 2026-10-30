@@ -668,15 +668,15 @@ test('demo mode acquires a QR stamp locally without the stamp API', async () => 
     assert.equal(apiCalls.some((call) => call.method === 'acquireStamp'), false);
 });
 
-test('demo mode does not enter an ending when stamp five has no pending branch', async () => {
+test('demo mode starts the ending route when stamp four is acquired', async () => {
     const { app, elements } = await loadRally({
-        search: '?demo=1&token=dev-stamp-token-5',
-        savedState: { loopCount: 1, stamps: [1, 2, 3, 4], currentChoices: [], discoveredEndings: [], currentSpot: 4 }
+        search: '?demo=1&token=dev-stamp-token-4',
+        savedState: { loopCount: 1, stamps: [1, 2, 3], currentChoices: [], discoveredEndings: [], currentSpot: 3 }
     });
 
-    assert.equal(app.state.currentNodeId, null);
+    assert.equal(app.state.currentNodeId, '8');
     assert.equal(elements.get('chat-box').children.some((child) => child.className.includes('ending-display-panel')), false);
-    assert.match(elements.get('chat-box').children[0].innerText, /チェックポイント3/);
+    assert.equal(elements.get('story-location-tag').innerText, 'CHECKPOINT 03');
 });
 
 test('investigation resumes from the latest acquired stamp instead of node 1', async () => {
@@ -733,7 +733,7 @@ test('demo mode displays an ending without the ending API', async () => {
 test('demo mode advances loops and resets stamps after a completed round', async () => {
     const { app } = await loadRally({
         search: '?demo=1',
-        savedState: { loopCount: 1, stamps: [1, 2, 3, 4, 5], currentChoices: [], discoveredEndings: [], currentSpot: 5 }
+        savedState: { loopCount: 1, stamps: [1, 2, 3, 4], currentChoices: [], discoveredEndings: [], currentSpot: 4 }
     });
 
     await app.triggerEnding('AI_SELF_DESTRUCT');
@@ -745,13 +745,13 @@ test('demo mode advances loops and resets stamps after a completed round', async
 test('demo mode keeps loop three and terminal stamps after the final self-destruct ending', async () => {
     const { app } = await loadRally({
         search: '?demo=1',
-        savedState: { loopCount: 3, stamps: [1, 2, 3, 4, 5], currentChoices: [], discoveredEndings: [], currentSpot: 5 }
+        savedState: { loopCount: 3, stamps: [1, 2, 3, 4], currentChoices: [], discoveredEndings: [], currentSpot: 4 }
     });
 
     await app.triggerEnding('AI_SELF_DESTRUCT');
 
     assert.equal(app.state.loopCount, 3);
-    assert.deepEqual(Array.from(app.state.stamps), [1, 2, 3, 4, 5]);
+    assert.deepEqual(Array.from(app.state.stamps), [1, 2, 3, 4]);
     assert.equal(typeof app.state.clearedAt, 'string');
 });
 
@@ -826,10 +826,10 @@ test('app clears previous-loop choices when Exment advances to the next loop', a
         loadApp: false,
         savedState: {
             loopCount: 1,
-            stamps: [1, 2, 3, 4, 5],
+            stamps: [1, 2, 3, 4],
             currentChoices: ['A', 'A', 'A'],
             discoveredEndings: [],
-            currentSpot: 5
+            currentSpot: 4
         }
     });
 
@@ -952,7 +952,7 @@ test('selectChoice does not append duplicate choice when save fails', async () =
 
 test('triggerEnding deduplicates endings, advances loop count, and saves END id', async () => {
     const { context, app, apiCalls, elements } = await loadRally();
-    app.state.stamps = [1, 2, 3, 4, 5];
+    app.state.stamps = [1, 2, 3, 4];
     context.__endingResults = {
         'END-01': {
             ok: true,
@@ -1016,7 +1016,6 @@ test('processUrlParams acquires stamps from server-validated tokens and opens ea
         'token-2': { ok: true, stamp: 2, stamps: [1, 2] },
         'token-3': { ok: true, stamp: 3, stamps: [1, 2, 3] },
         'token-4': { ok: true, stamp: 4, stamps: [1, 2, 3, 4] },
-        'token-5': { ok: true, stamp: 5, stamps: [1, 2, 3, 4, 5] }
     };
 
     assert.deepEqual(Array.from(app.state.stamps), [1]);
@@ -1025,22 +1024,17 @@ test('processUrlParams acquires stamps from server-validated tokens and opens ea
     assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
     assert.equal(elements.get('chat-controls').style.display, 'block');
 
-    for (const stampId of [2, 3, 4, 5]) {
+    for (const stampId of [2, 3, 4]) {
         context.window.location.search = `?token=token-${stampId}`;
         await app.processUrlParams();
 
         assert.deepEqual(Array.from(app.state.stamps), Array.from({ length: stampId }, (_, index) => index + 1));
         assert.equal(app.state.currentSpot, stampId);
-        const labels = { 1: 'START', 2: 'CHECKPOINT 01', 3: 'CHECKPOINT 02', 4: 'CHECKPOINT 03', 5: 'CHECKPOINT 03' };
+        const labels = { 1: 'START', 2: 'CHECKPOINT 01', 3: 'CHECKPOINT 02', 4: 'CHECKPOINT 03' };
         assert.equal(elements.get('story-location-tag').innerText, labels[stampId]);
         assert.equal(elements.get('start-btn').style.display, 'none');
-        if (stampId === 5) {
-            assert.equal(elements.get('next-dialogue-btn').style.display, 'none');
-            assert.equal(elements.get('chat-controls').style.display, 'none');
-        } else {
-            assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
-            assert.equal(elements.get('chat-controls').style.display, 'block');
-        }
+        assert.equal(elements.get('next-dialogue-btn').style.display, 'block');
+        assert.equal(elements.get('chat-controls').style.display, 'block');
     }
 
     assert.deepEqual(
@@ -1050,7 +1044,6 @@ test('processUrlParams acquires stamps from server-validated tokens and opens ea
             { method: 'acquireStamp', token: 'token-2' },
             { method: 'acquireStamp', token: 'token-3' },
             { method: 'acquireStamp', token: 'token-4' },
-            { method: 'acquireStamp', token: 'token-5' }
         ]
     );
 });
@@ -1212,7 +1205,7 @@ test('story node 18a skips its empty option list and continues to node 18', asyn
     assert.equal(app.state.currentNodeId, '18');
 });
 
-test('story endings require all five stamps', async () => {
+test('story endings require all four stamps', async () => {
     const { app, elements } = await loadRally({
         search: '?demo=1',
         savedState: { loopCount: 1, stamps: [1], currentChoices: [], discoveredEndings: [], currentSpot: 1 }
@@ -1225,13 +1218,13 @@ test('story endings require all five stamps', async () => {
     await app.advanceDialogue();
 
     assert.equal(elements.get('chat-box').children.some((child) => child.className.includes('ending-display-panel')), false);
-    assert.match(elements.get('chat-box').children.at(-1).innerText, /未取得: 2, 3, 4, 5/);
+    assert.match(elements.get('chat-box').children.at(-1).innerText, /未取得: 2, 3, 4/);
 });
 
 test('branch nodes do not switch to the unrelated loop-two logic-collapse dialogue', async () => {
     const { app, elements } = await loadRally({
         search: '?demo=1',
-        savedState: { loopCount: 2, stamps: [1, 2, 3, 4, 5], currentChoices: [], discoveredEndings: [], currentSpot: 5 }
+        savedState: { loopCount: 2, stamps: [1, 2, 3, 4], currentChoices: [], discoveredEndings: [], currentSpot: 4 }
     });
 
     app.loadStoryNode('15');
@@ -1275,14 +1268,14 @@ test('advanceDialogue shows choices, ordinary next guide, first-loop ending, and
     app.advanceDialogue();
     assert.equal(elements.get('next-guide-container').style.display, 'block');
 
-    app.state.currentSpot = 5;
+    app.state.currentSpot = 4;
     app.state.currentChoices = ['A', 'A', 'A'];
     app.state.loopCount = 1;
     app.currentDialogueList = [];
     await app.advanceDialogue();
     assert.equal(apiCalls.at(-1).endingId, 'END-01');
 
-    app.state.currentSpot = 5;
+    app.state.currentSpot = 4;
     app.state.loopCount = 2;
     app.currentDialogueList = [];
     await app.advanceDialogue();
@@ -1298,7 +1291,7 @@ test('advanceDialogue handles ending persistence failures without unhandled reje
         };
     `, context);
 
-    app.state.currentSpot = 5;
+    app.state.currentSpot = 4;
     app.state.currentChoices = ['A', 'A', 'A'];
     app.state.loopCount = 1;
     app.currentDialogueList = [];
@@ -1361,7 +1354,7 @@ test('triggerEnding shows END-EX temporal error without saving unknown endings',
 test('advanceDialogue uses END-EX temporal error for invalid first-loop choice patterns', async () => {
     const { app, apiCalls, elements } = await loadRally();
 
-    app.state.currentSpot = 5;
+    app.state.currentSpot = 4;
     app.state.currentChoices = ['A'];
     app.state.loopCount = 1;
     app.currentDialogueList = [];
