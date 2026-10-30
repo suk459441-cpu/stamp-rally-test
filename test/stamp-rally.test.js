@@ -1371,6 +1371,8 @@ test('advanceDialogue uses END-EX temporal error for invalid first-loop choice p
     assert.equal(apiCalls.some((call) => call.method === 'saveEnding'), false);
     assert.match(elements.get('chat-box').children[0].className, /temporal-error-panel/);
     assert.match(elements.get('chat-box').children[0].innerHTML, /TEMPORAL ERROR/);
+    assert.equal(app.currentChoiceData.question, '【選択2】防壁の向こうのキリコに対して');
+    assert.equal(app.currentChoiceData.options.length, 2);
 });
 
 test('confirmReset clears saved progress and navigates to the current path', async () => {

@@ -25,6 +25,7 @@ return Vue.createApp({
             currentDialogueList: [],
             dialogueIndex: 0,
             currentChoiceData: null,
+            previousChoiceData: null,
             isChoiceSaveInFlight: false,
             stamps: [
                 { id: 1, image: 'img/stamp1.PNG', label: '01: START' },
@@ -334,6 +335,7 @@ return Vue.createApp({
             message.className = 'system-msg';
             message.innerText = '先にチェックポイント3の選択肢を選んでください。';
             chatBox.appendChild(message);
+            this.restorePreviousChoice();
             document.getElementById('next-dialogue-btn').style.display = 'none';
             document.getElementById('chat-controls').style.display = 'none';
             document.getElementById('next-guide-container').style.display = 'block';
@@ -417,6 +419,7 @@ return Vue.createApp({
             if (storyNode) {
                 if (Array.isArray(storyNode.options) && storyNode.options.length > 0) {
                     this.currentChoiceData = storyNode;
+                    this.previousChoiceData = storyNode;
                     return;
                 }
                 if (storyNode.endingKey) {
@@ -452,6 +455,7 @@ return Vue.createApp({
 
             if (RALLY_CHOICES_DATA[this.state.currentSpot]) {
                 this.currentChoiceData = RALLY_CHOICES_DATA[this.state.currentSpot];
+                this.previousChoiceData = this.currentChoiceData;
             } else if (this.state.currentSpot === 5) {
                 const endingKey = this.state.currentChoices.join('');
                 try {
@@ -525,6 +529,18 @@ return Vue.createApp({
             document.getElementById('next-guide-container').style.display = 'block';
         },
 
+        restorePreviousChoice() {
+            if (!this.previousChoiceData) {
+                const choiceSpot = Math.min(this.state.currentChoices.length + 2, 4);
+                this.previousChoiceData = RALLY_CHOICES_DATA[choiceSpot] || null;
+            }
+
+            if (this.previousChoiceData) {
+                this.currentChoiceData = this.previousChoiceData;
+                document.getElementById('next-guide-container').style.display = 'none';
+            }
+        },
+
         async triggerEnding(key) {
             const ending = RALLY_ENDING_MASTER[key];
             if (!ending) {
@@ -591,6 +607,7 @@ return Vue.createApp({
                 </div>
             `;
             chatBox.appendChild(errorPanel);
+            this.restorePreviousChoice();
             document.getElementById('chat-controls').style.display = 'none';
             document.getElementById('next-guide-container').style.display = 'block';
         },
