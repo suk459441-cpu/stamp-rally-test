@@ -151,7 +151,7 @@ final class StampRallyRecordRepository
      */
     public function acquireStampByLineId(string $lineId, int $stampId): array
     {
-        if ($stampId < 1 || $stampId > 5) {
+        if ($stampId < 1 || $stampId > 4) {
             throw new DomainException('invalid_stamp');
         }
 
@@ -167,7 +167,7 @@ final class StampRallyRecordRepository
         $endings = $this->parseCsvStrings($record['value']['collected_endings'] ?? '');
         $stamps = $this->parseCollectedStamps($record['value']['collected_stamps'] ?? '');
         $clearedAt = trim((string) ($record['value']['cleared_at'] ?? ''));
-        if ($clearedAt === '' && ($loopCount > 1 || $endings !== []) && count($stamps) === 5 && $stampId === 1) {
+        if ($clearedAt === '' && ($loopCount > 1 || $endings !== []) && count($stamps) === 4 && $stampId === 1) {
             $stamps = [];
         }
 
@@ -228,7 +228,7 @@ final class StampRallyRecordRepository
             $endings[] = $endingId;
         }
 
-        $completedCurrentLoop = count($stamps) === 5;
+        $completedCurrentLoop = count($stamps) === 4;
         $nextLoopCount = $completedCurrentLoop ? min($loopCount + 1, 3) : $loopCount;
         $canClear = $completedCurrentLoop && $loopCount >= 3;
         $cleared = $canClear && $endingId === 'END-AI';
@@ -271,7 +271,7 @@ final class StampRallyRecordRepository
         $stamps = [];
         foreach (explode(',', $value) as $item) {
             $stampId = (int) trim($item);
-            if ($stampId >= 1 && $stampId <= 5 && !in_array($stampId, $stamps, true)) {
+            if ($stampId >= 1 && $stampId <= 4 && !in_array($stampId, $stamps, true)) {
                 $stamps[] = $stampId;
             }
         }

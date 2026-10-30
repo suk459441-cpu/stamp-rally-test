@@ -179,7 +179,6 @@ http://localhost:8000/?demo=1&token=dev-stamp-token-1
 http://localhost:8000/?demo=1&token=dev-stamp-token-2
 http://localhost:8000/?demo=1&token=dev-stamp-token-3
 http://localhost:8000/?demo=1&token=dev-stamp-token-4
-http://localhost:8000/?demo=1&token=dev-stamp-token-5
 ```
 
 操作の流れ:

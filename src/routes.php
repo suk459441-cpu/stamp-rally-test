@@ -283,7 +283,7 @@ return static function (App $app): void {
             ], 403);
         }
 
-        if (count($config->stampTokens) < 5) {
+        if (count($config->stampTokens) < 4) {
             return $writePrivateJson($response, [
                 'ok' => false,
                 'error' => 'stamp_tokens_not_configured',

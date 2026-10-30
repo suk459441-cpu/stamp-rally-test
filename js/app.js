@@ -31,8 +31,7 @@ return Vue.createApp({
                 { id: 1, image: 'img/stamp1.PNG', label: '01: START' },
                 { id: 2, image: 'img/stamp2.PNG', label: '02: CP1' },
                 { id: 3, image: 'img/stamp3.PNG', label: '03: CP2' },
-                { id: 4, image: 'img/stamp4.PNG', label: '04: CP3' },
-                { id: 5, image: 'img/stamp5.PNG', label: '05: GOAL' }
+                { id: 4, image: 'img/stamp4.PNG', label: '04: GOAL' }
             ]
         };
     },
@@ -82,7 +81,7 @@ return Vue.createApp({
             if (Object.prototype.hasOwnProperty.call(value, 'collected_stamps')) {
                 this.state.stamps = this.parseCsv(value.collected_stamps)
                     .map((item) => parseInt(item, 10))
-                    .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 5);
+                    .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 4);
             }
 
             const loopChoiceMap = {
@@ -116,7 +115,7 @@ return Vue.createApp({
 
             this.state.stamps = stamps
                 .map((item) => parseInt(item, 10))
-                .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 5);
+                .filter((item) => !Number.isNaN(item) && item >= 1 && item <= 4);
             this.saveState();
         },
 
@@ -237,7 +236,7 @@ return Vue.createApp({
             }
 
             const id = parseInt(result?.stamp, 10);
-            if (Number.isNaN(id) || id < 1 || id > 5) {
+            if (Number.isNaN(id) || id < 1 || id > 4) {
                 return;
             }
 
@@ -259,7 +258,7 @@ return Vue.createApp({
         },
 
         acquireDemoStamp(token) {
-            const match = /^dev-stamp-token-([1-5])$/.exec(token);
+            const match = /^dev-stamp-token-([1-4])$/.exec(token);
             const stampId = match ? parseInt(match[1], 10) : Number.NaN;
 
             if (Number.isNaN(stampId)) {
@@ -321,7 +320,7 @@ return Vue.createApp({
         },
 
         openStampStory(stampId) {
-            const entryNodes = { 1: '1', 2: '2', 3: '4', 4: '8', 5: null };
+            const entryNodes = { 1: '1', 2: '2', 3: '4', 4: '8' };
             const nodeId = this.state.pendingNodeId || entryNodes[stampId];
             this.state.pendingNodeId = null;
             if (nodeId) {
@@ -441,7 +440,7 @@ return Vue.createApp({
             }
 
             if (this.state.loopCount >= 2) {
-                if (this.state.currentSpot === 5) {
+                if (this.state.currentSpot === 4) {
                     try {
                         await this.triggerEnding('AI_SELF_DESTRUCT');
                     } catch (error) {
@@ -453,27 +452,27 @@ return Vue.createApp({
                 return;
             }
 
-            if (RALLY_CHOICES_DATA[this.state.currentSpot]) {
-                this.currentChoiceData = RALLY_CHOICES_DATA[this.state.currentSpot];
-                this.previousChoiceData = this.currentChoiceData;
-            } else if (this.state.currentSpot === 5) {
+            if (this.state.currentSpot === 4) {
                 const endingKey = this.state.currentChoices.join('');
                 try {
                     await this.triggerEnding(endingKey);
                 } catch (error) {
                     this.handleEndingSaveError();
                 }
+            } else if (RALLY_CHOICES_DATA[this.state.currentSpot]) {
+                this.currentChoiceData = RALLY_CHOICES_DATA[this.state.currentSpot];
+                this.previousChoiceData = this.currentChoiceData;
             } else {
                 document.getElementById('next-guide-container').style.display = 'block';
             }
         },
 
         hasAllStamps() {
-            return [1, 2, 3, 4, 5].every((stampId) => this.state.stamps.includes(stampId));
+            return [1, 2, 3, 4].every((stampId) => this.state.stamps.includes(stampId));
         },
 
         showStampRequirement() {
-            const missingStamps = [1, 2, 3, 4, 5]
+            const missingStamps = [1, 2, 3, 4]
                 .filter((stampId) => !this.state.stamps.includes(stampId))
                 .join(', ');
             const chatBox = document.getElementById('chat-box');

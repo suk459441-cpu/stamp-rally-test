@@ -210,7 +210,6 @@ $config = AppConfig::fromEnv([
     'STAMP_TOKEN_2' => 'token-2',
     'STAMP_TOKEN_3' => 'token-3',
     'STAMP_TOKEN_4' => 'token-4',
-    'STAMP_TOKEN_5' => 'token-5',
 ]);
 
 assertSameValue('local', $config->env, 'APP_ENV is loaded');
@@ -237,7 +236,6 @@ assertSameValue([
     2 => 'token-2',
     3 => 'token-3',
     4 => 'token-4',
-    5 => 'token-5',
 ], $config->stampTokens, 'Stamp QR tokens are loaded');
 
 $missingApiKeyConfig = AppConfig::fromEnv([
@@ -646,7 +644,7 @@ $terminalClearedLoopClient = new FakeExmentClient([
 $terminalClearedLoopRepository = new StampRallyRecordRepository($terminalClearedLoopClient, 'stamp_rally_records');
 $terminalClearedLoopResult = $terminalClearedLoopRepository->acquireStampByLineId('U-stamp-terminal', 1);
 assertTrueValue($terminalClearedLoopResult['alreadyAcquired'], 'Repository keeps terminal cleared records in already acquired state');
-assertSameValue([1, 2, 3, 4, 5], $terminalClearedLoopResult['stamps'], 'Repository preserves terminal cleared stamp progression');
+assertSameValue([1, 2, 3, 4], $terminalClearedLoopResult['stamps'], 'Repository preserves terminal cleared stamp progression');
 assertSameValue(1, count($terminalClearedLoopClient->calls), 'Repository does not rewrite terminal cleared loop stamps');
 
 $stuckFirstLoopCompletedClient = new FakeExmentClient(
@@ -861,7 +859,7 @@ $ineligibleClearClient = new FakeExmentClient([
                     'LINE_ID' => 'U-ending-3',
                     'loop_count' => 3,
                     'collected_endings' => 'END-AI',
-                    'collected_stamps' => '1,2,3,4',
+                    'collected_stamps' => '1,2,3',
                 ],
             ],
         ],
@@ -912,7 +910,6 @@ $configuredChoiceConfig = AppConfig::fromEnv([
     'STAMP_TOKEN_2' => 'route-token-2',
     'STAMP_TOKEN_3' => 'route-token-3',
     'STAMP_TOKEN_4' => 'route-token-4',
-    'STAMP_TOKEN_5' => 'route-token-5',
 ]);
 
 $stampRouteRepositoryClient = new FakeExmentClient(
