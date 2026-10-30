@@ -204,6 +204,10 @@ async function loadRally({ search = '', savedState = null, loadApp = true, stubA
                 globalThis.__apiCalls.push({ method: 'saveEnding', endingId });
                 return globalThis.__endingResults?.[endingId] || { endingId };
             };
+            StampRallyApi.reset = async () => {
+                globalThis.__apiCalls.push({ method: 'reset' });
+                return { ok: true };
+            };
         `, context);
     }
 
@@ -400,6 +404,39 @@ test('API saveChoice posts choices without sending userId', async () => {
         column: 'loop1_choices',
         choices: ['A', 'B'],
         record: { id: 1, value: { loop1_choices: 'A,B' } }
+    });
+
+    test('API reset requests server-side progress reset without sending userId', async () => {
+        const { context } = await loadRally({ loadApp: false, stubApi: false });
+
+        context.__apiFetchCalls = [];
+        context.fetch = async (requestPath, options) => {
+            context.__apiFetchCalls.push({ requestPath, options });
+            return {
+                ok: true,
+                status: 200,
+                async json() {
+                    return { ok: true, record: { id: 1, value: { loop_count: 1 } } };
+                }
+            };
+        };
+
+        const result = await vm.runInContext('StampRallyApi.reset()', context);
+
+        assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+            ok: true,
+            record: { id: 1, value: { loop_count: 1 } }
+        });
+        assert.deepEqual(JSON.parse(JSON.stringify(context.__apiFetchCalls)), [
+            {
+                requestPath: '/api/stamp-rally/reset',
+                options: {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { Accept: 'application/json' }
+                }
+            }
+        ]);
     });
     assert.deepEqual(JSON.parse(JSON.stringify(context.__apiFetchCalls)), [
         {
@@ -1347,7 +1384,7 @@ test('confirmReset clears saved progress and navigates to the current path', asy
         }
     });
 
-    app.confirmReset();
+    await app.confirmReset();
 
     assert.equal(storage.has('mystery_game_save'), true);
     assert.equal(JSON.parse(storage.get('mystery_game_save')).loopCount, 1);

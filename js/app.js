@@ -613,12 +613,30 @@ return Vue.createApp({
             };
         },
 
-        confirmReset() {
+        async confirmReset() {
             if (confirm('端末の全調査ログと進行状況を初期化します。よろしいですか？')) {
-                localStorage.removeItem('mystery_game_save');
-                this.state = { ...INITIAL_STATE };
-                this.saveState();
-                location.href = location.pathname;
+                try {
+                    if (!this.isDemoMode()) {
+                        await StampRallyApi.reset();
+                    }
+
+                    localStorage.removeItem('mystery_game_save');
+                    this.state = { ...INITIAL_STATE };
+                    this.currentDialogueList = [];
+                    this.dialogueIndex = 0;
+                    this.currentChoiceData = null;
+                    this.saveState();
+                    window.location.href = window.location.pathname;
+                } catch (error) {
+                    const chatBox = document.getElementById('chat-box');
+                    if (chatBox) {
+                        chatBox.innerHTML = '';
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'system-msg';
+                        errorMessage.innerText = '調査ログの初期化に失敗しました。通信状況を確認してからもう一度お試しください。';
+                        chatBox.appendChild(errorMessage);
+                    }
+                }
             }
         },
 
